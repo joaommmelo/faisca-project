@@ -32,7 +32,7 @@ Os testes cobrem o motor (`src/utils/`): factos, distratores, caixas de Leitner,
 
 O `npm run build` gera um site estático em `dist/` com caminhos relativos, por isso funciona tanto na raiz de um domínio como num subcaminho.
 
-- **GitHub Pages:** o workflow `.github/workflows/deploy.yml` corre os testes, faz o build e publica a cada push para `main`. No repositório, em *Settings → Pages*, escolher *Source: GitHub Actions*.
+- **GitHub Pages:** o workflow `.github/workflows/deploy.yml` corre os testes, faz o build e publica. Por agora corre só à mão (*Actions → Deploy to GitHub Pages → Run workflow*), porque o repositório é privado e o Pages em repositórios privados exige GitHub Pro. Com o repositório público, activar em *Settings → Pages → Source: GitHub Actions* e acrescentar `push: branches: [main]` ao `on:` do workflow para publicar a cada push.
 - **Netlify:** ligar o repositório com *Build command* `npm run build` e *Publish directory* `dist`.
 
 ## Como está organizado

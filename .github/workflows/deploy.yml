@@ -1,8 +1,8 @@
 name: Deploy to GitHub Pages
 
+# Manual only: the repository is private, and Pages on a private repository needs GitHub Pro.
+# Once the repository is public (or on Pro), add `push: branches: [main]` to deploy on every push.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:

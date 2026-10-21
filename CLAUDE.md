@@ -17,7 +17,8 @@ Este ficheiro é a fonte de verdade para quem trabalha neste repositório: o bri
 
 - Ortografia: os modos dizem «Só directas» e «Directas + inversas», como no briefing. A escola segue o Acordo Ortográfico («diretas»). Mudar é só em `Messages.getModeLabel` (`src/utils/messages.ts`).
 - Mascote: é um cão castanho genérico. Se chegar uma fotografia do cão real, ajustar `src/components/Mascot.tsx` (e `public/favicon.svg`) às características dele.
-- Visibilidade do repositório: o GitHub Pages num repositório privado exige GitHub Pro. Sem Pages activo, o workflow de deploy falha no passo `configure-pages`.
+- Visibilidade do repositório: está privado. O GitHub Pages num repositório privado exige GitHub Pro, por isso o workflow de deploy corre só à mão (`workflow_dispatch`). Ao tornar o repositório público, activar o Pages e repor o gatilho `push` para `main`.
+- Autoria dos 8 primeiros commits: estão com o email da conta de trabalho (`jmelo-catappult`). Passá-los para a conta pessoal implica reescrever o histórico já publicado (force push). Só com autorização explícita.
 
 ## Comandos
 
@@ -34,7 +35,7 @@ npm run lint         # oxlint
 
 ## Repositório e git
 
-- GitHub: `joaommmelo/faisca-project` (conta pessoal, não a de trabalho).
+- GitHub: `joaommmelo/faisca-project`, privado (conta pessoal, não a de trabalho). O `gh` tem sessão iniciada nesta conta.
 - Identidade git **local a este repositório**: `João Melo <46906321+joaommmelo@users.noreply.github.com>`.
 - O helper de credenciais também é local a este repositório (`gh auth git-credential`). **Não mexer na configuração global do git:** os repositórios de trabalho usam HTTPS com as credenciais da conta de trabalho no keychain.
 - Commits pequenos, um por etapa, com mensagens em inglês e o trailer `Co-Authored-By` do Claude.
