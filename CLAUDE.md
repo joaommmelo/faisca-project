@@ -10,14 +10,14 @@ A v1 (só multiplicação) está na `main`. A v2 está na branch `v2`, ainda por
 
 - Quatro operações no menu principal, mais «Misturado»: Soma, Subtração, Multiplicação e Divisão, cada uma com Fácil, Médio e Difícil. Na multiplicação e na divisão o Fácil são as tabuadas (como na v1) e o Médio e o Difícil usam números maiores.
 - Soma e subtração por dificuldade (Fácil até 20, Médio até 100, Difícil até 1000), com tipos de competência (transporte e empréstimo), em resposta directa ou na vertical.
-- Conta na vertical com cursor da direita para a esquerda, linha de marcas não validada e feedback por coluna.
+- Conta na vertical com cursor da direita para a esquerda e feedback por coluna; o «e vai 1» e o empréstimo só aparecem por cima da conta quando a ajuda os mostra.
 - Segunda tentativa antes de mostrar a resposta; níveis que abrem competências mais difíceis; desbloqueio por convite; rede de segurança; mealheiro com moedas e ajudas graduadas.
 - Dados na versão 4, com migração testada de todas as anteriores (v1 → v2 → v3 → v4: caixas, tabuadas, níveis, moedas, recordes e estatísticas mantêm-se). Dados de uma versão mais nova nunca são reescritos. Aviso no ecrã inicial quando o browser não guarda.
 - PWA instalável (manifest, ícones, service worker) a funcionar sem rede; build em `docs/` para o GitHub Pages.
 - Publicada em <https://joaommmelo.github.io/faisca-project/> (repositório público; GitHub Pages a servir a pasta `/docs` da branch `v2`). Instala-se no ecrã principal: no iPhone e no iPad, Safari → Partilhar → «Adicionar ao ecrã principal»; no Android, Chrome → menu → «Instalar aplicação».
 - Pedidos de 21 de Outubro, depois da v2: ecrã inicial com as operações logo no topo e a Multiplicação por defeito; moedas no canto (abrem o mealheiro); «Quem vai jogar?» no fundo; ajuda em todos os formatos (na escolha múltipla tira 2 das 4 opções); «Escrever sempre a resposta» na multiplicação e na divisão; relógio por operação, para a frente ou para trás, contra 3 minutos ou contra o recorde; recordes por categoria nas sessões perfeitas; a moeda ganha voa para o saldo. Dados na versão 3, com migração da v2 e da v1.
-- Pedidos seguintes do mesmo dia (ver «Pedidos seguintes»): números maiores na multiplicação e na divisão; «Misturado» com 2, 3 ou 4 operações; início só com a escolha e um ecrã de preparação com «Mais opções»; resultado logo por baixo da conta e tudo a avançar sozinho; saída com «Sim, sair do jogo» / «Não, continuar a jogar»; relógio ligado por defeito (para a frente, meta de 3 minutos); caixas de escrever a azul; ajuda desactivada sem moedas; «Início» sempre à vista no resumo. Dados na versão 4, com migração de todas as anteriores.
-- 222 testes unitários (Vitest) a passar; `tsc` e `oxlint` limpos.
+- Pedidos seguintes do mesmo dia (ver «Pedidos seguintes»): números maiores na multiplicação e na divisão; «Misturado» com 2, 3 ou 4 operações; início só com a escolha e um ecrã de preparação com «Mais opções»; resultado logo por baixo da conta e tudo a avançar sozinho; saída com «Sim, sair do jogo» / «Não, continuar a jogar»; relógio ligado por defeito (para a frente, meta de 3 minutos); caixas de escrever a azul; ajuda desactivada sem moedas; «Início» sempre à vista no resumo; sem as caixas do «e vai 1» na vertical. Dados na versão 4, com migração de todas as anteriores.
+- 226 testes unitários (Vitest) a passar; `tsc` e `oxlint` limpos.
 - Testado num Chrome headless a 360, 390 e 820 px, sem erros na consola nem scroll horizontal: todas as operações, a vertical com ajuda e empréstimo através do zero, os marcos, o convite de desbloqueio, a rede de segurança, a migração da v1 e o arranque sem rede.
 
 **À espera de decisão do dono do projecto:**
@@ -230,6 +230,7 @@ O pedido original da v2 está resumido aqui; as respostas do dono do projecto (2
 - **Relógio ligado por defeito,** a contar para a frente, com 3 minutos como meta.
 - **Misturado:** uma mistura de 2, 3 ou as 4 operações, escolhidas pela criança.
 - **Caixas de escrever sem vermelho:** a cor da soma (laranja) fazia as caixas parecerem um erro antes de responder; tudo o que a criança preenche fica azul.
+- **Sem caixas do «e vai 1»:** a linha de caixas para a criança marcar o transporte e o empréstimo era confusa e não servia; saiu. A vertical começa logo nos números, e o 1 que vem de trás ou o empréstimo só aparecem por cima da conta, sem caixa, quando a ajuda os mostra.
 
 ---
 
@@ -345,7 +346,7 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 - Uma pergunta acertada à segunda tentativa volta mais tarde na sessão, como um erro; uma pergunta acertada com ajuda não volta.
 - Aceitar um convite (desbloqueio ou rede de segurança) começa logo um jogo nessa dificuldade; recusar não muda nada.
 - Uma resposta certa avança sozinha ao fim de 1 s (`PRAISE_DISPLAY_MILLISECONDS` em `SessionScreen.tsx`), ou logo, tocando no ecrã. Uma errada e uma com marcos (moeda, nível) esperam pelo «Seguinte».
-- As marcas da vertical são toques (põe e tira um «1»); na subtração a ajuda mostra o algarismo riscado e o novo valor por cima (3 → 13, 0 → 9).
+- A vertical não tem onde a criança marque o «e vai 1»: as marcas são só da ajuda e aparecem numa linha por cima da conta, que não existe antes disso. Na soma, o «1» por cima da coluna que o recebe (também quando a ajuda escreve o dígito de uma coluna que leva 1); na subtração, o algarismo riscado e o novo valor por cima (3 → 13, 0 → 9).
 - O cronómetro conta para cima e mostra o tempo no fim; nunca conta para baixo.
 - Sair a meio pede confirmação («O que já fizeste fica guardado.»).
 - Apagar um perfil, com confirmação, no fundo do ecrã inicial.
