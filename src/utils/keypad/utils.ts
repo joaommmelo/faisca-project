@@ -1,10 +1,10 @@
-import { FactsUtils } from "../facts/utils.ts";
+import { DifficultiesUtils } from "../difficulties/utils.ts";
 
 export class KeypadUtils {
-    // Enough digits for the largest product (12 × 12 = 144).
+    // Enough digits for the largest result, 1000 in Difícil.
     public static getMaxDigits(): number {
-        const largestFactor: number = Math.max(...FactsUtils.getValidFactors());
-        return String(largestFactor * largestFactor).length;
+        const largestResult: number = Math.max(...DifficultiesUtils.getValidDifficulties().map((difficulty) => DifficultiesUtils.getLimit(difficulty)));
+        return String(largestResult).length;
     }
 
     public static appendDigit(value: string, digit: string): string {

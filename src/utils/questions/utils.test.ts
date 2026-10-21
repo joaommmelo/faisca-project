@@ -1,16 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { createSeededRandom } from "../../test/random.ts";
 import { FactsUtils, type Fact } from "../facts/utils.ts";
-import { QuestionsUtils, type Question } from "./utils.ts";
+import type { LeitnerBoxes } from "../leitner/utils.ts";
+import { QuestionsUtils, type PracticeMode, type Question } from "./utils.ts";
 
 const factSevenEight: Fact = FactsUtils.getAll().find((fact) => fact.id === "7x8") as Fact;
 
-function buildMany(count: number, mode: "direct" | "mixed", boxes = {}): Question[] {
+function buildMany(count: number, mode: PracticeMode, boxes: LeitnerBoxes = {}): Question[] {
     const random = createSeededRandom(99);
-    return Array.from({ length: count }, () => QuestionsUtils.build(factSevenEight, { mode, boxes, random }));
+    return Array.from({ length: count }, () => QuestionsUtils.buildMultiplication(factSevenEight, { mode, boxes, random }));
 }
 
-describe("QuestionsUtils.build", () => {
+describe("QuestionsUtils.buildMultiplication", () => {
     it("only asks direct questions in direct mode", () => {
         expect(buildMany(100, "direct").every((question) => question.kind === "direct")).toBe(true);
     });
@@ -22,22 +23,21 @@ describe("QuestionsUtils.build", () => {
 
     it("always has a consistent answer", () => {
         for (const question of buildMany(100, "mixed")) {
-            expect(question.leftFactor * question.rightFactor).toBe(question.product);
+            expect(question.left * question.right).toBe(question.result);
             if (question.kind === "direct") {
-                expect(question.answer).toBe(question.product);
+                expect(question.answer).toBe(question.result);
             }
             if (question.kind === "missing-left") {
-                expect(question.answer).toBe(question.leftFactor);
+                expect(question.answer).toBe(question.left);
             }
             if (question.kind === "missing-right") {
-                expect(question.answer).toBe(question.rightFactor);
+                expect(question.answer).toBe(question.right);
             }
         }
     });
 
     it("presents the factors in both orders", () => {
-        const leftFactors = new Set(buildMany(50, "direct").map((question) => question.leftFactor));
-        expect(leftFactors).toEqual(new Set([7, 8]));
+        expect(new Set(buildMany(50, "direct").map((question) => question.left))).toEqual(new Set([7, 8]));
     });
 
     it("uses multiple choice for new or weak facts", () => {
@@ -56,15 +56,56 @@ describe("QuestionsUtils.build", () => {
     });
 });
 
+describe("QuestionsUtils.buildDivision", () => {
+    it("is always exact and trains the multiplication fact", () => {
+        const random = createSeededRandom(12);
+        for (const fact of FactsUtils.getAll()) {
+            const question: Question = QuestionsUtils.buildDivision(fact, { boxes: {}, random });
+            expect(question.left).toBe(fact.product);
+            expect(question.left % question.right).toBe(0);
+            expect(question.right * question.answer).toBe(question.left);
+            expect(question.boxKey).toBe(fact.id);
+        }
+    });
+
+    it("follows the multiplication box for its format", () => {
+        expect(QuestionsUtils.buildDivision(factSevenEight, { boxes: { "7x8": 4 } }).format).toBe("keypad");
+        expect(QuestionsUtils.buildDivision(factSevenEight, { boxes: {} }).format).toBe("choice");
+    });
+});
+
+describe("QuestionsUtils.buildArithmetic", () => {
+    it("writes in columns when the child chose the vertical layout", () => {
+        const question: Question = QuestionsUtils.buildArithmetic({
+            operation: "addition",
+            difficulty: "medium",
+            skill: "carry",
+            left: 37,
+            right: 25,
+            layout: "vertical",
+            skillBoxes: {}
+        });
+        expect(question.answer).toBe(62);
+        expect(question.format).toBe("vertical");
+        expect(question.boxKey).toBe("addition:medium:carry");
+        expect(question.trackId).toBe("addition:medium");
+    });
+
+    it("follows the skill box when only the result is asked", () => {
+        const base = { operation: "subtraction" as const, difficulty: "easy" as const, skill: "borrow" as const, left: 13, right: 7, layout: "result" as const };
+        expect(QuestionsUtils.buildArithmetic({ ...base, skillBoxes: {} }).format).toBe("choice");
+        expect(QuestionsUtils.buildArithmetic({ ...base, skillBoxes: { "subtraction:easy:borrow": 3 } }).format).toBe("keypad");
+    });
+});
+
 describe("QuestionsUtils.buildRetry", () => {
     it("asks the same thing again, as multiple choice after a miss", () => {
         const [original] = buildMany(1, "mixed", { "7x8": 4 });
-        const retry: Question = QuestionsUtils.buildRetry(original, { "7x8": 1 }, createSeededRandom(5));
+        const retry: Question = QuestionsUtils.buildRetry(original, createSeededRandom(5));
 
         expect(original.format).toBe("keypad");
         expect(retry.isRetry).toBe(true);
-        expect(retry.kind).toBe(original.kind);
-        expect(retry.leftFactor).toBe(original.leftFactor);
+        expect(retry.id).toBe(original.id);
         expect(retry.answer).toBe(original.answer);
         expect(retry.format).toBe("choice");
         expect(retry.options).toContain(retry.answer);

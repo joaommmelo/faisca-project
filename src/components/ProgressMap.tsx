@@ -39,7 +39,7 @@ export function ProgressMap({ boxes }: ProgressMapProps) {
                                             {product}
                                         </span>
                                         <span className="visually-hidden">
-                                            {`${rowFactor} × ${columnFactor} = ${product}: ${Messages.getLevelLabel(level)}`}
+                                            {`${rowFactor} × ${columnFactor} = ${product}: ${Messages.getMasteryLabel(level)}`}
                                         </span>
                                     </td>
                                 );
@@ -52,7 +52,7 @@ export function ProgressMap({ boxes }: ProgressMapProps) {
                 {ProgressUtils.getLevels().map((level) => (
                     <li key={level}>
                         <span className={`legend__swatch level-${level}`} aria-hidden="true" />
-                        {Messages.getLevelLabel(level)}
+                        {Messages.getMasteryLabel(level)}
                     </li>
                 ))}
             </ul>

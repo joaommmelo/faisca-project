@@ -6,19 +6,31 @@ import { SessionScreen } from "./screens/SessionScreen.tsx";
 import { SummaryScreen } from "./screens/SummaryScreen.tsx";
 import { WelcomeScreen } from "./screens/WelcomeScreen.tsx";
 import { ProfilesUtils, type AppData, type Profile } from "./utils/profiles/utils.ts";
+import { ProgressionUtils, type FinishSessionResult } from "./utils/progression/utils.ts";
 import type { SessionOutcome } from "./utils/session/utils.ts";
-import { StatsUtils } from "./utils/stats/utils.ts";
-import { StorageUtils } from "./utils/storage/utils.ts";
+import { StorageUtils, type LoadResult } from "./utils/storage/utils.ts";
 
 type View = { name: "home" } | { name: "session" } | { name: "summary"; outcome: SessionOutcome } | { name: "progress" };
 
 export function App() {
-    const [data, setData] = useState<AppData>(() => StorageUtils.load());
+    const [stored] = useState<LoadResult>(() => StorageUtils.load());
+    const [data, setData] = useState<AppData>(stored.data);
     const [view, setView] = useState<View>({ name: "home" });
+    const canSave: boolean = StorageUtils.canSave(stored.status);
+    const hasProfiles: boolean = data.profiles.length > 0;
 
     useEffect(() => {
-        StorageUtils.save(data);
-    }, [data]);
+        if (canSave) {
+            StorageUtils.save(data);
+        }
+    }, [data, canSave]);
+
+    // Only worth asking once there is progress to keep; a refusal changes nothing.
+    useEffect(() => {
+        if (canSave && hasProfiles) {
+            void StorageUtils.requestPersistence();
+        }
+    }, [canSave, hasProfiles]);
 
     useEffect(() => {
         window.scrollTo({ top: 0 });
@@ -33,10 +45,10 @@ export function App() {
         setData((current) => ProfilesUtils.updateActive(current, change));
     };
 
-    const finishSession = (outcome: SessionOutcome): void => {
-        const finishedAt: moment.Moment = moment();
-        updateActiveProfile((profile) => ({ ...profile, stats: StatsUtils.registerSession(profile.stats, finishedAt) }));
-        setView({ name: "summary", outcome });
+    const finishSession = (outcome: Omit<SessionOutcome, "offer">): void => {
+        const finished: FinishSessionResult = ProgressionUtils.finishSession(activeProfile, moment());
+        updateActiveProfile(() => finished.profile);
+        setView({ name: "summary", outcome: { ...outcome, offer: finished.offer } });
     };
 
     switch (view.name) {
@@ -44,7 +56,7 @@ export function App() {
             return (
                 <SessionScreen
                     profile={activeProfile}
-                    onBoxesChange={(boxes) => updateActiveProfile((profile) => ({ ...profile, boxes }))}
+                    onProfileChange={(profile) => updateActiveProfile(() => profile)}
                     onFinish={finishSession}
                     onExit={() => setView({ name: "home" })}
                 />
@@ -53,6 +65,10 @@ export function App() {
             return (
                 <SummaryScreen
                     outcome={view.outcome}
+                    onAcceptOffer={(offer) => {
+                        updateActiveProfile((profile) => ProgressionUtils.acceptOffer(profile, offer));
+                        setView({ name: "session" });
+                    }}
                     onPlayAgain={() => setView({ name: "session" })}
                     onShowProgress={() => setView({ name: "progress" })}
                     onHome={() => setView({ name: "home" })}
@@ -66,6 +82,7 @@ export function App() {
                     key={activeProfile.id}
                     data={data}
                     profile={activeProfile}
+                    storageStatus={stored.status}
                     onSelectProfile={(profileId) => setData(ProfilesUtils.select(data, profileId))}
                     onCreateProfile={(name) => setData(ProfilesUtils.add(data, name))}
                     onDeleteProfile={(profileId) => setData(ProfilesUtils.remove(data, profileId))}

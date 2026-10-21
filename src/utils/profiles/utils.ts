@@ -1,20 +1,47 @@
 import { v4 as uuidv4 } from "uuid";
+import { DifficultiesUtils, type Difficulty } from "../difficulties/utils.ts";
 import { FactsUtils } from "../facts/utils.ts";
 import type { LeitnerBoxes } from "../leitner/utils.ts";
-import { QuestionsUtils, type PracticeMode } from "../questions/utils.ts";
+import type { Tracks } from "../levels/utils.ts";
+import { OperationsUtils, type ArithmeticOperation, type Operation } from "../operations/utils.ts";
+import { QuestionsUtils, type AnswerLayout, type PracticeMode } from "../questions/utils.ts";
 import { StatsUtils, type PracticeStats } from "../stats/utils.ts";
+import { WalletUtils, type Wallet } from "../wallet/utils.ts";
+
+export interface ArithmeticSettings {
+    difficulty: Difficulty;
+    layout: AnswerLayout;
+}
+
+export interface TablesSettings {
+    tables: number[];
+}
+
+export interface MultiplicationSettings extends TablesSettings {
+    mode: PracticeMode;
+}
 
 export interface ProfileSettings {
-    tables: number[];
-    mode: PracticeMode;
+    operation: Operation;
     isTimerEnabled: boolean;
+    addition: ArithmeticSettings;
+    subtraction: ArithmeticSettings;
+    multiplication: MultiplicationSettings;
+    division: TablesSettings;
 }
 
 export interface Profile {
     id: string;
     name: string;
     settings: ProfileSettings;
+    // Multiplication facts ("7x8"), shared by division.
     boxes: LeitnerBoxes;
+    // Addition and subtraction skills ("addition:easy:carry").
+    skillBoxes: LeitnerBoxes;
+    tracks: Tracks;
+    // The highest difficulty open in each operation; every one below it stays open.
+    unlockedDifficulties: Record<ArithmeticOperation, Difficulty>;
+    wallet: Wallet;
     stats: PracticeStats;
 }
 
@@ -28,7 +55,7 @@ export type ProfileNameProblem = "empty" | "too-long" | "taken";
 
 export class ProfilesUtils {
     public static getDataVersion(): number {
-        return 1;
+        return 2;
     }
 
     public static getMaxNameLength(): number {
@@ -37,6 +64,32 @@ export class ProfilesUtils {
 
     public static createEmptyData(): AppData {
         return { version: this.getDataVersion(), profiles: [], activeProfileId: null };
+    }
+
+    public static createDefaultSettings(): ProfileSettings {
+        const arithmetic: ArithmeticSettings = { difficulty: DifficultiesUtils.getDefaultDifficulty(), layout: QuestionsUtils.getDefaultLayout() };
+        return {
+            operation: OperationsUtils.getDefaultOperation(),
+            isTimerEnabled: false,
+            addition: arithmetic,
+            subtraction: arithmetic,
+            multiplication: { tables: FactsUtils.getDefaultTables(), mode: QuestionsUtils.getDefaultMode() },
+            division: { tables: FactsUtils.getDefaultTables() }
+        };
+    }
+
+    public static createProfile(name: string): Profile {
+        return {
+            id: uuidv4(),
+            name: this.normalizeName(name),
+            settings: this.createDefaultSettings(),
+            boxes: {},
+            skillBoxes: {},
+            tracks: {},
+            unlockedDifficulties: { addition: DifficultiesUtils.getDefaultDifficulty(), subtraction: DifficultiesUtils.getDefaultDifficulty() },
+            wallet: WalletUtils.createInitial(),
+            stats: StatsUtils.createEmpty()
+        };
     }
 
     public static normalizeName(name: string): string {
@@ -62,13 +115,7 @@ export class ProfilesUtils {
         if (this.getNameProblem(data, name) !== null) {
             throw new Error(`Invalid profile name: "${name}".`);
         }
-        const profile: Profile = {
-            id: uuidv4(),
-            name: this.normalizeName(name),
-            settings: { tables: FactsUtils.getDefaultTables(), mode: QuestionsUtils.getDefaultMode(), isTimerEnabled: false },
-            boxes: {},
-            stats: StatsUtils.createEmpty()
-        };
+        const profile: Profile = this.createProfile(name);
         return { ...data, profiles: [...data.profiles, profile], activeProfileId: profile.id };
     }
 
@@ -96,6 +143,14 @@ export class ProfilesUtils {
             return tables.filter((selectedTable) => selectedTable !== table);
         }
         return [...tables, table].sort((first, second) => first - second);
+    }
+
+    // Multiplication and division need at least one table; additions and subtractions are always ready.
+    public static canPlay(settings: ProfileSettings): boolean {
+        if (OperationsUtils.isArithmetic(settings.operation)) {
+            return true;
+        }
+        return settings[settings.operation].tables.length > 0;
     }
 
     public static remove(data: AppData, profileId: string): AppData {

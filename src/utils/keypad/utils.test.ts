@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { KeypadUtils } from "./utils.ts";
 
 describe("KeypadUtils", () => {
-    it("allows up to three digits, enough for 144", () => {
-        expect(KeypadUtils.getMaxDigits()).toBe(3);
-        expect(KeypadUtils.appendDigit("14", "4")).toBe("144");
-        expect(KeypadUtils.appendDigit("144", "1")).toBe("144");
+    it("allows up to four digits, enough for 1000", () => {
+        expect(KeypadUtils.getMaxDigits()).toBe(4);
+        expect(KeypadUtils.appendDigit("100", "0")).toBe("1000");
+        expect(KeypadUtils.appendDigit("1000", "1")).toBe("1000");
     });
 
     it("replaces a lone leading zero", () => {

@@ -1,18 +1,20 @@
 import { useEffect, useId, useRef } from "react";
 import { Messages, type Feedback } from "../utils/messages.ts";
-import type { AnswerRecord } from "../utils/session/utils.ts";
+import type { Milestone } from "../utils/progression/utils.ts";
+import { Celebration } from "./Celebration.tsx";
+import { CoinIcon, StarIcon } from "./Icons.tsx";
 import { Mascot } from "./Mascot.tsx";
 
 interface FeedbackSheetProps {
-    record: AnswerRecord;
-    praiseVariant: number;
+    feedback: Feedback;
+    isCorrect: boolean;
+    milestones: Milestone[];
     onContinue: () => void;
 }
 
-export function FeedbackSheet({ record, praiseVariant, onContinue }: FeedbackSheetProps) {
+export function FeedbackSheet({ feedback, isCorrect, milestones, onContinue }: FeedbackSheetProps) {
     const messageId: string = useId();
     const continueButtonRef = useRef<HTMLButtonElement>(null);
-    const feedback: Feedback = Messages.getFeedback(record, praiseVariant);
 
     // Focus lands on "Seguinte", which describes itself with the message, so screen readers read both.
     useEffect(() => {
@@ -22,10 +24,11 @@ export function FeedbackSheet({ record, praiseVariant, onContinue }: FeedbackShe
     }, []);
 
     return (
-        <section className={record.isCorrect ? "feedback feedback--correct" : "feedback feedback--wrong"} aria-label="Resultado">
+        <section className={isCorrect ? "feedback feedback--correct" : "feedback feedback--wrong"} aria-label="Resultado">
+            {milestones.length > 0 && <Celebration />}
             <div className="feedback__inner">
                 <div className="feedback__message">
-                    <Mascot mood={record.isCorrect ? "cheer" : "encourage"} size={72} />
+                    <Mascot mood={isCorrect ? "cheer" : "encourage"} size={72} />
                     <div id={messageId}>
                         <p className="feedback__title">{feedback.title}</p>
                         {feedback.lines.map((line) => (
@@ -33,6 +36,16 @@ export function FeedbackSheet({ record, praiseVariant, onContinue }: FeedbackShe
                                 {line}
                             </p>
                         ))}
+                        {milestones.length > 0 && (
+                            <ul className="milestones">
+                                {milestones.map((milestone, index) => (
+                                    <li key={index} className={`milestone milestone--${milestone.kind}`}>
+                                        {milestone.kind === "coin" ? <CoinIcon /> : <StarIcon />}
+                                        {Messages.getMilestone(milestone)}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
                 </div>
                 <button

@@ -11,7 +11,11 @@ describe("ProfilesUtils.add", () => {
         const profile = ProfilesUtils.getActive(data);
 
         expect(profile?.name).toBe("Rita");
-        expect(profile?.settings).toEqual({ tables: [2, 5, 10], mode: "direct", isTimerEnabled: false });
+        expect(profile?.settings.multiplication).toEqual({ tables: [2, 5, 10], mode: "direct" });
+        expect(profile?.settings.addition).toEqual({ difficulty: "easy", layout: "result" });
+        expect(profile?.settings.isTimerEnabled).toBe(false);
+        expect(profile?.unlockedDifficulties).toEqual({ addition: "easy", subtraction: "easy" });
+        expect(profile?.wallet).toEqual({ coins: 3, points: 0 });
         expect(profile?.boxes).toEqual({});
         expect(profile?.stats.sessionsCompleted).toBe(0);
     });
@@ -73,6 +77,15 @@ describe("ProfilesUtils.toggleTable", () => {
 
     it("removes a selected table", () => {
         expect(ProfilesUtils.toggleTable([2, 5, 10], 5)).toEqual([2, 10]);
+    });
+});
+
+describe("ProfilesUtils.canPlay", () => {
+    it("needs a table for multiplication and division only", () => {
+        const settings = ProfilesUtils.createDefaultSettings();
+        expect(ProfilesUtils.canPlay({ ...settings, operation: "division", division: { tables: [] } })).toBe(false);
+        expect(ProfilesUtils.canPlay({ ...settings, operation: "multiplication" })).toBe(true);
+        expect(ProfilesUtils.canPlay({ ...settings, operation: "subtraction" })).toBe(true);
     });
 });
 

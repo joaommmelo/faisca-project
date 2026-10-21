@@ -3,12 +3,15 @@ import { LeitnerUtils, type LeitnerBoxes } from "../leitner/utils.ts";
 
 export class ProgressUtils {
     // 0 = never practised, then the Leitner box (1 to 5).
-    public static getLevel(boxes: LeitnerBoxes, firstFactor: number, secondFactor: number): number {
-        const factId: string = FactsUtils.getFactId(firstFactor, secondFactor);
-        if (!LeitnerUtils.isPractised(boxes, factId)) {
+    public static getMastery(boxes: LeitnerBoxes, key: string): number {
+        if (!LeitnerUtils.isPractised(boxes, key)) {
             return 0;
         }
-        return LeitnerUtils.getBox(boxes, factId);
+        return LeitnerUtils.getBox(boxes, key);
+    }
+
+    public static getLevel(boxes: LeitnerBoxes, firstFactor: number, secondFactor: number): number {
+        return this.getMastery(boxes, FactsUtils.getFactId(firstFactor, secondFactor));
     }
 
     public static getLevels(): number[] {

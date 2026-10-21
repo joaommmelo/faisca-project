@@ -1,27 +1,27 @@
 import { useEffect, useEffectEvent } from "react";
-import { KeypadUtils } from "../utils/keypad/utils.ts";
 import { CheckIcon, EraseIcon } from "./Icons.tsx";
 
 interface NumericKeypadProps {
-    value: string;
+    announcement: string;
+    canConfirm: boolean;
     isDisabled: boolean;
-    onChange: (value: string) => void;
+    onDigit: (digit: number) => void;
+    onErase: () => void;
     onConfirm: () => void;
 }
 
-const DIGIT_ROWS: string[][] = [
-    ["1", "2", "3"],
-    ["4", "5", "6"],
-    ["7", "8", "9"]
+const DIGIT_ROWS: number[][] = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
 ];
 
-// On-screen keypad so tablets and phones never open their own keyboard.
+// On-screen keypad so tablets and phones never open their own keyboard. It only sends keys; the screen
+// decides where they go (the answer slot or the cell under the cursor in a column sum).
 // A physical keyboard also works (digits, Backspace, Enter) for keyboard-only users.
-export function NumericKeypad({ value, isDisabled, onChange, onConfirm }: NumericKeypadProps) {
-    const pressDigit = (digit: string): void => onChange(KeypadUtils.appendDigit(value, digit));
-    const erase = (): void => onChange(KeypadUtils.eraseDigit(value));
+export function NumericKeypad({ announcement, canConfirm, isDisabled, onDigit, onErase, onConfirm }: NumericKeypadProps) {
     const confirm = (): void => {
-        if (KeypadUtils.canConfirm(value)) {
+        if (canConfirm) {
             onConfirm();
         }
     };
@@ -32,12 +32,12 @@ export function NumericKeypad({ value, isDisabled, onChange, onConfirm }: Numeri
         }
         if (/^[0-9]$/.test(event.key)) {
             event.preventDefault();
-            pressDigit(event.key);
+            onDigit(Number(event.key));
             return;
         }
         if (event.key === "Backspace") {
             event.preventDefault();
-            erase();
+            onErase();
             return;
         }
         // A focused button already turns Enter into its own click.
@@ -59,24 +59,24 @@ export function NumericKeypad({ value, isDisabled, onChange, onConfirm }: Numeri
     return (
         <div className="keypad" role="group" aria-label="Teclado numérico">
             <output className="visually-hidden" aria-live="polite">
-                {value.length === 0 ? "Ainda sem resposta" : `A tua resposta: ${value}`}
+                {announcement}
             </output>
             {DIGIT_ROWS.flat().map((digit) => (
-                <button key={digit} type="button" className="keypad__key" disabled={isDisabled} onClick={() => pressDigit(digit)}>
+                <button key={digit} type="button" className="keypad__key" disabled={isDisabled} onClick={() => onDigit(digit)}>
                     {digit}
                 </button>
             ))}
-            <button type="button" className="keypad__key keypad__key--erase" aria-label="Apagar" disabled={isDisabled} onClick={erase}>
+            <button type="button" className="keypad__key keypad__key--erase" aria-label="Apagar" disabled={isDisabled} onClick={onErase}>
                 <EraseIcon />
             </button>
-            <button type="button" className="keypad__key" disabled={isDisabled} onClick={() => pressDigit("0")}>
+            <button type="button" className="keypad__key" disabled={isDisabled} onClick={() => onDigit(0)}>
                 0
             </button>
             <button
                 type="button"
                 className="keypad__key keypad__key--confirm"
                 aria-label="Confirmar"
-                disabled={isDisabled || !KeypadUtils.canConfirm(value)}
+                disabled={isDisabled || !canConfirm}
                 onClick={confirm}
             >
                 <CheckIcon />

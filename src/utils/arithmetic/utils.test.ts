@@ -1,0 +1,82 @@
+import { describe, expect, it } from "vitest";
+import { createSeededRandom } from "../../test/random.ts";
+import { DifficultiesUtils, type Difficulty } from "../difficulties/utils.ts";
+import type { ArithmeticOperation } from "../operations/utils.ts";
+import { ArithmeticUtils } from "./utils.ts";
+
+const operations: ArithmeticOperation[] = ["addition", "subtraction"];
+
+describe("ArithmeticUtils.classify", () => {
+    it("tells carries apart", () => {
+        expect(ArithmeticUtils.classify("addition", 23, 45)).toBe("no-carry");
+        expect(ArithmeticUtils.classify("addition", 37, 25)).toBe("carry");
+        expect(ArithmeticUtils.classify("addition", 8, 5)).toBe("carry");
+        expect(ArithmeticUtils.classify("addition", 368, 457)).toBe("chain-carry");
+    });
+
+    it("tells borrows apart, including borrowing across a zero", () => {
+        expect(ArithmeticUtils.classify("subtraction", 47, 23)).toBe("no-borrow");
+        expect(ArithmeticUtils.classify("subtraction", 52, 27)).toBe("borrow");
+        expect(ArithmeticUtils.classify("subtraction", 13, 7)).toBe("borrow");
+        expect(ArithmeticUtils.classify("subtraction", 403, 127)).toBe("borrow-across-zero");
+        expect(ArithmeticUtils.classify("subtraction", 1000, 127)).toBe("borrow-across-zero");
+        expect(ArithmeticUtils.classify("subtraction", 410, 125)).toBe("borrow");
+    });
+});
+
+describe("ArithmeticUtils.getBorrowColumns", () => {
+    it("follows the borrow through a zero", () => {
+        expect(ArithmeticUtils.getBorrowColumns(403, 127)).toEqual([0, 1]);
+    });
+});
+
+describe("ArithmeticUtils.getSkills", () => {
+    it("only offers chains and zeros with three-digit numbers", () => {
+        expect(ArithmeticUtils.getSkills("addition", "easy")).toEqual(["no-carry", "carry"]);
+        expect(ArithmeticUtils.getSkills("addition", "hard")).toEqual(["no-carry", "carry", "chain-carry"]);
+        expect(ArithmeticUtils.getSkills("subtraction", "hard")).toEqual(["no-borrow", "borrow", "borrow-across-zero"]);
+    });
+
+    it("opens one more skill per level", () => {
+        expect(ArithmeticUtils.getOpenSkills("addition", "hard", 1)).toEqual(["no-carry"]);
+        expect(ArithmeticUtils.getOpenSkills("addition", "hard", 2)).toEqual(["no-carry", "carry"]);
+        expect(ArithmeticUtils.getOpenSkills("addition", "hard", 9)).toEqual(["no-carry", "carry", "chain-carry"]);
+    });
+});
+
+describe("ArithmeticUtils.generate", () => {
+    const random = createSeededRandom(7);
+
+    for (const operation of operations) {
+        for (const difficulty of DifficultiesUtils.getValidDifficulties()) {
+            for (const skill of ArithmeticUtils.getSkills(operation, difficulty)) {
+                it(`makes ${operation} with ${skill} in ${difficulty} inside the difficulty`, () => {
+                    for (let attempt = 0; attempt < 200; attempt++) {
+                        const { left, right } = ArithmeticUtils.generate(operation, difficulty, skill, random);
+                        const result: number = operation === "addition" ? left + right : left - right;
+                        const governing: number = operation === "addition" ? result : left;
+
+                        expect(ArithmeticUtils.classify(operation, left, right)).toBe(skill);
+                        expect(Math.min(left, right)).toBeGreaterThanOrEqual(DifficultiesUtils.getMinOperand(difficulty));
+                        expect(governing).toBeLessThanOrEqual(DifficultiesUtils.getLimit(difficulty));
+                        expect(governing).toBeGreaterThan(DifficultiesUtils.getLowerLimit(difficulty));
+                        expect(result).toBeGreaterThan(0);
+                    }
+                });
+            }
+        }
+    }
+
+    it("never gives a negative subtraction", () => {
+        const difficulties: Difficulty[] = DifficultiesUtils.getValidDifficulties();
+        for (let attempt = 0; attempt < 500; attempt++) {
+            const difficulty: Difficulty = difficulties[attempt % difficulties.length];
+            const { left, right } = ArithmeticUtils.generate("subtraction", difficulty, "no-borrow", random);
+            expect(left - right).toBeGreaterThan(0);
+        }
+    });
+
+    it("refuses a skill the difficulty cannot produce", () => {
+        expect(() => ArithmeticUtils.generate("addition", "easy", "chain-carry", random)).toThrow();
+    });
+});

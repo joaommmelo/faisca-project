@@ -59,3 +59,40 @@ export function PlusIcon() {
         </svg>
     );
 }
+
+export function LockIcon() {
+    return (
+        <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="currentColor" />
+            <path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+        </svg>
+    );
+}
+
+// A gold coin stamped with the brand's spark.
+export function CoinIcon() {
+    return (
+        <svg className="icon icon--coin" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="12" cy="12" r="10.5" fill="#ffc83d" stroke="#c98a00" strokeWidth="1.5" />
+            <circle cx="12" cy="12" r="7.5" fill="none" stroke="#dfa200" strokeWidth="1" />
+            <path d={getSparkPath(12, 12, 5.5)} fill="#ffffff" opacity="0.9" />
+        </svg>
+    );
+}
+
+export function HelpIcon() {
+    return (
+        <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" />
+            <path d="M9.5 19h5M10.5 21.5h3" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+        </svg>
+    );
+}
+
+export function StarIcon() {
+    return (
+        <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z" fill="currentColor" strokeLinejoin="round" />
+        </svg>
+    );
+}

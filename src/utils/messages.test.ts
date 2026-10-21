@@ -3,35 +3,47 @@ import { Messages } from "./messages.ts";
 import type { Question } from "./questions/utils.ts";
 
 const question: Question = {
-    factId: "7x8",
-    leftFactor: 7,
-    rightFactor: 8,
-    product: 56,
+    id: "multiplication:7×8:direct",
+    operation: "multiplication",
+    left: 7,
+    right: 8,
+    result: 56,
     kind: "direct",
     answer: 56,
     format: "choice",
     options: [48, 56, 63, 65],
-    isRetry: false
+    isRetry: false,
+    boxKey: "7x8",
+    trackId: "multiplication"
 };
 
 describe("Messages.getFeedback", () => {
     it("praises a right answer, varying the words", () => {
-        const first = Messages.getFeedback({ question, givenAnswer: 56, isCorrect: true }, 0);
-        const second = Messages.getFeedback({ question, givenAnswer: 56, isCorrect: true }, 1);
+        const first = Messages.getFeedback({ question, givenAnswers: [56], isCorrect: true, isHelped: false }, { variant: 0, hasRetryAhead: false });
+        const second = Messages.getFeedback({ question, givenAnswers: [56], isCorrect: true, isHelped: false }, { variant: 1, hasRetryAhead: false });
         expect(first.title).not.toBe(second.title);
         expect(first.lines).toEqual([]);
     });
 
-    it("shows the right answer and promises another try after a miss", () => {
-        expect(Messages.getFeedback({ question, givenAnswer: 54, isCorrect: false }, 0)).toEqual({
+    it("celebrates getting it at the second try", () => {
+        const feedback = Messages.getFeedback({ question, givenAnswers: [54, 56], isCorrect: true, isHelped: false }, { variant: 0, hasRetryAhead: true });
+        expect(feedback.title).toBe("Boa! À segunda acertaste!");
+    });
+
+    it("shows the right answer after two misses and says when it comes back", () => {
+        const missed = { question, givenAnswers: [54, 55], isCorrect: false, isHelped: false };
+        expect(Messages.getFeedback(missed, { variant: 0, hasRetryAhead: true })).toEqual({
             title: "Quase!",
             lines: ["A resposta certa é 56.", "Vamos tentar outra vez mais à frente."]
         });
+        expect(Messages.getFeedback(missed, { variant: 0, hasRetryAhead: false }).lines[1]).toBe("Vamos treinar esta na próxima vez.");
     });
+});
 
-    it("leaves a missed retry for next time", () => {
-        const feedback = Messages.getFeedback({ question: { ...question, isRetry: true }, givenAnswer: 54, isCorrect: false }, 0);
-        expect(feedback.lines[1]).toBe("Vamos treinar esta na próxima vez.");
+describe("Messages.getTryAgain", () => {
+    it("never reveals the answer", () => {
+        expect(Messages.getTryAgain(question, 0, 0)).not.toContain("56");
+        expect(Messages.getTryAgain({ ...question, format: "vertical" }, 0, 2)).toBe("Quase! Vê as colunas realçadas e tenta outra vez.");
     });
 });
 
@@ -40,6 +52,16 @@ describe("Messages.getSpokenQuestion", () => {
         expect(Messages.getSpokenQuestion(question)).toBe("Quanto é 7 vezes 8?");
         expect(Messages.getSpokenQuestion({ ...question, kind: "missing-left", answer: 7 })).toBe("Que número vezes 8 dá 56?");
         expect(Messages.getSpokenQuestion({ ...question, kind: "missing-right", answer: 8 })).toBe("7 vezes que número dá 56?");
+        expect(Messages.getSpokenQuestion({ ...question, operation: "division", left: 56, right: 7, result: 8, answer: 8 })).toBe("Quanto é 56 a dividir por 7?");
+        expect(Messages.getSpokenQuestion({ ...question, operation: "subtraction", left: 52, right: 27, result: 25, answer: 25 })).toBe("Quanto é 52 menos 27?");
+    });
+});
+
+describe("Messages.getCoinProgress", () => {
+    it("shows halves from multiple choice", () => {
+        expect(Messages.getCoinProgress(3)).toBe("3 de 5");
+        expect(Messages.getCoinProgress(3.5)).toBe("3½ de 5");
+        expect(Messages.getCoinProgress(0.5)).toBe("½ de 5");
     });
 });
 

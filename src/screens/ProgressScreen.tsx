@@ -1,9 +1,14 @@
 import moment from "moment";
-import { BackIcon } from "../components/Icons.tsx";
+import { BackIcon, LockIcon } from "../components/Icons.tsx";
+import { LevelMeter } from "../components/LevelMeter.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
 import { ProgressMap } from "../components/ProgressMap.tsx";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
+import { ArithmeticUtils } from "../utils/arithmetic/utils.ts";
+import { DifficultiesUtils } from "../utils/difficulties/utils.ts";
+import { LevelsUtils } from "../utils/levels/utils.ts";
 import { Messages } from "../utils/messages.ts";
+import type { ArithmeticOperation } from "../utils/operations/utils.ts";
 import type { Profile } from "../utils/profiles/utils.ts";
 import { ProgressUtils } from "../utils/progress/utils.ts";
 import { StatsUtils } from "../utils/stats/utils.ts";
@@ -37,18 +42,16 @@ export function ProgressScreen({ profile, onBack }: ProgressScreenProps) {
 
             <ul className="stats" aria-label="Números do teu progresso">
                 <li className="stat">
-                    <span className="stat__value">
-                        {masteredCount}/{ProgressUtils.getTotalFacts()}
-                    </span>
-                    <span className="stat__label">contas de cor</span>
-                </li>
-                <li className="stat">
                     <span className="stat__value">{profile.stats.sessionsCompleted}</span>
                     <span className="stat__label">jogos</span>
                 </li>
                 <li className="stat">
                     <span className="stat__value">{profile.stats.practiceDays}</span>
                     <span className="stat__label">dias de prática</span>
+                </li>
+                <li className="stat">
+                    <span className="stat__value">{profile.wallet.coins}</span>
+                    <span className="stat__label">{profile.wallet.coins === 1 ? "moeda" : "moedas"}</span>
                 </li>
                 {visibleStreak > 0 && (
                     <li className="stat">
@@ -58,10 +61,72 @@ export function ProgressScreen({ profile, onBack }: ProgressScreenProps) {
                 )}
             </ul>
 
-            <section className="card">
-                <h2 className="section-title">Mapa das tabuadas</h2>
+            <ArithmeticProgress profile={profile} operation="addition" />
+            <ArithmeticProgress profile={profile} operation="subtraction" />
+
+            <section className="card card--multiplication">
+                <h2 className="section-title">{Messages.getOperationName("multiplication")}</h2>
+                <LevelMeter track={LevelsUtils.getTrack(profile.tracks, LevelsUtils.getTrackId("multiplication", null))} />
+                <p className="hint hint--left">
+                    {masteredCount} de {ProgressUtils.getTotalFacts()} contas de cor
+                </p>
                 <ProgressMap boxes={profile.boxes} />
             </section>
+
+            <section className="card card--division">
+                <h2 className="section-title">{Messages.getOperationName("division")}</h2>
+                <LevelMeter track={LevelsUtils.getTrack(profile.tracks, LevelsUtils.getTrackId("division", null))} />
+                <p className="hint hint--left">As divisões treinam as mesmas contas do mapa da multiplicação.</p>
+            </section>
         </main>
+    );
+}
+
+interface ArithmeticProgressProps {
+    profile: Profile;
+    operation: ArithmeticOperation;
+}
+
+// One row per difficulty: its level and how each skill is going. Locked difficulties show what is ahead.
+function ArithmeticProgress({ profile, operation }: ArithmeticProgressProps) {
+    return (
+        <section className={`card card--${operation}`}>
+            <h2 className="section-title">{Messages.getOperationName(operation)}</h2>
+            <ul className="difficulty-progress">
+                {DifficultiesUtils.getValidDifficulties().map((difficulty) => {
+                    const isUnlocked: boolean = DifficultiesUtils.isUnlocked(difficulty, profile.unlockedDifficulties[operation]);
+                    return (
+                        <li key={difficulty} className="difficulty-progress__item">
+                            <p className="difficulty-progress__name">
+                                {Messages.getDifficultyName(difficulty)}
+                                <span className="difficulty-progress__range"> {Messages.getDifficultyRange(difficulty)}</span>
+                            </p>
+                            {isUnlocked ? (
+                                <>
+                                    <LevelMeter track={LevelsUtils.getTrack(profile.tracks, LevelsUtils.getTrackId(operation, difficulty))} />
+                                    <ul className="skills">
+                                        {ArithmeticUtils.getSkills(operation, difficulty).map((skill) => {
+                                            const mastery: number = ProgressUtils.getMastery(profile.skillBoxes, ArithmeticUtils.getSkillId(operation, difficulty, skill));
+                                            return (
+                                                <li key={skill} className="skill">
+                                                    <span className={`skill__swatch level-${mastery}`} aria-hidden="true" />
+                                                    <span className="skill__name">{Messages.getSkillName(skill)}</span>
+                                                    <span className="skill__mastery">{Messages.getMasteryLabel(mastery)}</span>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                </>
+                            ) : (
+                                <p className="locked">
+                                    <LockIcon />
+                                    Por desbloquear
+                                </p>
+                            )}
+                        </li>
+                    );
+                })}
+            </ul>
+        </section>
     );
 }

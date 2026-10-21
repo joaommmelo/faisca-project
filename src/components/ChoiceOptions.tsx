@@ -4,22 +4,22 @@ import { CheckIcon } from "./Icons.tsx";
 interface ChoiceOptionsProps {
     options: number[];
     answer: number;
+    missedAttempts: number[];
     record: AnswerRecord | null;
     onChoose: (value: number) => void;
 }
 
-export function ChoiceOptions({ options, answer, record, onChoose }: ChoiceOptionsProps) {
+// After a first miss the chosen option steps aside and the others stay open for the second chance.
+export function ChoiceOptions({ options, answer, missedAttempts, record, onChoose }: ChoiceOptionsProps) {
+    const triedAnswers: number[] = record === null ? missedAttempts : record.givenAnswers;
     const getStateClassName = (option: number): string => {
-        if (record === null) {
-            return "";
-        }
-        if (option === answer) {
+        if (record !== null && option === answer) {
             return "choice--correct";
         }
-        if (option === record.givenAnswer) {
-            return "choice--chosen-wrong";
+        if (triedAnswers.includes(option)) {
+            return "choice--tried";
         }
-        return "choice--dimmed";
+        return record === null ? "" : "choice--dimmed";
     };
 
     return (
@@ -29,7 +29,7 @@ export function ChoiceOptions({ options, answer, record, onChoose }: ChoiceOptio
                     key={option}
                     type="button"
                     className={`choice ${getStateClassName(option)}`}
-                    disabled={record !== null}
+                    disabled={record !== null || triedAnswers.includes(option)}
                     onClick={() => onChoose(option)}
                 >
                     {option}

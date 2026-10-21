@@ -1,10 +1,30 @@
+import type { Skill } from "./arithmetic/utils.ts";
+import { DifficultiesUtils, type Difficulty } from "./difficulties/utils.ts";
+import { HelpsUtils, type HelpUnavailableReason, type NeighbourFact, type VerticalHelpStep } from "./helps/utils.ts";
+import { OperationsUtils, type Operation } from "./operations/utils.ts";
+import type { Milestone, SessionOffer } from "./progression/utils.ts";
 import { ProfilesUtils, type ProfileNameProblem } from "./profiles/utils.ts";
-import type { PracticeMode, Question } from "./questions/utils.ts";
-import type { AnswerRecord } from "./session/utils.ts";
+import type { AnswerLayout, PracticeMode, Question } from "./questions/utils.ts";
+import { SessionUtils, type AnswerRecord } from "./session/utils.ts";
+import type { StorageStatus } from "./storage/utils.ts";
+import type { VerticalColumn } from "./vertical/utils.ts";
+import { WalletUtils } from "./wallet/utils.ts";
 
 export interface Feedback {
     title: string;
     lines: string[];
+}
+
+export interface FeedbackContext {
+    variant: number;
+    hasRetryAhead: boolean;
+}
+
+export interface OfferText {
+    title: string;
+    text: string;
+    acceptLabel: string;
+    declineLabel: string;
 }
 
 // Faísca's voice: the sentences that react to the child, in European Portuguese.
@@ -26,33 +46,173 @@ export class Messages {
         return ["Muito bem!", "Boa! Acertaste!", "Isso mesmo!", "Excelente!", "Estás a melhorar!"];
     }
 
+    public static getTryAgainMessages(): string[] {
+        return ["Quase! Tenta outra vez.", "Ainda não. Experimenta outra vez!", "Hmm, quase! Vamos ver outra vez?"];
+    }
+
+    // The first miss never shows the answer: it points at what to look at and gives the second chance.
+    public static getTryAgain(question: Question, variant: number, wrongColumnCount: number): string {
+        if (question.format === "vertical") {
+            return wrongColumnCount === 1 ? "Quase! Vê a coluna realçada e tenta outra vez." : "Quase! Vê as colunas realçadas e tenta outra vez.";
+        }
+        const messages: string[] = this.getTryAgainMessages();
+        return messages[variant % messages.length];
+    }
+
     // Rotates through the praises so consecutive right answers do not repeat the same one.
-    public static getFeedback(record: AnswerRecord, variant: number): Feedback {
+    public static getFeedback(record: AnswerRecord, context: FeedbackContext): Feedback {
         if (record.isCorrect && record.question.isRetry) {
             return { title: "Boa! Desta vez acertaste!", lines: [] };
         }
+        if (record.isCorrect && !SessionUtils.isFirstTryCorrect(record)) {
+            return { title: "Boa! À segunda acertaste!", lines: [] };
+        }
         if (record.isCorrect) {
             const praises: string[] = this.getCorrectMessages();
-            return { title: praises[variant % praises.length], lines: [] };
+            return { title: praises[context.variant % praises.length], lines: [] };
         }
         return {
             title: "Quase!",
             lines: [
                 `A resposta certa é ${record.question.answer}.`,
-                record.question.isRetry ? "Vamos treinar esta na próxima vez." : "Vamos tentar outra vez mais à frente."
+                context.hasRetryAhead ? "Vamos tentar outra vez mais à frente." : "Vamos treinar esta na próxima vez."
             ]
         };
     }
 
+    public static getMilestone(milestone: Milestone): string {
+        if (milestone.kind === "coin") {
+            return "Ganhaste uma moeda!";
+        }
+        return `Subiste para o nível ${milestone.level}!`;
+    }
+
+    public static getOperationName(operation: Operation): string {
+        switch (operation) {
+            case "addition":
+                return "Soma";
+            case "subtraction":
+                return "Subtração";
+            case "multiplication":
+                return "Multiplicação";
+            default:
+                return "Divisão";
+        }
+    }
+
+    public static getDifficultyName(difficulty: Difficulty): string {
+        switch (difficulty) {
+            case "easy":
+                return "Fácil";
+            case "medium":
+                return "Médio";
+            default:
+                return "Difícil";
+        }
+    }
+
+    public static getDifficultyRange(difficulty: Difficulty): string {
+        return `até ${DifficultiesUtils.getLimit(difficulty)}`;
+    }
+
+    public static getLayoutLabel(layout: AnswerLayout): string {
+        return layout === "result" ? "Só o resultado" : "Na vertical";
+    }
+
+    public static getSkillName(skill: Skill): string {
+        switch (skill) {
+            case "no-carry":
+                return "Sem transporte";
+            case "carry":
+                return "Transporte numa coluna";
+            case "chain-carry":
+                return "Transporte em cadeia";
+            case "no-borrow":
+                return "Sem empréstimo";
+            case "borrow":
+                return "Com empréstimo";
+            default:
+                return "Empréstimo através do zero";
+        }
+    }
+
+    public static getLevelName(level: number): string {
+        return `Nível ${level}`;
+    }
+
+    // The home screen's one-line summary of an operation: where the child is, not every level.
+    public static getOperationSummary(difficulty: Difficulty | null, level: number): string {
+        if (difficulty === null) {
+            return this.getLevelName(level);
+        }
+        return `${this.getDifficultyName(difficulty)} · ${this.getLevelName(level).toLocaleLowerCase("pt-PT")}`;
+    }
+
+    public static getEquationText(question: Question): string {
+        return `${question.left} ${OperationsUtils.getSymbol(question.operation)} ${question.right} = ${question.result}`;
+    }
+
     public static getSpokenQuestion(question: Question): string {
+        switch (question.operation) {
+            case "addition":
+                return `Quanto é ${question.left} mais ${question.right}?`;
+            case "subtraction":
+                return `Quanto é ${question.left} menos ${question.right}?`;
+            case "division":
+                return `Quanto é ${question.left} a dividir por ${question.right}?`;
+            default:
+                break;
+        }
         switch (question.kind) {
             case "missing-left":
-                return `Que número vezes ${question.rightFactor} dá ${question.product}?`;
+                return `Que número vezes ${question.right} dá ${question.result}?`;
             case "missing-right":
-                return `${question.leftFactor} vezes que número dá ${question.product}?`;
+                return `${question.left} vezes que número dá ${question.result}?`;
             default:
-                return `Quanto é ${question.leftFactor} vezes ${question.rightFactor}?`;
+                return `Quanto é ${question.left} vezes ${question.right}?`;
         }
+    }
+
+    public static getColumnName(column: number): string {
+        const names: string[] = ["unidades", "dezenas", "centenas", "milhares"];
+        return names[column];
+    }
+
+    public static getHelpUnavailable(reason: HelpUnavailableReason): string {
+        if (reason === "limit") {
+            return `Já usaste as ${HelpsUtils.getMaxHelpsPerSession()} ajudas deste jogo.`;
+        }
+        return "O mealheiro está vazio. Cada 5 certas dão uma moeda!";
+    }
+
+    public static getNeighbourHint(fact: NeighbourFact): string {
+        return `Pista: ${fact.left} × ${fact.right} = ${fact.result}`;
+    }
+
+    public static getVerticalHint(question: Question, column: VerticalColumn, columnIndex: number, step: VerticalHelpStep): string {
+        const columnName: string = this.getColumnName(columnIndex);
+        if (column.result === null) {
+            return "Esta casa fica vazia. Já podes confirmar!";
+        }
+        if (step === "digit") {
+            return `Nas ${columnName} fica ${column.result}.`;
+        }
+        if (column.top === null && column.bottom === null) {
+            return "Aqui só desce o 1 que veio de trás.";
+        }
+        // A number shorter than the other has nothing in this column, which is the same as 0.
+        const top: number = column.top ?? 0;
+        const bottom: number = column.bottom ?? 0;
+        if (question.operation === "addition") {
+            if (step === "marks") {
+                return `Não te esqueças do 1 que veio de trás: ${top} + ${bottom} + 1.`;
+            }
+            return `Agora as ${columnName}: ${top} + ${bottom}.`;
+        }
+        if (step === "marks") {
+            return `O ${top} passa a ${column.workingTop ?? top}. Agora faz ${column.workingTop ?? top} − ${bottom}.`;
+        }
+        return `Agora as ${columnName}: ${top} − ${bottom}.`;
     }
 
     public static getSessionEnd(): string {
@@ -74,6 +234,50 @@ export class Messages {
         return "Não ficou nenhuma conta para trás. Fantástico!";
     }
 
+    public static getHelpedCount(helpedCount: number): string {
+        return helpedCount === 1 ? "1 com ajuda" : `${helpedCount} com ajuda`;
+    }
+
+    public static getOfferText(offer: SessionOffer): OfferText {
+        const difficultyName: string = this.getDifficultyName(offer.difficulty);
+        if (offer.kind === "unlock") {
+            return {
+                title: "Desafio desbloqueado!",
+                text: `Já podes experimentar o ${difficultyName}, com contas ${this.getDifficultyRange(offer.difficulty)}.`,
+                acceptLabel: `Experimentar o ${difficultyName}`,
+                declineLabel: "Agora não"
+            };
+        }
+        return {
+            title: "Esta foi puxada!",
+            text: `Queres praticar um bocadinho no ${difficultyName}? Não perdes nível nem moedas.`,
+            acceptLabel: `Praticar no ${difficultyName}`,
+            declineLabel: "Continuar aqui"
+        };
+    }
+
+    public static getCoinsCount(coins: number): string {
+        return coins === 1 ? "1 moeda" : `${coins} moedas`;
+    }
+
+    // Multiple choice counts half, so the progress can be "3½ de 5".
+    public static getCoinProgress(answers: number): string {
+        const wholeAnswers: number = Math.floor(answers);
+        const half: string = answers > wholeAnswers ? "½" : "";
+        return `${wholeAnswers === 0 && half !== "" ? "" : wholeAnswers}${half} de ${WalletUtils.getAnswersPerCoin()}`;
+    }
+
+    public static getPiggyBankFull(): string {
+        return "Mealheiro cheio!";
+    }
+
+    public static getStorageWarning(status: StorageStatus): string {
+        if (status === "newer-version") {
+            return "Este progresso foi guardado por uma versão mais nova do Faísca. Aqui nada fica guardado.";
+        }
+        return "Atenção: neste browser o teu progresso não fica guardado.";
+    }
+
     public static getProgressCheer(masteredCount: number): string {
         if (masteredCount === 0) {
             return "Cada jogo acende mais quadrados. Vamos a isso?";
@@ -84,7 +288,7 @@ export class Messages {
         return `Já sabes ${masteredCount} contas de cor. Que orgulho!`;
     }
 
-    public static getLevelLabel(level: number): string {
+    public static getMasteryLabel(level: number): string {
         const labels: string[] = ["Por praticar", "A começar", "A aprender", "A melhorar", "Quase lá", "Dominado"];
         return labels[level];
     }
