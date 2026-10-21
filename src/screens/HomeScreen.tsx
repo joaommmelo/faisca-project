@@ -17,9 +17,10 @@ interface HomeScreenProps {
     onDeleteProfile: (profileId: string) => void;
     onSettingsChange: (settings: ProfileSettings) => void;
     onPlay: () => void;
+    onShowProgress: () => void;
 }
 
-export function HomeScreen({ data, profile, onSelectProfile, onCreateProfile, onDeleteProfile, onSettingsChange, onPlay }: HomeScreenProps) {
+export function HomeScreen({ data, profile, onSelectProfile, onCreateProfile, onDeleteProfile, onSettingsChange, onPlay, onShowProgress }: HomeScreenProps) {
     const deleteTitleId: string = useId();
     const [isAddingProfile, setIsAddingProfile] = useState<boolean>(false);
     const [isConfirmingDelete, setIsConfirmingDelete] = useState<boolean>(false);
@@ -90,6 +91,10 @@ export function HomeScreen({ data, profile, onSelectProfile, onCreateProfile, on
                     Jogar
                 </button>
             </div>
+
+            <button type="button" className="button button--secondary button--block" onClick={onShowProgress}>
+                Ver progresso
+            </button>
 
             {isConfirmingDelete ? (
                 <section className="card stack" role="alertdialog" aria-labelledby={deleteTitleId}>

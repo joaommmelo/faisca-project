@@ -1,6 +1,7 @@
 import moment from "moment";
 import { useEffect, useState } from "react";
 import { HomeScreen } from "./screens/HomeScreen.tsx";
+import { ProgressScreen } from "./screens/ProgressScreen.tsx";
 import { SessionScreen } from "./screens/SessionScreen.tsx";
 import { SummaryScreen } from "./screens/SummaryScreen.tsx";
 import { WelcomeScreen } from "./screens/WelcomeScreen.tsx";
@@ -9,7 +10,7 @@ import type { SessionOutcome } from "./utils/session/utils.ts";
 import { StatsUtils } from "./utils/stats/utils.ts";
 import { StorageUtils } from "./utils/storage/utils.ts";
 
-type View = { name: "home" } | { name: "session" } | { name: "summary"; outcome: SessionOutcome };
+type View = { name: "home" } | { name: "session" } | { name: "summary"; outcome: SessionOutcome } | { name: "progress" };
 
 export function App() {
     const [data, setData] = useState<AppData>(() => StorageUtils.load());
@@ -49,7 +50,16 @@ export function App() {
                 />
             );
         case "summary":
-            return <SummaryScreen outcome={view.outcome} onPlayAgain={() => setView({ name: "session" })} onHome={() => setView({ name: "home" })} />;
+            return (
+                <SummaryScreen
+                    outcome={view.outcome}
+                    onPlayAgain={() => setView({ name: "session" })}
+                    onShowProgress={() => setView({ name: "progress" })}
+                    onHome={() => setView({ name: "home" })}
+                />
+            );
+        case "progress":
+            return <ProgressScreen profile={activeProfile} onBack={() => setView({ name: "home" })} />;
         default:
             return (
                 <HomeScreen
@@ -61,6 +71,7 @@ export function App() {
                     onDeleteProfile={(profileId) => setData(ProfilesUtils.remove(data, profileId))}
                     onSettingsChange={(settings) => updateActiveProfile((profile) => ({ ...profile, settings }))}
                     onPlay={() => setView({ name: "session" })}
+                    onShowProgress={() => setView({ name: "progress" })}
                 />
             );
     }

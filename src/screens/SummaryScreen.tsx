@@ -7,10 +7,11 @@ import { TimeUtils } from "../utils/time/utils.ts";
 interface SummaryScreenProps {
     outcome: SessionOutcome;
     onPlayAgain: () => void;
+    onShowProgress: () => void;
     onHome: () => void;
 }
 
-export function SummaryScreen({ outcome, onPlayAgain, onHome }: SummaryScreenProps) {
+export function SummaryScreen({ outcome, onPlayAgain, onShowProgress, onHome }: SummaryScreenProps) {
     const headingRef = useFocusOnMount<HTMLHeadingElement>();
     const { summary } = outcome;
 
@@ -50,6 +51,9 @@ export function SummaryScreen({ outcome, onPlayAgain, onHome }: SummaryScreenPro
             <div className="stack">
                 <button type="button" className="button button--play" onClick={onPlayAgain}>
                     Jogar outra vez
+                </button>
+                <button type="button" className="button button--secondary button--block" onClick={onShowProgress}>
+                    Ver progresso
                 </button>
                 <button type="button" className="button button--ghost" onClick={onHome}>
                     Início
