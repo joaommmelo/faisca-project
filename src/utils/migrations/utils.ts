@@ -93,11 +93,14 @@ interface VersionThreeData {
     activeProfileId: string | null;
 }
 
+// v5 and older had no challenge to switch on.
+type VersionFiveSettings = Omit<ProfileSettings, "isChallengeEnabled">;
+
 // v4 decided multiple choice or keypad by the box alone, so it kept no answers per skill.
 interface VersionFourProfile {
     id: string;
     name: string;
-    settings: ProfileSettings;
+    settings: VersionFiveSettings;
     boxes: LeitnerBoxes;
     skillBoxes: LeitnerBoxes;
     tracks: Tracks;
@@ -110,6 +113,17 @@ interface VersionFourProfile {
 interface VersionFourData {
     version: 4;
     profiles: VersionFourProfile[];
+    activeProfileId: string | null;
+}
+
+// v5 had no challenge, nor its record.
+interface VersionFiveProfile extends VersionFourProfile {
+    recentSkillAnswers: RecentSkillAnswers;
+}
+
+interface VersionFiveData {
+    version: 5;
+    profiles: VersionFiveProfile[];
     activeProfileId: string | null;
 }
 
@@ -132,8 +146,14 @@ export class MigrationsUtils {
             }
             return data.version === 3 ? (data as VersionThreeData) : null;
         })();
-        const versionFour: VersionFourData = versionThree === null ? (data as VersionFourData) : this.fromVersionThree(versionThree);
-        return this.fromVersionFour(versionFour);
+        const versionFour: VersionFourData | null = (() => {
+            if (versionThree !== null) {
+                return this.fromVersionThree(versionThree);
+            }
+            return data.version === 4 ? (data as VersionFourData) : null;
+        })();
+        const versionFive: VersionFiveData = versionFour === null ? (data as VersionFiveData) : this.fromVersionFour(versionFour);
+        return this.fromVersionFive(versionFive);
     }
 
     // v1 only knew multiplication: its boxes, tables, mode, timer and stats carry over unchanged.
@@ -234,11 +254,24 @@ export class MigrationsUtils {
     }
 
     // v5 decides multiple choice or keypad by each skill's last answers, rebuilt from what the tracks already kept.
-    private static fromVersionFour(data: VersionFourData): AppData {
+    private static fromVersionFour(data: VersionFourData): VersionFiveData {
         return {
             version: 5,
             activeProfileId: data.activeProfileId,
-            profiles: data.profiles.map((profile): Profile => ({ ...profile, recentSkillAnswers: this.rebuildRecentSkillAnswers(profile.tracks) }))
+            profiles: data.profiles.map((profile): VersionFiveProfile => ({ ...profile, recentSkillAnswers: this.rebuildRecentSkillAnswers(profile.tracks) }))
+        };
+    }
+
+    // v6 adds the endless challenge for adults: switched off, and without a record.
+    private static fromVersionFive(data: VersionFiveData): AppData {
+        return {
+            version: 6,
+            activeProfileId: data.activeProfileId,
+            profiles: data.profiles.map((profile): Profile => ({
+                ...profile,
+                settings: { ...profile.settings, isChallengeEnabled: false },
+                challengeRecord: null
+            }))
         };
     }
 

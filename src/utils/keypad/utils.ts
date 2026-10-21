@@ -7,8 +7,8 @@ export class KeypadUtils {
         return String(largestResult).length;
     }
 
-    public static appendDigit(value: string, digit: string): string {
-        if (value.length >= this.getMaxDigits()) {
+    public static appendDigit(value: string, digit: string, maxDigits: number): string {
+        if (value.length >= maxDigits) {
             return value;
         }
         if (value === "0") {

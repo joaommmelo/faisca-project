@@ -27,6 +27,9 @@
     --op-multiplication-soft: #e4edff;
     --op-division: #7c3aed;
     --op-division-soft: #efe6ff;
+    /* The challenge for adults: a quiet slate, set apart from the children's operations. */
+    --op-challenge: #3d4757;
+    --op-challenge-soft: #e7eaef;
 
     --color-coin: #ffc83d;
     --color-coin-edge: #c98a00;
@@ -713,6 +716,7 @@ fieldset {
 
 .equation {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     gap: 0.25em;
@@ -721,6 +725,19 @@ fieldset {
     font-weight: 900;
     font-variant-numeric: tabular-nums;
     line-height: 1;
+}
+
+.equation__side {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25em;
+}
+
+/* Numbers of five digits or more: smaller, and the result on a line of its own. */
+.equation--long {
+    flex-direction: column;
+    gap: 0.2em;
+    font-size: clamp(1.6rem, 8vw, 3.25rem);
 }
 
 .equation__operator {
@@ -1232,6 +1249,13 @@ fieldset {
     --op-soft: var(--color-accent-soft);
 }
 
+.practice--challenge,
+.card--challenge,
+.screen--challenge {
+    --op-ink: var(--op-challenge);
+    --op-soft: var(--op-challenge-soft);
+}
+
 .practices {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1266,7 +1290,8 @@ fieldset {
     box-shadow: 0 2px 0 var(--color-border);
 }
 
-.practice--mix {
+.practice--mix,
+.practice--challenge {
     min-height: 96px;
     flex-direction: row;
     gap: var(--space-3);
@@ -1297,6 +1322,15 @@ fieldset {
     font-size: clamp(1rem, 4.4vw, 1.25rem);
     font-weight: 900;
     line-height: 1.15;
+}
+
+/* The challenge's name and record, one under the other, next to its symbol. */
+.practice__text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    text-align: left;
 }
 
 .practice__summary {
@@ -1995,6 +2029,85 @@ fieldset {
     color: var(--color-warm);
 }
 
+/* Challenge: the time left on the question, the score, the rules and the result */
+
+.challenge-timer {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.challenge-timer__bar {
+    flex: 1;
+    height: 14px;
+    border-radius: 999px;
+    background: var(--color-border);
+    overflow: hidden;
+}
+
+.challenge-timer__fill {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--op-ink);
+    transform-origin: left center;
+}
+
+.challenge-timer__time {
+    min-width: 3.5em;
+    text-align: right;
+    font-size: 1.2rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Little time left: a warm tone, never an alarm. */
+.challenge-timer--low .challenge-timer__fill {
+    background: var(--color-warm);
+}
+
+.challenge-timer--low .challenge-timer__time {
+    color: var(--color-warm);
+}
+
+.challenge-score {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--color-success-soft);
+    color: var(--color-success);
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+
+.challenge-status {
+    min-height: 1.4em;
+    color: var(--op-ink);
+    font-weight: 900;
+    text-align: center;
+}
+
+.challenge-rules {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding-left: 1.2em;
+    font-weight: 700;
+}
+
+.challenge-record {
+    color: var(--color-text-muted);
+    font-weight: 900;
+    text-align: center;
+}
+
+/* Inside a card the last question has less room than on the session screen. */
+.challenge-last .equation--long {
+    font-size: clamp(1.4rem, 7vw, 2.75rem);
+}
+
 .clock-result {
     display: flex;
     flex-direction: column;
@@ -2060,6 +2173,11 @@ fieldset {
     .progress-bar__fill,
     .meter__fill {
         transition: transform 300ms ease-out;
+    }
+
+    /* Smooths the steps between redraws of the time left. */
+    .challenge-timer__fill {
+        transition: transform 100ms linear;
     }
 
     .feedback {

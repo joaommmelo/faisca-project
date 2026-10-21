@@ -33,7 +33,7 @@ export function KeypadAnswer({ question, record, status, help, onSubmit }: Keypa
                 announcement={typedAnswer.length === 0 ? "Ainda sem resposta" : `A tua resposta: ${typedAnswer}`}
                 canConfirm={KeypadUtils.canConfirm(typedAnswer)}
                 isDisabled={record !== null}
-                onDigit={(digit) => setTypedAnswer(KeypadUtils.appendDigit(typedAnswer, String(digit)))}
+                onDigit={(digit) => setTypedAnswer(KeypadUtils.appendDigit(typedAnswer, String(digit), KeypadUtils.getMaxDigits()))}
                 onErase={() => setTypedAnswer(KeypadUtils.eraseDigit(typedAnswer))}
                 onConfirm={confirm}
             />

@@ -3,6 +3,7 @@ import { Logo } from "../components/Logo.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
 import { PracticeTiles } from "../components/PracticeTiles.tsx";
 import { ProfilesPanel } from "../components/ProfilesPanel.tsx";
+import { SwitchField } from "../components/SwitchField.tsx";
 import { useInstallPrompt, type InstallPrompt } from "../hooks/useInstallPrompt.ts";
 import type { Difficulty } from "../utils/difficulties/utils.ts";
 import { LevelsUtils } from "../utils/levels/utils.ts";
@@ -20,10 +21,13 @@ interface HomeScreenProps {
     onDeleteProfile: (profileId: string) => void;
     onChoosePractice: (practice: Practice) => void;
     onShowProgress: () => void;
+    onOpenChallenge: () => void;
+    onChallengeSwitch: (isChallengeEnabled: boolean) => void;
 }
 
 // Only the choice of what to practise; everything about how to play it waits on the next screen. The coins sit in
-// the corner and open the piggy bank; who is playing rarely changes, so it waits at the bottom.
+// the corner and open the piggy bank; who is playing rarely changes, so it waits at the bottom, and the challenge for
+// adults is switched on below that.
 export function HomeScreen({
     data,
     profile,
@@ -32,7 +36,9 @@ export function HomeScreen({
     onCreateProfile,
     onDeleteProfile,
     onChoosePractice,
-    onShowProgress
+    onShowProgress,
+    onOpenChallenge,
+    onChallengeSwitch
 }: HomeScreenProps) {
     const { settings } = profile;
     const installPrompt: InstallPrompt = useInstallPrompt();
@@ -71,6 +77,18 @@ export function HomeScreen({
 
             <PracticeTiles summaries={summaries} onChoose={onChoosePractice} />
 
+            {settings.isChallengeEnabled && (
+                <button type="button" className="practice practice--challenge" onClick={onOpenChallenge}>
+                    <span className="practice__symbol" aria-hidden="true">
+                        ∞
+                    </span>
+                    <span className="practice__text">
+                        <span className="practice__name">{Messages.getChallengeName()}</span>
+                        <span className="practice__summary">{Messages.getChallengeSummary(profile.challengeRecord)}</span>
+                    </span>
+                </button>
+            )}
+
             <button type="button" className="button button--secondary button--block" onClick={onShowProgress}>
                 Ver progresso
             </button>
@@ -90,6 +108,16 @@ export function HomeScreen({
                 onCreateProfile={onCreateProfile}
                 onDeleteProfile={onDeleteProfile}
             />
+
+            <section className="card" aria-label="Avançado">
+                <h2 className="section-title">Avançado</h2>
+                <SwitchField
+                    label={Messages.getChallengeName()}
+                    description={Messages.getChallengeAbout()}
+                    isOn={settings.isChallengeEnabled}
+                    onChange={onChallengeSwitch}
+                />
+            </section>
         </main>
     );
 }

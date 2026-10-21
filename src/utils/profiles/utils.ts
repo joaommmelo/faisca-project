@@ -46,6 +46,8 @@ export interface ProfileSettings {
     multiplication: MultiplicationSettings;
     division: MultiplicativeSettings;
     mix: MixSettings;
+    // The endless challenge for adults shows on the home screen only when switched on.
+    isChallengeEnabled: boolean;
 }
 
 // Why Jogar is off: a times-table practice with no table chosen, or a mix with fewer than two operations.
@@ -67,6 +69,8 @@ export interface Profile {
     wallet: Wallet;
     records: Records;
     stats: PracticeStats;
+    // The most right answers in one run of the challenge; null until one has any.
+    challengeRecord: number | null;
 }
 
 export interface AppData {
@@ -79,7 +83,7 @@ export type ProfileNameProblem = "empty" | "too-long" | "taken";
 
 export class ProfilesUtils {
     public static getDataVersion(): number {
-        return 5;
+        return 6;
     }
 
     // A mix of a single operation would just be that operation.
@@ -113,7 +117,8 @@ export class ProfilesUtils {
             subtraction: additive,
             multiplication: { ...multiplicative, mode: QuestionsUtils.getDefaultMode() },
             division: multiplicative,
-            mix: { operations: OperationsUtils.getValidOperations(), clock: ClockUtils.createDefault() }
+            mix: { operations: OperationsUtils.getValidOperations(), clock: ClockUtils.createDefault() },
+            isChallengeEnabled: false
         };
     }
 
@@ -155,7 +160,8 @@ export class ProfilesUtils {
             },
             wallet: WalletUtils.createInitial(),
             records: {},
-            stats: StatsUtils.createEmpty()
+            stats: StatsUtils.createEmpty(),
+            challengeRecord: null
         };
     }
 

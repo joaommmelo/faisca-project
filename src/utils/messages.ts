@@ -1,11 +1,13 @@
 import type { Skill } from "./arithmetic/utils.ts";
+import { ChallengeUtils, type ChallengeRun } from "./challenge/utils.ts";
 import { ClockUtils, type ClockDirection, type ClockReference, type ClockSettings } from "./clock/utils.ts";
 import { DifficultiesUtils, type Difficulty } from "./difficulties/utils.ts";
 import { HelpsUtils, type ArithmeticHint, type HelpUnavailableReason, type Calculation, type VerticalHelpStep } from "./helps/utils.ts";
+import { NumbersUtils } from "./numbers/utils.ts";
 import { OperationsUtils, type Operation } from "./operations/utils.ts";
 import type { ClockOutcome, Milestone, SessionOffer } from "./progression/utils.ts";
 import { ProfilesUtils, type PlayProblem, type Practice, type ProfileNameProblem } from "./profiles/utils.ts";
-import type { AnswerLayout, PracticeMode, Question } from "./questions/utils.ts";
+import type { AnswerLayout, DisplayedQuestion, PracticeMode, Question } from "./questions/utils.ts";
 import type { RecordCategory } from "./records/utils.ts";
 import { SessionUtils, type AnswerRecord } from "./session/utils.ts";
 import type { StorageStatus } from "./storage/utils.ts";
@@ -103,6 +105,19 @@ export class Messages {
         }
     }
 
+    public static getOperationPluralName(operation: Operation): string {
+        switch (operation) {
+            case "addition":
+                return "somas";
+            case "subtraction":
+                return "subtrações";
+            case "multiplication":
+                return "multiplicações";
+            default:
+                return "divisões";
+        }
+    }
+
     public static getMixName(): string {
         return "Misturado";
     }
@@ -180,11 +195,12 @@ export class Messages {
         return `${this.getDifficultyName(difficulty)} · ${this.getLevelName(level).toLocaleLowerCase("pt-PT")}`;
     }
 
-    public static getEquationText(question: Question): string {
-        return `${question.left} ${OperationsUtils.getSymbol(question.operation)} ${question.right} = ${question.result}`;
+    public static getEquationText(question: DisplayedQuestion): string {
+        const [left, right, result]: string[] = [question.left, question.right, question.result].map((value) => NumbersUtils.format(value));
+        return `${left} ${OperationsUtils.getSymbol(question.operation)} ${right} = ${result}`;
     }
 
-    public static getSpokenQuestion(question: Question): string {
+    public static getSpokenQuestion(question: DisplayedQuestion): string {
         switch (question.operation) {
             case "addition":
                 return `Quanto é ${question.left} mais ${question.right}?`;
@@ -388,6 +404,73 @@ export class Messages {
             parts.push("a escrever");
         }
         return parts.join(" · ");
+    }
+
+    public static getChallengeName(): string {
+        return "Desafio sem fim";
+    }
+
+    // Next to the switch that shows it on the home screen: who it is for, and how it ends.
+    public static getChallengeAbout(): string {
+        return "Para adultos: cada vez mais difícil e mais rápido, até falhar.";
+    }
+
+    public static getChallengeGreeting(): string {
+        return "Até onde consegues chegar?";
+    }
+
+    public static getChallengeRules(): string[] {
+        return [
+            `Cada ${ChallengeUtils.getAnswersPerLevel()} certas sobes de nível. Começa com somas; depois entram as subtrações, as multiplicações e as divisões, e os números crescem até ${ChallengeUtils.getMaxDigits()} algarismos.`,
+            "Cada pergunta tem o seu tempo, e a cada nível há menos.",
+            "Uma resposta errada ou o tempo a acabar terminam o desafio."
+        ];
+    }
+
+    public static getChallengeScore(correctCount: number): string {
+        return correctCount === 1 ? "1 certa" : `${correctCount} certas`;
+    }
+
+    // Under the challenge's name on the home screen.
+    public static getChallengeSummary(record: number | null): string {
+        return record === null ? "Para adultos" : `Recorde: ${this.getChallengeScore(record)}`;
+    }
+
+    public static getChallengeRecord(record: number | null): string {
+        return record === null ? "Ainda sem recorde." : `O teu recorde: ${this.getChallengeScore(record)}.`;
+    }
+
+    // What changes at the new level: an operation joins, or the numbers grow and the time shrinks. Past the top
+    // level nothing changes any more.
+    public static getChallengeLevelUp(level: number): string {
+        const joiningOperation: Operation | null = ChallengeUtils.getJoiningOperation(level);
+        if (joiningOperation !== null) {
+            return `Nível ${level}! Agora também há ${this.getOperationPluralName(joiningOperation)}.`;
+        }
+        if (level <= ChallengeUtils.getTopLevel()) {
+            return `Nível ${level}! Números maiores e menos tempo.`;
+        }
+        return `Nível ${level}!`;
+    }
+
+    public static getChallengeExitNote(correctCount: number): string {
+        return `Fica o que já fizeste: ${this.getChallengeScore(correctCount)}.`;
+    }
+
+    // The last question shows next to it, with the right answer.
+    public static getChallengeEnding(run: ChallengeRun): Feedback {
+        switch (run.ending) {
+            case "time":
+                return { title: "O tempo acabou!", lines: [] };
+            case "wrong":
+                return { title: "Quase!", lines: run.givenAnswer === null ? [] : [`Escreveste ${NumbersUtils.format(run.givenAnswer)}.`] };
+            default:
+                return { title: "Desafio terminado.", lines: [] };
+        }
+    }
+
+    public static getChallengeLevelReached(correctCount: number): string {
+        return `Chegaste ao nível ${ChallengeUtils.getLevel(correctCount)}.`;
     }
 
     public static getCoinsCount(coins: number): string {

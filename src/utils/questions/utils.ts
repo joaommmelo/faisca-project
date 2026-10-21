@@ -45,6 +45,9 @@ export interface Question {
     trackId: string;
 }
 
+// What it takes to show or read out a question, in a session or in the challenge.
+export type DisplayedQuestion = Pick<Question, "operation" | "left" | "right" | "result" | "kind" | "answer">;
+
 export interface BuildMultiplicationOptions {
     mode: PracticeMode;
     boxes: LeitnerBoxes;

@@ -194,9 +194,11 @@ describe("StorageUtils.load", () => {
     it("migrates v4 progress: each skill gets its last answers from its track, and nothing else changes", () => {
         const answer = (questionId: string, isCorrect: boolean) => ({ questionId, isCorrect, format: "keypad" });
         const track = (recentAnswers: ReturnType<typeof answer>[]) => ({ level: 2, points: 6, recentAnswers, answersSinceSafetyNet: 3 });
-        const { recentSkillAnswers: _, ...current } = ProfilesUtils.createProfile("Rui");
+        const { recentSkillAnswers: _, challengeRecord: __, settings, ...current } = ProfilesUtils.createProfile("Rui");
+        const { isChallengeEnabled: ___, ...versionFourSettings } = settings;
         const versionFourProfile = {
             ...current,
+            settings: versionFourSettings,
             skillBoxes: { "multiplication:medium:carry": 5 },
             tracks: {
                 "multiplication:easy": track([answer("multiplication:7×8:direct", false)]),
@@ -212,12 +214,36 @@ describe("StorageUtils.load", () => {
         expect(data.version).toBe(ProfilesUtils.getDataVersion());
         expect(data.profiles[0]).toEqual({
             ...versionFourProfile,
+            settings,
             recentSkillAnswers: {
                 "multiplication:medium:carry": [true],
                 "multiplication:medium:no-carry": [true],
                 "division:medium:no-remainder": [false],
                 "addition:easy:no-carry": [true]
-            }
+            },
+            challengeRecord: null
+        });
+    });
+
+    it("migrates v5 progress: the challenge starts switched off and without a record, and nothing else changes", () => {
+        const { challengeRecord: _, settings, ...current } = ProfilesUtils.createProfile("Rui");
+        const { isChallengeEnabled: __, ...versionFiveSettings } = settings;
+        const versionFiveProfile = {
+            ...current,
+            settings: { ...versionFiveSettings, practice: "mix" },
+            recentSkillAnswers: { "addition:easy:carry": [true, false, true] },
+            wallet: { coins: 4, points: 6 }
+        };
+        stubStorage({ [StorageUtils.getStorageKey()]: JSON.stringify({ version: 5, activeProfileId: current.id, profiles: [versionFiveProfile] }) });
+        const { data, status } = StorageUtils.load();
+
+        expect(status).toBe("saved");
+        expect(data.version).toBe(ProfilesUtils.getDataVersion());
+        expect(data.activeProfileId).toBe(current.id);
+        expect(data.profiles[0]).toEqual({
+            ...versionFiveProfile,
+            settings: { ...versionFiveProfile.settings, isChallengeEnabled: false },
+            challengeRecord: null
         });
     });
 
