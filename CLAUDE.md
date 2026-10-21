@@ -12,12 +12,13 @@ A v1 (só multiplicação) está na `main`. A v2 está na branch `v2`, ainda por
 - Soma e subtração por dificuldade (Fácil até 20, Médio até 100, Difícil até 1000), com tipos de competência (transporte e empréstimo), em resposta directa ou na vertical.
 - Conta na vertical com cursor da direita para a esquerda e feedback por coluna; o «e vai 1» e o empréstimo só aparecem por cima da conta quando a ajuda os mostra.
 - Segunda tentativa antes de mostrar a resposta; níveis que abrem competências mais difíceis; desbloqueio por convite; rede de segurança; mealheiro com moedas e ajudas graduadas.
-- Dados na versão 4, com migração testada de todas as anteriores (v1 → v2 → v3 → v4: caixas, tabuadas, níveis, moedas, recordes e estatísticas mantêm-se). Dados de uma versão mais nova nunca são reescritos. Aviso no ecrã inicial quando o browser não guarda.
+- Dados na versão 5, com migração testada de todas as anteriores (v1 → v2 → v3 → v4 → v5: caixas, tabuadas, níveis, moedas, recordes e estatísticas mantêm-se). Dados de uma versão mais nova nunca são reescritos. Aviso no ecrã inicial quando o browser não guarda.
 - PWA instalável (manifest, ícones, service worker) a funcionar sem rede; build em `docs/` para o GitHub Pages.
 - Publicada em <https://joaommmelo.github.io/faisca-project/> (repositório público; GitHub Pages a servir a pasta `/docs` da branch `v2`). Instala-se no ecrã principal: no iPhone e no iPad, Safari → Partilhar → «Adicionar ao ecrã principal»; no Android, Chrome → menu → «Instalar aplicação».
 - Pedidos de 21 de Outubro, depois da v2: ecrã inicial com as operações logo no topo e a Multiplicação por defeito; moedas no canto (abrem o mealheiro); «Quem vai jogar?» no fundo; ajuda em todos os formatos (na escolha múltipla tira 2 das 4 opções); «Escrever sempre a resposta» na multiplicação e na divisão; relógio por operação, para a frente ou para trás, contra 3 minutos ou contra o recorde; recordes por categoria nas sessões perfeitas; a moeda ganha voa para o saldo. Dados na versão 3, com migração da v2 e da v1.
 - Pedidos seguintes do mesmo dia (ver «Pedidos seguintes»): números maiores na multiplicação e na divisão; «Misturado» com 2, 3 ou 4 operações; início só com a escolha e um ecrã de preparação com «Mais opções»; resultado logo por baixo da conta e tudo a avançar sozinho; saída com «Sim, sair do jogo» / «Não, continuar a jogar»; relógio ligado por defeito (para a frente, meta de 3 minutos); caixas de escrever a azul; ajuda desactivada sem moedas; «Início» sempre à vista no resumo; sem as caixas do «e vai 1» na vertical. Dados na versão 4, com migração de todas as anteriores.
-- 226 testes unitários (Vitest) a passar; `tsc` e `oxlint` limpos.
+- Escolha múltipla nas competências (soma, subtração e × ÷ com números maiores) enquanto a criança não acerta 8 das últimas 10 respostas dessa competência, e de volta quando começa a falhar. Antes seguia a caixa da competência, que enchia num jogo e tirava a escolha múltipla para sempre.
+- 231 testes unitários (Vitest) a passar; `tsc` e `oxlint` limpos.
 - Testado num Chrome headless a 360, 390 e 820 px, sem erros na consola nem scroll horizontal: todas as operações, a vertical com ajuda e empréstimo através do zero, os marcos, o convite de desbloqueio, a rede de segurança, a migração da v1 e o arranque sem rede.
 
 **À espera de decisão do dono do projecto:**
@@ -261,7 +262,7 @@ src/
     progress/               ProgressUtils: domínio 0–5 de factos e competências, contas dominadas
     profiles/               ProfilesUtils: AppData, perfis, definições por operação, validação do nome
     storage/                StorageUtils: load/save no localStorage, disponibilidade, persistência
-    migrations/             MigrationsUtils: formas antigas congeladas e migrações v1 → v2 → v3 → v4
+    migrations/             MigrationsUtils: formas antigas congeladas e migrações v1 → v2 → v3 → v4 → v5
     keypad/                 KeypadUtils: regras do valor escrito no teclado
     time/                   TimeUtils: formatar o tempo do cronómetro (moment)
     install/                InstallUtils: como este dispositivo põe a app no ecrã principal
@@ -305,7 +306,7 @@ Cada pergunta tem a forma `left (operador) right = result`, com `kind` a dizer q
 | Caixa de um facto (tabuadas) | certo → sobe uma (máx. 5); errado → volta à 1 (como na v1) | `LeitnerUtils.applyAnswer` |
 | Caixa de uma competência | certo → sobe uma; errado → desce só uma | `LeitnerUtils.applySkillAnswer` |
 | Divisão no Fácil | dividendo = produto de um facto das tabuadas escolhidas; divisor = um dos factores; treina a caixa desse facto | `QuestionsUtils.buildDivision` |
-| Formato | vertical se a criança a escolheu (+, −); «escrever sempre» (×, ÷) → teclado; senão caixa ≥ 3 → teclado, abaixo → escolha múltipla | `QuestionsUtils` |
+| Formato | vertical se a criança a escolheu (+, −); «escrever sempre» (×, ÷) → teclado; senão, nas tabuadas, caixa do facto ≥ 3 → teclado, abaixo → escolha múltipla; nas competências, 8 certas nas últimas 10 respostas dessa competência → teclado, menos → escolha múltipla (volta quando a criança começa a falhar). Decide-se ao começar a sessão | `QuestionsUtils.getTablesAnswerFormat`, `getSkillAnswerFormat` |
 | Tentativas | 2; a primeira falha só diz «tenta outra vez»; a segunda mostra a resposta | `SessionUtils.getAttemptsPerQuestion()` |
 | O que conta | só a primeira tentativa, sem ajuda e fora das repetições | `SessionUtils.countsForProgress`, `isFirstTryCorrect` |
 | Repetição de um erro | uma vez, 3 perguntas depois; um erro na última pergunta fica para a próxima sessão (nunca a mesma pergunta seguida) | `SessionUtils.scheduleRetry` |
@@ -335,7 +336,7 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 
 ### Decisões tomadas onde o briefing e o pedido não diziam nada
 
-- A caixa 3 (duas certas seguidas) é o limiar para a resposta escrita, em factos e em competências.
+- Nas tabuadas, a caixa 3 (duas certas seguidas) é o limiar para a resposta escrita. Nas competências não serve: uma competência junta muitas perguntas, enche a caixa numa sessão e a escolha múltipla desaparecia depois do primeiro jogo. Por isso o formato de uma competência segue as últimas 10 respostas dela (8 certas → teclado). Pedido do dono do projecto, a 21 de Outubro de 2026, «para ver no que dá».
 - Uma competência agrega muitas perguntas diferentes, por isso um erro só a faz descer uma caixa (um facto continua a voltar à caixa 1).
 - «Até 20» limita o resultado da soma e o número de partida da subtração; cada dificuldade começa acima do limite da anterior, para o Médio nunca repetir o Fácil.
 - O nível 1 de cada dificuldade só tem o tipo mais fácil; o convite de desbloqueio só aparece quando todos os tipos dessa dificuldade estão abertos, para nenhum tipo ficar por treinar.
@@ -378,13 +379,14 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 
 ### Dados guardados
 
-- Chave do `localStorage`: `faisca:data`. Forma (versão 4): `{ version: 4, profiles: Profile[], activeProfileId }`, com `Profile = { id, name, settings, boxes, skillBoxes, tracks, unlockedDifficulties, wallet, records, stats }`:
+- Chave do `localStorage`: `faisca:data`. Forma (versão 5): `{ version: 5, profiles: Profile[], activeProfileId }`, com `Profile = { id, name, settings, boxes, skillBoxes, recentSkillAnswers, tracks, unlockedDifficulties, wallet, records, stats }`:
   - `settings = { practice, addition: { difficulty, layout, clock }, subtraction: { difficulty, layout, clock }, multiplication: { difficulty, tables, mode, isAlwaysTyped, clock }, division: { difficulty, tables, isAlwaysTyped, clock }, mix: { operations, clock } }`, com `practice` uma operação ou `"mix"` e `clock = { isEnabled, direction, reference }`;
   - `records = { "<categoria>": { category, milliseconds } }`, com `category` de uma operação (`kind: "operation"`) ou de uma mistura (`kind: "mix"`, `parts`);
   - `boxes = { "3x7": 1..5 }` (tabuadas, no Fácil da multiplicação e da divisão), `skillBoxes = { "addition:easy:carry": 1..5, "division:hard:remainder": 1..5 }`;
+  - `recentSkillAnswers = { "addition:easy:carry": [true, false, …] }`: a primeira tentativa das últimas 10 respostas que contaram em cada competência, da mais antiga para a mais recente (decide escolha múltipla ou teclado);
   - `tracks = { "addition:easy": …, "multiplication:medium": { level, points, recentAnswers (últimas 40), answersSinceSafetyNet } }`;
   - `unlockedDifficulties = { addition, subtraction, multiplication, division }` (a mais alta aberta), `wallet = { coins, points }`, `stats` como na v1.
-- **Migração:** `MigrationsUtils` guarda as formas antigas congeladas e migra passo a passo: v1 → v2 (caixas, tabuadas, modo, cronómetro e estatísticas mantêm-se; a operação fica Multiplicação; começa com 3 moedas) → v3 (cada operação herda o cronómetro antigo como relógio para a frente; «escrever sempre» desligado; recordes vazios) → v4 (as tabuadas passam a Fácil da multiplicação e da divisão, com o nível em `"multiplication:easy"`/`"division:easy"` e os recordes com dificuldade; desbloqueios para as quatro operações; `operation` passa a `practice`; Misturado com as quatro; relógio ligado onde estava como vinha de origem). Antes de mudar outra vez a forma dos dados é preciso subir `ProfilesUtils.getDataVersion()` **e** acrescentar um passo em `MigrationsUtils`, senão as crianças perdem o progresso.
+- **Migração:** `MigrationsUtils` guarda as formas antigas congeladas e migra passo a passo: v1 → v2 (caixas, tabuadas, modo, cronómetro e estatísticas mantêm-se; a operação fica Multiplicação; começa com 3 moedas) → v3 (cada operação herda o cronómetro antigo como relógio para a frente; «escrever sempre» desligado; recordes vazios) → v4 (as tabuadas passam a Fácil da multiplicação e da divisão, com o nível em `"multiplication:easy"`/`"division:easy"` e os recordes com dificuldade; desbloqueios para as quatro operações; `operation` passa a `practice`; Misturado com as quatro; relógio ligado onde estava como vinha de origem) → v5 (as últimas respostas de cada competência reconstroem-se a partir das respostas recentes de cada pista, cujo id diz que conta era; as tabuadas não têm competências). Antes de mudar outra vez a forma dos dados é preciso subir `ProfilesUtils.getDataVersion()` **e** acrescentar um passo em `MigrationsUtils`, senão as crianças perdem o progresso.
 - Dados ilegíveis recomeçam do zero. Dados de uma versão **mais nova** não são lidos nem reescritos: a app corre em memória e avisa no ecrã inicial (protege o progresso de uma versão antiga em cache).
 - Se o browser bloquear o armazenamento, a app funciona só em memória e avisa no ecrã inicial.
 
