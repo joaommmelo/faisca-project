@@ -15,7 +15,7 @@ export class Messages {
     }
 
     public static getWelcomeQuestion(): string {
-        return "Olá! Eu sou a Faísca. Como te chamas?";
+        return "Olá! Eu sou o Faísca. Como te chamas?";
     }
 
     public static getGreeting(name: string): string {

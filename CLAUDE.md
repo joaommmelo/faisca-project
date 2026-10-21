@@ -7,7 +7,7 @@ Este ficheiro é a fonte de verdade para quem trabalha neste repositório: o bri
 **Feito e verificado:**
 
 - Motor de perguntas completo e isolado da UI: 78 factos, caixas de Leitner por perfil, sorteio ponderado, perguntas directas e inversas, distratores credíveis, sessão de 10 perguntas com repetição dos erros, estatísticas (jogos, dias de prática, dias seguidos).
-- UI completa: boas-vindas (primeiro perfil), início (perfis, tabuadas, modo, cronómetro, Jogar), sessão (escolha múltipla ou teclado numérico próprio, feedback da Faísca), resumo final, mapa de progresso 12×12 com legenda e estatísticas.
+- UI completa: boas-vindas (primeiro perfil), início (perfis, tabuadas, modo, cronómetro, Jogar), sessão (escolha múltipla ou teclado numérico próprio, feedback do Faísca), resumo final, mapa de progresso 12×12 com legenda e estatísticas.
 - Mascote em SVG com quatro expressões; identidade visual aplicada em todos os ecrãs.
 - 85 testes unitários (Vitest) a passar; `tsc` e `oxlint` limpos; build de produção a funcionar na raiz e num subcaminho (GitHub Pages).
 - Fluxo completo testado num Chrome headless, a 390 px (telemóvel) e 820 px (tablet), sem erros na consola nem scroll horizontal (também a 360 px).
@@ -80,7 +80,7 @@ npm run lint         # oxlint
 
 ### Comportamento da mascote
 
-A Faísca acompanha a criança durante a experiência:
+O Faísca acompanha a criança durante a experiência:
 
 - Quando a resposta está certa, celebra de forma breve e entusiástica.
 - Quando está errada, reage com simpatia e incentiva uma nova tentativa, mostrando a resposta correcta.
@@ -115,7 +115,7 @@ Evitar expressões brasileiras, linguagem demasiado formal, sarcasmo, culpabiliz
 
 A app permite praticar as tabuadas de 1 a 12, com perguntas directas e inversas, escolha múltipla ou resposta através de teclado numérico próprio. Adapta o formato ao domínio de cada facto e usa repetição espaçada para reforçar os que ainda não estão consolidados. O progresso é individual por perfil e guardado localmente.
 
-**Instrução para o desenvolvimento:** manter a identidade da Faísca consistente em todos os ecrãs e componentes. Dar prioridade à clareza, à facilidade de utilização e à motivação da criança. A marca deve estar presente nos detalhes da experiência, sem transformar cada ecrã numa ilustração nem prejudicar a rapidez dos exercícios.
+**Instrução para o desenvolvimento:** manter a identidade do Faísca consistente em todos os ecrãs e componentes. Dar prioridade à clareza, à facilidade de utilização e à motivação da criança. A marca deve estar presente nos detalhes da experiência, sem transformar cada ecrã numa ilustração nem prejudicar a rapidez dos exercícios.
 
 ---
 
@@ -196,7 +196,7 @@ src/
     storage/                StorageUtils: load/save no localStorage
     keypad/                 KeypadUtils: regras do valor escrito no teclado
     time/                   TimeUtils: formatar o tempo do cronómetro (moment)
-    messages.ts             Messages: as frases da Faísca que reagem à criança
+    messages.ts             Messages: as frases do Faísca que reagem à criança
   components/               Mascot, Logo, Icons, Equation, ChoiceOptions, NumericKeypad,
                             FeedbackSheet, Stopwatch, TablesPicker, ModePicker, SwitchField,
                             ProfileForm, ProgressMap, sparkPath.ts
@@ -241,7 +241,7 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 - Sair a meio pede confirmação («O que já fizeste fica guardado.»).
 - Acrescentado sem estar no briefing: apagar um perfil, com confirmação, no fundo do ecrã inicial.
 - Nomes de perfil: até 20 caracteres, sem repetidos (ignora maiúsculas).
-- A Faísca é tratada no feminino («Eu sou a Faísca»), como no briefing.
+- O Faísca é tratado no masculino («Eu sou o Faísca»): é um cão. Correcção do dono do projecto, a 21 de Outubro de 2026.
 
 ### UI, marca e acessibilidade
 
@@ -249,7 +249,7 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 - **Níveis do mapa** (`--level-0` a `--level-5`): cinzento → pêssego → amarelo → amarelo-esverdeado → verde-claro → verde. Legendas: Por praticar, A começar, A aprender, A melhorar, Quase lá, Dominado.
 - **Tipografia:** Nunito (variável), alojada no próprio site através de `@fontsource-variable/nunito`, sem pedidos à Google (privacidade das crianças).
 - **Mascote** (`Mascot.tsx`): cão castanho de orelhas caídas escuras, mancha creme na testa e no focinho, coleira azul com uma chapa em forma de faísca. Expressões: `happy` (início), `cheer` (certo, com faíscas a cintilar e um salto), `encourage` (errado e confirmação de saída, cabeça inclinada e sobrancelhas de apoio), `proud` (resumo e progresso). É sempre decorativa (`aria-hidden`); a mensagem está no balão.
-- **Feedback:** painel fixo em baixo, verde-claro (certo) ou pêssego (errado), com a Faísca, a mensagem e o botão «Seguinte». A equação mostra sempre a resposta certa depois de responder.
+- **Feedback:** painel fixo em baixo, verde-claro (certo) ou pêssego (errado), com o Faísca, a mensagem e o botão «Seguinte». A equação mostra sempre a resposta certa depois de responder.
 - **Teclado do dispositivo nunca abre na sessão:** o teclado numérico é próprio. Um teclado físico também funciona (dígitos, Backspace, Enter).
 - **Leitores de ecrã:** cada pergunta tem um título escondido lido como frase («Quanto é 7 vezes 8?»), que recebe o foco a cada pergunta nova. O botão «Seguinte» é descrito pela mensagem de feedback. Os botões do teclado têm `aria-label`. As células do mapa têm texto escondido («7 × 8 = 56: A aprender»).
 - **Movimento:** animações só com `prefers-reduced-motion: no-preference`; tudo funciona sem elas. Não há sons.

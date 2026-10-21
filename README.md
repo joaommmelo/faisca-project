@@ -1,6 +1,6 @@
 # Faísca
 
-**Acende o teu talento!** — uma web app para crianças praticarem as tabuadas do 1 ao 12, com a ajuda da Faísca, um cão castanho que celebra cada progresso.
+**Acende o teu talento!** — uma web app para crianças praticarem as tabuadas do 1 ao 12, com a ajuda do Faísca, um cão castanho que celebra cada progresso.
 
 - Perguntas directas (`7 × 8 = ?`) e inversas (`? × 8 = 56`, `7 × ? = 56`).
 - Escolha múltipla para contas novas ou difíceis; teclado numérico próprio para as que já estão a ficar sabidas.
@@ -47,7 +47,7 @@ src/
     session/      10 perguntas, repetição dos erros mais à frente, resumo
     stats/        jogos, dias de prática e dias seguidos
     profiles/     perfis e definições; storage/ guarda tudo no localStorage
-    messages.ts   as frases da Faísca, em PT-PT
+    messages.ts   as frases do Faísca, em PT-PT
   components/   peças de UI (mascote, teclado, mapa…)
   screens/      ecrãs: boas-vindas, início, sessão, resumo, progresso
 ```
