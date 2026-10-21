@@ -1,11 +1,8 @@
 # Faísca
 
-**Acende o teu talento!** — uma web app para crianças praticarem as tabuadas do 1 ao 12, com a ajuda do Faísca, um cão castanho que celebra cada progresso.
+Web app para crianças praticarem somas, subtrações, tabuadas e divisões com o Faísca, um cão castanho. React + TypeScript + Vite, sem backend: o progresso fica no `localStorage` do dispositivo. Instalável como app (PWA) e funciona sem rede.
 
-- Perguntas directas (`7 × 8 = ?`) e inversas (`? × 8 = 56`, `7 × ? = 56`).
-- Escolha múltipla para contas novas ou difíceis; teclado numérico próprio para as que já estão a ficar sabidas.
-- Repetição espaçada com caixas de Leitner (1 a 5), por perfil.
-- Vários perfis no mesmo dispositivo; tudo guardado localmente (`localStorage`), sem contas nem servidor.
+As regras do motor, as decisões de produto e as convenções de código estão em [`CLAUDE.md`](CLAUDE.md).
 
 ## Correr
 
@@ -16,46 +13,45 @@ npm install
 npm run dev        # http://localhost:5173
 ```
 
-Para experimentar num tablet ou telemóvel na mesma rede: `npm run dev -- --host`.
+Para experimentar num tablet ou telemóvel na mesma rede: `npm run dev -- --host`. O service worker só existe no build de produção; para o experimentar, `npm run build` e depois `npm run preview`.
 
 ## Testar
 
 ```bash
 npm test           # Vitest, uma vez
 npm run test:watch # Vitest em modo watch
-npm run build      # verifica os tipos (tsc) e gera dist/
+npm run lint       # oxlint
+npm run build      # verifica os tipos (tsc) e gera docs/
 ```
 
-Os testes cobrem o motor (`src/utils/`): factos, distratores, caixas de Leitner, sessão, estatísticas, perfis e armazenamento.
+Os testes cobrem o motor (`src/utils/`): geradores por operação, competências, perguntas, distratores, sessão, níveis, moedas, desbloqueio, rede de segurança, ajudas, conta na vertical, perfis, armazenamento e a migração da v1.
 
 ## Deploy
 
-O `npm run build` gera um site estático em `dist/` com caminhos relativos, por isso funciona tanto na raiz de um domínio como num subcaminho.
+O build é feito localmente e vai para a pasta `docs/`, com caminhos relativos, por isso funciona tanto na raiz de um domínio como num subcaminho.
 
-- **GitHub Pages:** o workflow `.github/workflows/deploy.yml` corre os testes, faz o build e publica. Por agora corre só à mão (*Actions → Deploy to GitHub Pages → Run workflow*), porque o repositório é privado e o Pages em repositórios privados exige GitHub Pro. Com o repositório público, activar em *Settings → Pages → Source: GitHub Actions* e acrescentar `push: branches: [main]` ao `on:` do workflow para publicar a cada push.
-- **Netlify:** ligar o repositório com *Build command* `npm run build` e *Publish directory* `dist`.
+**GitHub Pages**
 
-## Como está organizado
+1. `npm run build`
+2. Commit e push da pasta `docs/` (com o resto das alterações).
+3. Uma vez só: *Settings → Pages → Build and deployment → Source: Deploy from a branch*, escolher a branch e a pasta `/docs`.
 
-```text
-src/
-  utils/        motor e lógica, sem React (cada pasta tem utils.ts + utils.test.ts)
-    facts/        os 78 factos únicos (a × b com a ≤ b)
-    leitner/      caixas 1–5 e peso de sorteio
-    questions/    pergunta directa/inversa e formato de resposta
-    distractors/  opções credíveis: vizinhos na tabuada, ±1, dígitos trocados
-    session/      10 perguntas, repetição dos erros mais à frente, resumo
-    stats/        jogos, dias de prática e dias seguidos
-    profiles/     perfis e definições; storage/ guarda tudo no localStorage
-    messages.ts   as frases do Faísca, em PT-PT
-  components/   peças de UI (mascote, teclado, mapa…)
-  screens/      ecrãs: boas-vindas, início, sessão, resumo, progresso
-```
+O Pages publica `docs/` tal como está, por isso cada alteração à app precisa de um novo `npm run build` e de um commit de `docs/`. Num repositório privado, o Pages exige GitHub Pro.
 
-### Regras do motor
+**Netlify:** ligar o repositório com *Build command* `npm run build` e *Publish directory* `docs`.
 
-- Cada facto começa por praticar (cinzento no mapa). Certo → sobe uma caixa; errado → volta à caixa 1.
-- O sorteio de cada sessão é ponderado por `1 / caixa`; factos com 1 ou 10 pesam 30%.
-- Caixa 3 ou mais (duas certas seguidas) → resposta no teclado; abaixo disso → escolha múltipla.
-- Um erro volta a aparecer 3 perguntas depois, uma vez, sem contar para a pontuação nem mexer na caixa.
-- A sequência de dias só aparece quando está activa; falhar um dia não mostra mensagens nem tira nada.
+## Instalar a app
+
+A app tem de estar publicada em HTTPS (o GitHub Pages já o é).
+
+- **iPhone e iPad (Safari):** abrir o site, tocar em *Partilhar* e depois em *Adicionar ao ecrã principal*. No iOS, os dados de um site aberto só no Safari são apagados ao fim de 7 dias sem uso; instalada no ecrã principal, a app guarda-os.
+- **Android (Chrome):** abrir o site e tocar em *Instalar app* (ou, no menu ⋮, *Adicionar ao ecrã principal*).
+- **Computador (Chrome ou Edge):** ícone de instalar na barra de endereço.
+
+Depois da primeira visita a app abre sem rede. Quando há uma versão nova, aparece na abertura seguinte com ligação.
+
+## Dados
+
+- Guardados no `localStorage` do browser, na chave `faisca:data`, por perfil. Sem contas, sem servidor e sem exportação.
+- Os dados da v1 são migrados automaticamente na primeira abertura da v2, sem perder progresso.
+- Se o browser não deixar guardar (por exemplo, com os dados de sites bloqueados), a app funciona na mesma e avisa no ecrã inicial que o progresso não fica guardado.

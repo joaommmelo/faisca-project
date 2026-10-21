@@ -1,7 +1,7 @@
 {
   "name": "faisca",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -28,5 +28,5 @@
     "vite": "^8.3.4",
     "vitest": "^5.0.5"
   },
-  "description": "Faísca — praticar as tabuadas de 1 a 12 com a ajuda de um cão castanho."
+  "description": "Faísca — praticar somas, subtrações, tabuadas e divisões com a ajuda de um cão castanho."
 }
