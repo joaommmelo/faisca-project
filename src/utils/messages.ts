@@ -1,12 +1,15 @@
 import type { Skill } from "./arithmetic/utils.ts";
+import { ClockUtils, type ClockDirection, type ClockReference, type ClockSettings } from "./clock/utils.ts";
 import { DifficultiesUtils, type Difficulty } from "./difficulties/utils.ts";
-import { HelpsUtils, type HelpUnavailableReason, type NeighbourFact, type VerticalHelpStep } from "./helps/utils.ts";
+import { HelpsUtils, type ArithmeticHint, type HelpUnavailableReason, type NeighbourFact, type VerticalHelpStep } from "./helps/utils.ts";
 import { OperationsUtils, type Operation } from "./operations/utils.ts";
-import type { Milestone, SessionOffer } from "./progression/utils.ts";
+import type { ClockOutcome, Milestone, SessionOffer } from "./progression/utils.ts";
 import { ProfilesUtils, type ProfileNameProblem } from "./profiles/utils.ts";
 import type { AnswerLayout, PracticeMode, Question } from "./questions/utils.ts";
+import type { RecordCategory } from "./records/utils.ts";
 import { SessionUtils, type AnswerRecord } from "./session/utils.ts";
 import type { StorageStatus } from "./storage/utils.ts";
+import { TimeUtils } from "./time/utils.ts";
 import type { VerticalColumn } from "./vertical/utils.ts";
 import { WalletUtils } from "./wallet/utils.ts";
 
@@ -39,7 +42,7 @@ export class Messages {
     }
 
     public static getGreeting(name: string): string {
-        return `Olá, ${name}! Vamos praticar?`;
+        return `Olá, ${name}! O que vamos praticar hoje?`;
     }
 
     public static getCorrectMessages(): string[] {
@@ -185,6 +188,23 @@ export class Messages {
         return "O mealheiro está vazio. Cada 5 certas dão uma moeda!";
     }
 
+    public static getChoiceHint(): string {
+        return "Tirei duas respostas. É uma destas!";
+    }
+
+    public static getArithmeticHint(question: Question, hint: ArithmeticHint): string {
+        const symbol: string = OperationsUtils.getSymbol(question.operation);
+        if (hint.kind === "split") {
+            const { firstStep } = hint;
+            return `Pista: ${firstStep.left} ${symbol} ${firstStep.right} = ${firstStep.result}. Agora ${symbol} ${hint.remaining}.`;
+        }
+        const direction: string = question.operation === "addition" ? "para a frente" : "para trás";
+        if (hint.unit === 10) {
+            return `Pista: começa no ${hint.start} e conta ${hint.steps === 1 ? "1 dezena" : `${hint.steps} dezenas`} ${direction}.`;
+        }
+        return `Pista: começa no ${hint.start} e conta ${hint.steps} ${direction}.`;
+    }
+
     public static getNeighbourHint(fact: NeighbourFact): string {
         return `Pista: ${fact.left} × ${fact.right} = ${fact.result}`;
     }
@@ -256,6 +276,75 @@ export class Messages {
         };
     }
 
+    public static getClockDirectionLabel(direction: ClockDirection): string {
+        return direction === "up" ? "Para a frente" : "Para trás";
+    }
+
+    public static getClockReferenceLabel(reference: ClockReference): string {
+        return reference === "default" ? `${ClockUtils.getDefaultMinutes()} minutos` : "O teu recorde";
+    }
+
+    // Under the running clock: what it is measured against. Never a warning.
+    public static getClockNote(settings: ClockSettings, referenceMilliseconds: number, hasRecord: boolean, isOvertime: boolean): string {
+        if (isOvertime) {
+            return "tempo extra";
+        }
+        const reference: string = TimeUtils.formatElapsed(referenceMilliseconds);
+        const isRecord: boolean = settings.reference === "record" && hasRecord;
+        if (settings.direction === "down") {
+            return isRecord ? `do recorde ${reference}` : `de ${reference}`;
+        }
+        return isRecord ? `recorde ${reference}` : `meta ${reference}`;
+    }
+
+    // The end of a timed session: always something kind, and the record only when it was perfect.
+    public static getClockOutcomeLines(outcome: ClockOutcome): string[] {
+        const lines: string[] = [];
+        if (outcome.isNewRecord) {
+            lines.push(
+                outcome.previousRecordMilliseconds === null
+                    ? "Primeiro recorde nesta categoria!"
+                    : `Novo recorde! Antes era ${TimeUtils.formatElapsed(outcome.previousRecordMilliseconds)}.`
+            );
+        } else if (outcome.isWithinReference) {
+            lines.push("Ganhaste ao relógio!");
+        } else {
+            const extra: string = TimeUtils.formatElapsed(outcome.elapsedMilliseconds - outcome.referenceMilliseconds);
+            lines.push(
+                outcome.isAgainstRecord
+                    ? `Ficaste a ${extra} do teu recorde, ${TimeUtils.formatElapsed(outcome.referenceMilliseconds)}. Para a próxima!`
+                    : `Mais ${extra} do que os ${ClockUtils.getDefaultMinutes()} minutos. Para a próxima!`
+            );
+        }
+        if (!outcome.isNewRecord && !outcome.isAgainstRecord && outcome.previousRecordMilliseconds !== null) {
+            lines.push(`O teu recorde: ${TimeUtils.formatElapsed(outcome.previousRecordMilliseconds)}.`);
+        }
+        if (!outcome.isPerfect) {
+            lines.push("Os recordes contam quando acertas todas à primeira.");
+        }
+        return lines;
+    }
+
+    public static getRecordCategoryName(category: RecordCategory): string {
+        const parts: string[] = [this.getOperationName(category.operation)];
+        if (category.difficulty !== null) {
+            parts.push(this.getDifficultyName(category.difficulty));
+        }
+        if (category.layout !== null) {
+            parts.push(category.layout === "vertical" ? "na vertical" : "só o resultado");
+        }
+        if (category.tables !== null) {
+            parts.push(category.tables.length === 1 ? `tabuada do ${category.tables[0]}` : `tabuadas ${category.tables.join(", ")}`);
+        }
+        if (category.mode === "mixed") {
+            parts.push("com inversas");
+        }
+        if (category.isAlwaysTyped) {
+            parts.push("a escrever");
+        }
+        return parts.join(" · ");
+    }
+
     public static getCoinsCount(coins: number): string {
         return coins === 1 ? "1 moeda" : `${coins} moedas`;
     }
@@ -265,6 +354,10 @@ export class Messages {
         const wholeAnswers: number = Math.floor(answers);
         const half: string = answers > wholeAnswers ? "½" : "";
         return `${wholeAnswers === 0 && half !== "" ? "" : wholeAnswers}${half} de ${WalletUtils.getAnswersPerCoin()}`;
+    }
+
+    public static getPiggyBankAbout(): string {
+        return `Cada ajuda custa 1 moeda. Cada ${WalletUtils.getAnswersPerCoin()} certas dão uma moeda nova.`;
     }
 
     public static getPiggyBankFull(): string {

@@ -1,7 +1,5 @@
-import type { LeitnerBoxes } from "../leitner/utils.ts";
-import { ProfilesUtils, type AppData, type Profile } from "../profiles/utils.ts";
-import type { PracticeMode } from "../questions/utils.ts";
-import type { PracticeStats } from "../stats/utils.ts";
+import { MigrationsUtils } from "../migrations/utils.ts";
+import { ProfilesUtils, type AppData } from "../profiles/utils.ts";
 
 // saved: progress is written to localStorage. unavailable: the browser blocks it (private mode, site data off).
 // newer-version: the data was written by a newer Faísca; this one runs in memory and never overwrites it.
@@ -10,21 +8,6 @@ export type StorageStatus = "saved" | "unavailable" | "newer-version";
 export interface LoadResult {
     data: AppData;
     status: StorageStatus;
-}
-
-// The shape written by v1 (multiplication only), kept to migrate it.
-interface VersionOneProfile {
-    id: string;
-    name: string;
-    settings: { tables: number[]; mode: PracticeMode; isTimerEnabled: boolean };
-    boxes: LeitnerBoxes;
-    stats: PracticeStats;
-}
-
-interface VersionOneData {
-    version: 1;
-    profiles: VersionOneProfile[];
-    activeProfileId: string | null;
 }
 
 // The single place that knows progress lives in localStorage, so it can be swapped later.
@@ -61,11 +44,11 @@ export class StorageUtils {
         if (parsed.version > ProfilesUtils.getDataVersion()) {
             return { data: ProfilesUtils.createEmptyData(), status: "newer-version" };
         }
-        if (parsed.version === 1) {
-            return { data: this.migrateFromVersionOne(parsed as unknown as VersionOneData), status: "saved" };
-        }
         if (parsed.version === ProfilesUtils.getDataVersion()) {
             return { data: parsed as unknown as AppData, status: "saved" };
+        }
+        if (parsed.version >= MigrationsUtils.getOldestMigratableVersion()) {
+            return { data: MigrationsUtils.migrate(parsed), status: "saved" };
         }
         return { data: ProfilesUtils.createEmptyData(), status: "saved" };
     }
@@ -106,27 +89,6 @@ export class StorageUtils {
         } catch (error) {
             console.warn("Faísca: could not ask for persistent storage.", error);
         }
-    }
-
-    // v1 only knew multiplication: its boxes, tables, mode and stats carry over unchanged.
-    public static migrateFromVersionOne(data: VersionOneData): AppData {
-        const profiles: Profile[] = data.profiles.map((oldProfile) => {
-            const profile: Profile = ProfilesUtils.createProfile(oldProfile.name);
-            return {
-                ...profile,
-                id: oldProfile.id,
-                settings: {
-                    ...profile.settings,
-                    operation: "multiplication",
-                    isTimerEnabled: oldProfile.settings.isTimerEnabled,
-                    multiplication: { tables: oldProfile.settings.tables, mode: oldProfile.settings.mode },
-                    division: { tables: oldProfile.settings.tables }
-                },
-                boxes: oldProfile.boxes,
-                stats: oldProfile.stats
-            };
-        });
-        return { version: ProfilesUtils.getDataVersion(), profiles, activeProfileId: data.activeProfileId };
     }
 
     private static hasProfiles(value: unknown): value is { version: number; profiles: unknown[] } {

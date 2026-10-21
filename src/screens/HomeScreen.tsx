@@ -1,19 +1,21 @@
-import { useId, useState } from "react";
-import { PlusIcon } from "../components/Icons.tsx";
+import type { ReactNode } from "react";
+import { ClockField } from "../components/ClockField.tsx";
+import { CoinButton } from "../components/CoinButton.tsx";
 import { Logo } from "../components/Logo.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
 import { OperationPicker } from "../components/OperationPicker.tsx";
-import { PiggyBank } from "../components/PiggyBank.tsx";
-import { ProfileForm } from "../components/ProfileForm.tsx";
+import { ProfilesPanel } from "../components/ProfilesPanel.tsx";
 import { SegmentedField } from "../components/SegmentedField.tsx";
 import { SwitchField } from "../components/SwitchField.tsx";
 import { TablesPicker } from "../components/TablesPicker.tsx";
+import type { ClockSettings } from "../utils/clock/utils.ts";
 import { DifficultiesUtils, type Difficulty } from "../utils/difficulties/utils.ts";
 import { LevelsUtils } from "../utils/levels/utils.ts";
 import { Messages } from "../utils/messages.ts";
-import { OperationsUtils, type ArithmeticOperation, type Operation } from "../utils/operations/utils.ts";
+import { OperationsUtils, type Operation, type TablesOperation } from "../utils/operations/utils.ts";
 import { ProfilesUtils, type AppData, type Profile, type ProfileSettings } from "../utils/profiles/utils.ts";
 import { QuestionsUtils, type AnswerLayout, type PracticeMode } from "../utils/questions/utils.ts";
+import { RecordsUtils } from "../utils/records/utils.ts";
 import type { StorageStatus } from "../utils/storage/utils.ts";
 
 interface HomeScreenProps {
@@ -28,6 +30,8 @@ interface HomeScreenProps {
     onShowProgress: () => void;
 }
 
+// What matters comes first on a phone: pick an operation, adjust it if wanted, play. The coins sit in the corner
+// and open the piggy bank; who is playing rarely changes, so it waits at the bottom.
 export function HomeScreen({
     data,
     profile,
@@ -39,9 +43,6 @@ export function HomeScreen({
     onPlay,
     onShowProgress
 }: HomeScreenProps) {
-    const deleteTitleId: string = useId();
-    const [isAddingProfile, setIsAddingProfile] = useState<boolean>(false);
-    const [isConfirmingDelete, setIsConfirmingDelete] = useState<boolean>(false);
     const { settings } = profile;
     const canPlay: boolean = ProfilesUtils.canPlay(settings);
 
@@ -60,9 +61,13 @@ export function HomeScreen({
     })();
 
     return (
-        <main className="screen">
-            <Logo />
-            <MascotMessage mood="happy" size={96}>
+        <main className="screen screen--home">
+            <header className="home-header">
+                <Logo />
+                <CoinButton wallet={profile.wallet} />
+            </header>
+
+            <MascotMessage mood="happy" size={80}>
                 {Messages.getGreeting(profile.name)}
             </MascotMessage>
 
@@ -72,60 +77,15 @@ export function HomeScreen({
                 </p>
             )}
 
-            <section className="card">
-                <h2 className="section-title">Quem vai jogar?</h2>
-                <div className="profiles">
-                    {data.profiles.map((candidate) => (
-                        <button
-                            key={candidate.id}
-                            type="button"
-                            className="chip"
-                            aria-pressed={candidate.id === profile.id}
-                            onClick={() => onSelectProfile(candidate.id)}
-                        >
-                            {candidate.name}
-                        </button>
-                    ))}
-                    <button type="button" className="chip chip--add" aria-expanded={isAddingProfile} onClick={() => setIsAddingProfile(true)}>
-                        <PlusIcon />
-                        Novo
-                    </button>
-                </div>
-                {isAddingProfile && (
-                    <div className="card-section">
-                        <ProfileForm
-                            data={data}
-                            title="Nome do novo perfil"
-                            submitLabel="Criar perfil"
-                            onSubmit={onCreateProfile}
-                            onCancel={() => setIsAddingProfile(false)}
-                        />
-                    </div>
-                )}
-            </section>
-
-            <PiggyBank wallet={profile.wallet} />
-
-            <section className="card">
-                <OperationPicker operation={settings.operation} summaries={summaries} onChange={(operation) => onSettingsChange({ ...settings, operation })} />
-            </section>
+            <OperationPicker operation={settings.operation} summaries={summaries} onChange={(operation) => onSettingsChange({ ...settings, operation })} />
 
             <OperationSettings profile={profile} onSettingsChange={onSettingsChange} />
-
-            <section className="card">
-                <SwitchField
-                    label="Cronómetro"
-                    description="Mostra o tempo de cada jogo. Sem pressa!"
-                    isOn={settings.isTimerEnabled}
-                    onChange={(isTimerEnabled) => onSettingsChange({ ...settings, isTimerEnabled })}
-                />
-            </section>
 
             <div className="play-bar">
                 <p className="hint" role="status">
                     {canPlay ? "" : "Escolhe pelo menos uma tabuada."}
                 </p>
-                <button type="button" className={`button button--play button--play-${settings.operation}`} disabled={!canPlay} onClick={onPlay}>
+                <button type="button" className="button button--play" disabled={!canPlay} onClick={onPlay}>
                     Jogar
                 </button>
             </div>
@@ -134,26 +94,13 @@ export function HomeScreen({
                 Ver progresso
             </button>
 
-            {isConfirmingDelete ? (
-                <section className="card stack" role="alertdialog" aria-labelledby={deleteTitleId}>
-                    <p id={deleteTitleId} className="section-title">
-                        Apagar o perfil «{profile.name}» e todo o progresso?
-                    </p>
-                    <p className="hint">Não dá para desfazer.</p>
-                    <div className="actions-row">
-                        <button type="button" className="button button--secondary" autoFocus onClick={() => setIsConfirmingDelete(false)}>
-                            Cancelar
-                        </button>
-                        <button type="button" className="button button--secondary button--danger" onClick={() => onDeleteProfile(profile.id)}>
-                            Sim, apagar
-                        </button>
-                    </div>
-                </section>
-            ) : (
-                <button type="button" className="button button--ghost button--danger" onClick={() => setIsConfirmingDelete(true)}>
-                    Apagar perfil «{profile.name}»
-                </button>
-            )}
+            <ProfilesPanel
+                data={data}
+                profile={profile}
+                onSelectProfile={onSelectProfile}
+                onCreateProfile={onCreateProfile}
+                onDeleteProfile={onDeleteProfile}
+            />
         </main>
     );
 }
@@ -163,47 +110,26 @@ interface OperationSettingsProps {
     onSettingsChange: (settings: ProfileSettings) => void;
 }
 
-// The choices that belong to the selected operation: difficulty and layout, or the times tables.
+// The choices that belong to the selected operation, its clock included.
 function OperationSettings({ profile, onSettingsChange }: OperationSettingsProps) {
     const { settings } = profile;
     const operation: Operation = settings.operation;
+    const recordMilliseconds: number | null = RecordsUtils.getBest(profile.records, RecordsUtils.getCategory(settings));
+    const changeClock = (clock: ClockSettings): void => onSettingsChange({ ...settings, [operation]: { ...settings[operation], clock } });
+    const clockField = <ClockField clock={settings[operation].clock} recordMilliseconds={recordMilliseconds} onChange={changeClock} />;
 
-    if (operation === "multiplication") {
-        return (
-            <section className={`card card--${operation}`}>
-                <TablesPicker
-                    selectedTables={settings.multiplication.tables}
-                    onChange={(tables) => onSettingsChange({ ...settings, multiplication: { ...settings.multiplication, tables } })}
-                />
-                <div className="card-section">
-                    <SegmentedField<PracticeMode>
-                        legend="Que contas queres?"
-                        value={settings.multiplication.mode}
-                        options={QuestionsUtils.getValidModes().map((mode) => ({ value: mode, label: Messages.getModeLabel(mode), detail: Messages.getModeExample(mode) }))}
-                        onChange={(mode) => onSettingsChange({ ...settings, multiplication: { ...settings.multiplication, mode } })}
-                    />
-                </div>
-            </section>
-        );
+    if (!OperationsUtils.isArithmetic(operation)) {
+        return <TablesSettingsCard operation={operation} settings={settings} clockField={clockField} onSettingsChange={onSettingsChange} />;
     }
 
-    if (operation === "division") {
-        return (
-            <section className={`card card--${operation}`}>
-                <TablesPicker selectedTables={settings.division.tables} onChange={(tables) => onSettingsChange({ ...settings, division: { tables } })} />
-            </section>
-        );
-    }
-
-    const arithmeticOperation: ArithmeticOperation = operation;
-    const arithmeticSettings = settings[arithmeticOperation];
+    const arithmeticSettings = settings[operation];
     const layoutExamples: Record<AnswerLayout, string> = {
-        result: arithmeticOperation === "addition" ? "37 + 25 = ?" : "52 − 27 = ?",
+        result: operation === "addition" ? "37 + 25 = ?" : "52 − 27 = ?",
         vertical: "Uma por baixo da outra"
     };
 
     return (
-        <section className={`card card--${operation}`}>
+        <section className={`card stack card--${operation}`}>
             <SegmentedField<Difficulty>
                 legend="Que dificuldade?"
                 value={arithmeticSettings.difficulty}
@@ -211,18 +137,62 @@ function OperationSettings({ profile, onSettingsChange }: OperationSettingsProps
                     value: difficulty,
                     label: Messages.getDifficultyName(difficulty),
                     detail: Messages.getDifficultyRange(difficulty),
-                    isLocked: !DifficultiesUtils.isUnlocked(difficulty, profile.unlockedDifficulties[arithmeticOperation])
+                    isLocked: !DifficultiesUtils.isUnlocked(difficulty, profile.unlockedDifficulties[operation])
                 }))}
-                onChange={(difficulty) => onSettingsChange({ ...settings, [arithmeticOperation]: { ...arithmeticSettings, difficulty } })}
+                onChange={(difficulty) => onSettingsChange({ ...settings, [operation]: { ...arithmeticSettings, difficulty } })}
             />
-            <div className="card-section">
-                <SegmentedField<AnswerLayout>
-                    legend="Como queres fazer as contas?"
-                    value={arithmeticSettings.layout}
-                    options={QuestionsUtils.getValidLayouts().map((layout) => ({ value: layout, label: Messages.getLayoutLabel(layout), detail: layoutExamples[layout] }))}
-                    onChange={(layout) => onSettingsChange({ ...settings, [arithmeticOperation]: { ...arithmeticSettings, layout } })}
+            <SegmentedField<AnswerLayout>
+                legend="Como queres fazer as contas?"
+                value={arithmeticSettings.layout}
+                options={QuestionsUtils.getValidLayouts().map((layout) => ({
+                    value: layout,
+                    label: Messages.getLayoutLabel(layout),
+                    detail: layoutExamples[layout]
+                }))}
+                onChange={(layout) => onSettingsChange({ ...settings, [operation]: { ...arithmeticSettings, layout } })}
+            />
+            <div className="card-divider" />
+            {clockField}
+        </section>
+    );
+}
+
+interface TablesSettingsCardProps {
+    operation: TablesOperation;
+    settings: ProfileSettings;
+    clockField: ReactNode;
+    onSettingsChange: (settings: ProfileSettings) => void;
+}
+
+function TablesSettingsCard({ operation, settings, clockField, onSettingsChange }: TablesSettingsCardProps) {
+    const tablesSettings = settings[operation];
+
+    return (
+        <section className={`card stack card--${operation}`}>
+            <TablesPicker
+                selectedTables={tablesSettings.tables}
+                onChange={(tables) => onSettingsChange({ ...settings, [operation]: { ...tablesSettings, tables } })}
+            />
+            {operation === "multiplication" && (
+                <SegmentedField<PracticeMode>
+                    legend="Que contas queres?"
+                    value={settings.multiplication.mode}
+                    options={QuestionsUtils.getValidModes().map((mode) => ({
+                        value: mode,
+                        label: Messages.getModeLabel(mode),
+                        detail: Messages.getModeExample(mode)
+                    }))}
+                    onChange={(mode) => onSettingsChange({ ...settings, multiplication: { ...settings.multiplication, mode } })}
                 />
-            </div>
+            )}
+            <SwitchField
+                label="Escrever sempre a resposta"
+                description="Sem escolha múltipla, mesmo nas contas novas."
+                isOn={tablesSettings.isAlwaysTyped}
+                onChange={(isAlwaysTyped) => onSettingsChange({ ...settings, [operation]: { ...tablesSettings, isAlwaysTyped } })}
+            />
+            <div className="card-divider" />
+            {clockField}
         </section>
     );
 }

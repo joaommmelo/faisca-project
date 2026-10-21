@@ -1,11 +1,13 @@
 import moment from "moment";
 import { ArithmeticUtils } from "../arithmetic/utils.ts";
+import { ClockUtils, type ClockSettings } from "../clock/utils.ts";
 import { DifficultiesUtils, type Difficulty } from "../difficulties/utils.ts";
 import { LeitnerUtils, type LeitnerBoxes } from "../leitner/utils.ts";
 import { LevelsUtils, type RecentAnswer, type RecordTrackAnswerResult, type TrackProgress } from "../levels/utils.ts";
 import { OperationsUtils, type ArithmeticOperation, type Operation } from "../operations/utils.ts";
-import type { Profile } from "../profiles/utils.ts";
-import { SessionUtils, type AnswerRecord } from "../session/utils.ts";
+import { ProfilesUtils, type Profile } from "../profiles/utils.ts";
+import { RecordsUtils, type RecordCategory, type RegisterTimeResult } from "../records/utils.ts";
+import { SessionUtils, type AnswerRecord, type SessionSummary } from "../session/utils.ts";
 import { StatsUtils } from "../stats/utils.ts";
 import { WalletUtils, type AddWalletPointsResult } from "../wallet/utils.ts";
 
@@ -19,9 +21,32 @@ export interface ApplyRecordResult {
 // What the end of a session proposes: the next difficulty, or a step back after a hard run.
 export type SessionOffer = { kind: "unlock"; difficulty: Difficulty } | { kind: "safety-net"; difficulty: Difficulty };
 
+// How the session went against the clock, when it was on.
+export interface ClockOutcome {
+    elapsedMilliseconds: number;
+    referenceMilliseconds: number;
+    // The clock ran against the child's record (there was one), not the default time.
+    isAgainstRecord: boolean;
+    isWithinReference: boolean;
+    isPerfect: boolean;
+    isNewRecord: boolean;
+    previousRecordMilliseconds: number | null;
+}
+
+export interface FinishedSession {
+    summary: SessionSummary;
+    elapsedMilliseconds: number | null;
+}
+
+interface TimedProfile {
+    profile: Profile;
+    clock: ClockOutcome | null;
+}
+
 export interface FinishSessionResult {
     profile: Profile;
     offer: SessionOffer | null;
+    clock: ClockOutcome | null;
 }
 
 export class ProgressionUtils {
@@ -81,21 +106,23 @@ export class ProgressionUtils {
         };
     }
 
-    // Counts the session, then checks the current difficulty for an offer. Unlocking happens right away; accepting
-    // the offer only decides whether to play the new difficulty now. A safety-net offer is not repeated until
-    // another full window of answers.
-    public static finishSession(profile: Profile, now: moment.Moment): FinishSessionResult {
-        const counted: Profile = { ...profile, stats: StatsUtils.registerSession(profile.stats, now) };
+    // Counts the session and its time, then checks the current difficulty for an offer. Unlocking happens right
+    // away; accepting the offer only decides whether to play the new difficulty now. A safety-net offer is not
+    // repeated until another full window of answers.
+    public static finishSession(profile: Profile, now: moment.Moment, finished: FinishedSession): FinishSessionResult {
+        const timed: TimedProfile = this.registerClock(profile, finished);
+        const counted: Profile = { ...timed.profile, stats: StatsUtils.registerSession(profile.stats, now) };
         const operation: Operation = counted.settings.operation;
         if (!OperationsUtils.isArithmetic(operation)) {
-            return { profile: counted, offer: null };
+            return { profile: counted, offer: null, clock: timed.clock };
         }
 
         const unlockable: Difficulty | null = this.getUnlockableDifficulty(counted, operation);
         if (unlockable !== null) {
             return {
                 profile: { ...counted, unlockedDifficulties: { ...counted.unlockedDifficulties, [operation]: unlockable } },
-                offer: { kind: "unlock", difficulty: unlockable }
+                offer: { kind: "unlock", difficulty: unlockable },
+                clock: timed.clock
             };
         }
 
@@ -105,11 +132,42 @@ export class ProgressionUtils {
             const track: TrackProgress = LevelsUtils.getTrack(counted.tracks, trackId);
             return {
                 profile: { ...counted, tracks: { ...counted.tracks, [trackId]: { ...track, answersSinceSafetyNet: 0 } } },
-                offer: { kind: "safety-net", difficulty: saferDifficulty }
+                offer: { kind: "safety-net", difficulty: saferDifficulty },
+                clock: timed.clock
             };
         }
 
-        return { profile: counted, offer: null };
+        return { profile: counted, offer: null, clock: timed.clock };
+    }
+
+    // The reference is read before this session's time is registered, so it matches what the clock showed.
+    // Only a perfect session with the clock on can set a record.
+    private static registerClock(profile: Profile, finished: FinishedSession): TimedProfile {
+        const clockSettings: ClockSettings = ProfilesUtils.getClock(profile.settings);
+        if (!clockSettings.isEnabled || finished.elapsedMilliseconds === null) {
+            return { profile, clock: null };
+        }
+
+        const category: RecordCategory = RecordsUtils.getCategory(profile.settings);
+        const previousRecordMilliseconds: number | null = RecordsUtils.getBest(profile.records, category);
+        const referenceMilliseconds: number = ClockUtils.getReferenceMilliseconds(clockSettings, previousRecordMilliseconds);
+        const isPerfect: boolean = RecordsUtils.isPerfect(finished.summary);
+        const registered: RegisterTimeResult = isPerfect
+            ? RecordsUtils.registerTime(profile.records, category, finished.elapsedMilliseconds)
+            : { records: profile.records, isNewRecord: false, previousMilliseconds: previousRecordMilliseconds };
+
+        return {
+            profile: { ...profile, records: registered.records },
+            clock: {
+                elapsedMilliseconds: finished.elapsedMilliseconds,
+                referenceMilliseconds,
+                isAgainstRecord: clockSettings.reference === "record" && previousRecordMilliseconds !== null,
+                isWithinReference: finished.elapsedMilliseconds <= referenceMilliseconds,
+                isPerfect,
+                isNewRecord: registered.isNewRecord,
+                previousRecordMilliseconds
+            }
+        };
     }
 
     // Either offer is accepted by playing its difficulty; nothing is lost in the one left behind.

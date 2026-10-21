@@ -57,7 +57,10 @@ describe("SessionUtils.create", () => {
 
     it("asks exact divisions from the chosen tables", () => {
         const defaults = ProfilesUtils.createDefaultSettings();
-        const session: Session = SessionUtils.create(createTestProfile({ operation: "division", division: { ...defaults.division, tables: [6] } }), createSeededRandom(3));
+        const session: Session = SessionUtils.create(
+            createTestProfile({ operation: "division", division: { ...defaults.division, tables: [6] } }),
+            createSeededRandom(3)
+        );
         for (const question of session.questions) {
             expect(question.operation).toBe("division");
             expect(question.left % question.right).toBe(0);

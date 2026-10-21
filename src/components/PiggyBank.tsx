@@ -30,6 +30,7 @@ export function PiggyBank({ wallet }: PiggyBankProps) {
                 <div className="meter" aria-hidden="true">
                     <div className="meter__fill" style={{ transform: `scaleX(${answers / WalletUtils.getAnswersPerCoin()})` }} />
                 </div>
+                <p className="piggy__about">{Messages.getPiggyBankAbout()}</p>
             </div>
         </section>
     );

@@ -11,7 +11,9 @@ import { Messages } from "../utils/messages.ts";
 import type { ArithmeticOperation } from "../utils/operations/utils.ts";
 import type { Profile } from "../utils/profiles/utils.ts";
 import { ProgressUtils } from "../utils/progress/utils.ts";
+import type { BestTime } from "../utils/records/utils.ts";
 import { StatsUtils } from "../utils/stats/utils.ts";
+import { TimeUtils } from "../utils/time/utils.ts";
 
 interface ProgressScreenProps {
     profile: Profile;
@@ -61,6 +63,8 @@ export function ProgressScreen({ profile, onBack }: ProgressScreenProps) {
                 )}
             </ul>
 
+            <RecordsCard profile={profile} />
+
             <ArithmeticProgress profile={profile} operation="addition" />
             <ArithmeticProgress profile={profile} operation="subtraction" />
 
@@ -79,6 +83,29 @@ export function ProgressScreen({ profile, onBack }: ProgressScreenProps) {
                 <p className="hint hint--left">As divisões treinam as mesmas contas do mapa da multiplicação.</p>
             </section>
         </main>
+    );
+}
+
+// Best times of perfect sessions, one per way of playing.
+function RecordsCard({ profile }: { profile: Profile }) {
+    const bestTimes: BestTime[] = Object.values(profile.records);
+
+    return (
+        <section className="card">
+            <h2 className="section-title">Recordes</h2>
+            {bestTimes.length === 0 ? (
+                <p className="hint hint--left">Liga o relógio e acerta todas à primeira para teres o teu primeiro recorde.</p>
+            ) : (
+                <ul className="records">
+                    {bestTimes.map((bestTime) => (
+                        <li key={Messages.getRecordCategoryName(bestTime.category)} className="record">
+                            <span className="record__name">{Messages.getRecordCategoryName(bestTime.category)}</span>
+                            <span className="record__time">{TimeUtils.formatElapsed(bestTime.milliseconds)}</span>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </section>
     );
 }
 
@@ -106,7 +133,10 @@ function ArithmeticProgress({ profile, operation }: ArithmeticProgressProps) {
                                     <LevelMeter track={LevelsUtils.getTrack(profile.tracks, LevelsUtils.getTrackId(operation, difficulty))} />
                                     <ul className="skills">
                                         {ArithmeticUtils.getSkills(operation, difficulty).map((skill) => {
-                                            const mastery: number = ProgressUtils.getMastery(profile.skillBoxes, ArithmeticUtils.getSkillId(operation, difficulty, skill));
+                                            const mastery: number = ProgressUtils.getMastery(
+                                                profile.skillBoxes,
+                                                ArithmeticUtils.getSkillId(operation, difficulty, skill)
+                                            );
                                             return (
                                                 <li key={skill} className="skill">
                                                     <span className={`skill__swatch level-${mastery}`} aria-hidden="true" />

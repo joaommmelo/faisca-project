@@ -15,7 +15,7 @@ export class OperationsUtils {
     }
 
     public static getDefaultOperation(): Operation {
-        return "addition";
+        return "multiplication";
     }
 
     public static isArithmetic(operation: Operation): operation is ArithmeticOperation {

@@ -72,13 +72,7 @@ export function NumericKeypad({ announcement, canConfirm, isDisabled, onDigit, o
             <button type="button" className="keypad__key" disabled={isDisabled} onClick={() => onDigit(0)}>
                 0
             </button>
-            <button
-                type="button"
-                className="keypad__key keypad__key--confirm"
-                aria-label="Confirmar"
-                disabled={isDisabled || !canConfirm}
-                onClick={confirm}
-            >
+            <button type="button" className="keypad__key keypad__key--confirm" aria-label="Confirmar" disabled={isDisabled || !canConfirm} onClick={confirm}>
                 <CheckIcon />
             </button>
         </div>

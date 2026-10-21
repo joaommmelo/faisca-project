@@ -4,7 +4,7 @@ import { LeitnerUtils } from "../leitner/utils.ts";
 import { LevelsUtils } from "../levels/utils.ts";
 import { OperationsUtils, type ArithmeticOperation, type Operation, type TablesOperation } from "../operations/utils.ts";
 import type { Profile } from "../profiles/utils.ts";
-import type { Milestone, SessionOffer } from "../progression/utils.ts";
+import type { ClockOutcome, Milestone, SessionOffer } from "../progression/utils.ts";
 import { QuestionsUtils, type Question } from "../questions/utils.ts";
 import { RandomUtils, type RandomSource } from "../random/utils.ts";
 
@@ -48,6 +48,7 @@ export interface SessionOutcome {
     elapsedMilliseconds: number | null;
     milestones: Milestone[];
     offer: SessionOffer | null;
+    clock: ClockOutcome | null;
 }
 
 export class SessionUtils {
@@ -191,10 +192,11 @@ export class SessionUtils {
             getWeight: (fact) => LeitnerUtils.getDrawWeight(fact, profile.boxes),
             random
         });
+        const { isAlwaysTyped } = profile.settings[operation];
         return drawnFacts.map((fact) =>
             operation === "multiplication"
-                ? QuestionsUtils.buildMultiplication(fact, { mode: profile.settings.multiplication.mode, boxes: profile.boxes, random })
-                : QuestionsUtils.buildDivision(fact, { boxes: profile.boxes, random })
+                ? QuestionsUtils.buildMultiplication(fact, { mode: profile.settings.multiplication.mode, boxes: profile.boxes, isAlwaysTyped, random })
+                : QuestionsUtils.buildDivision(fact, { boxes: profile.boxes, isAlwaysTyped, random })
         );
     }
 

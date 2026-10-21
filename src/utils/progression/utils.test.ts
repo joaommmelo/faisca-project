@@ -5,13 +5,23 @@ import type { Difficulty } from "../difficulties/utils.ts";
 import type { RecentAnswer, TrackProgress } from "../levels/utils.ts";
 import type { Profile } from "../profiles/utils.ts";
 import { QuestionsUtils, type AnswerFormat, type Question } from "../questions/utils.ts";
-import type { AnswerRecord } from "../session/utils.ts";
-import { ProgressionUtils } from "./utils.ts";
+import type { AnswerRecord, SessionSummary } from "../session/utils.ts";
+import { ProgressionUtils, type FinishedSession } from "./utils.ts";
 
 const now: moment.Moment = moment("2026-10-21T18:00:00");
+const perfect: SessionSummary = { correctAtFirstTry: 10, helpedCount: 0, firstTryCount: 10, questionsToReinforce: [] };
+const untimed: FinishedSession = { summary: perfect, elapsedMilliseconds: null };
 
 function additionQuestion(format: AnswerFormat = "vertical", left: number = 37): Question {
-    const question: Question = QuestionsUtils.buildArithmetic({ operation: "addition", difficulty: "easy", skill: "no-carry", left: 3, right: 4, layout: "vertical", skillBoxes: {} });
+    const question: Question = QuestionsUtils.buildArithmetic({
+        operation: "addition",
+        difficulty: "easy",
+        skill: "no-carry",
+        left: 3,
+        right: 4,
+        layout: "vertical",
+        skillBoxes: {}
+    });
     return { ...question, id: `addition:${left}+4:direct`, format, options: format === "choice" ? [6, 7, 8, 9] : [] };
 }
 
@@ -63,8 +73,14 @@ describe("ProgressionUtils.applyRecord", () => {
     });
 
     it("sends a missed multiplication fact back to box 1, as in v1", () => {
-        const question: Question = QuestionsUtils.buildMultiplication({ id: "7x8", smallerFactor: 7, largerFactor: 8, product: 56 }, { mode: "direct", boxes: { "7x8": 4 } });
-        const result = ProgressionUtils.applyRecord(createTestProfile({}, { boxes: { "7x8": 4 } }), record(question, { givenAnswers: [54, 55], isCorrect: false }));
+        const question: Question = QuestionsUtils.buildMultiplication(
+            { id: "7x8", smallerFactor: 7, largerFactor: 8, product: 56 },
+            { mode: "direct", boxes: { "7x8": 4 } }
+        );
+        const result = ProgressionUtils.applyRecord(
+            createTestProfile({}, { boxes: { "7x8": 4 } }),
+            record(question, { givenAnswers: [54, 55], isCorrect: false })
+        );
         expect(result.profile.boxes["7x8"]).toBe(1);
     });
 
@@ -115,9 +131,13 @@ describe("ProgressionUtils.getSafetyNetDifficulty", () => {
     });
 
     it("stays quiet with 5 right, with too few answers, or right after proposing", () => {
-        expect(ProgressionUtils.getSafetyNetDifficulty(profileAt("medium", { recentAnswers: answers(10, 5), answersSinceSafetyNet: 10 }), "addition")).toBeNull();
+        expect(
+            ProgressionUtils.getSafetyNetDifficulty(profileAt("medium", { recentAnswers: answers(10, 5), answersSinceSafetyNet: 10 }), "addition")
+        ).toBeNull();
         expect(ProgressionUtils.getSafetyNetDifficulty(profileAt("medium", { recentAnswers: answers(9, 0), answersSinceSafetyNet: 9 }), "addition")).toBeNull();
-        expect(ProgressionUtils.getSafetyNetDifficulty(profileAt("medium", { recentAnswers: answers(10, 0), answersSinceSafetyNet: 3 }), "addition")).toBeNull();
+        expect(
+            ProgressionUtils.getSafetyNetDifficulty(profileAt("medium", { recentAnswers: answers(10, 0), answersSinceSafetyNet: 3 }), "addition")
+        ).toBeNull();
     });
 
     it("has nothing below Fácil", () => {
@@ -127,7 +147,7 @@ describe("ProgressionUtils.getSafetyNetDifficulty", () => {
 
 describe("ProgressionUtils.finishSession", () => {
     it("unlocks right away and lets the child decide when to play it", () => {
-        const result = ProgressionUtils.finishSession(profileAt("easy", { recentAnswers: answers(20, 18) }), now);
+        const result = ProgressionUtils.finishSession(profileAt("easy", { recentAnswers: answers(20, 18) }), now, untimed);
         expect(result.offer).toEqual({ kind: "unlock", difficulty: "medium" });
         expect(result.profile.unlockedDifficulties.addition).toBe("medium");
         expect(result.profile.settings.addition.difficulty).toBe("easy");
@@ -137,8 +157,11 @@ describe("ProgressionUtils.finishSession", () => {
     });
 
     it("keeps level and coins when stepping back, and does not repeat the proposal at once", () => {
-        const profile: Profile = { ...profileAt("medium", { level: 3, recentAnswers: answers(10, 2), answersSinceSafetyNet: 12 }), wallet: { coins: 4, points: 6 } };
-        const result = ProgressionUtils.finishSession(profile, now);
+        const profile: Profile = {
+            ...profileAt("medium", { level: 3, recentAnswers: answers(10, 2), answersSinceSafetyNet: 12 }),
+            wallet: { coins: 4, points: 6 }
+        };
+        const result = ProgressionUtils.finishSession(profile, now, untimed);
         expect(result.offer).toEqual({ kind: "safety-net", difficulty: "easy" });
         expect(result.profile.tracks["addition:medium"].answersSinceSafetyNet).toBe(0);
         expect(ProgressionUtils.getSafetyNetDifficulty(result.profile, "addition")).toBeNull();
@@ -151,6 +174,40 @@ describe("ProgressionUtils.finishSession", () => {
     });
 
     it("offers nothing in multiplication", () => {
-        expect(ProgressionUtils.finishSession(createTestProfile({ operation: "multiplication" }), now).offer).toBeNull();
+        expect(ProgressionUtils.finishSession(createTestProfile({ operation: "multiplication" }), now, untimed).offer).toBeNull();
+    });
+});
+
+describe("ProgressionUtils.finishSession with the clock", () => {
+    function timedProfile(changes: Partial<Profile> = {}): Profile {
+        const base: Profile = createTestProfile({ operation: "multiplication" });
+        const clock = { isEnabled: true, direction: "down" as const, reference: "record" as const };
+        return { ...base, ...changes, settings: { ...base.settings, multiplication: { ...base.settings.multiplication, clock } } };
+    }
+
+    it("sets the first record on a perfect timed session", () => {
+        const result = ProgressionUtils.finishSession(timedProfile(), now, { summary: perfect, elapsedMilliseconds: 95_000 });
+        expect(result.clock).toMatchObject({ isNewRecord: true, previousRecordMilliseconds: null, referenceMilliseconds: 180_000, isWithinReference: true });
+        expect(Object.values(result.profile.records).map((best) => best.milliseconds)).toEqual([95_000]);
+    });
+
+    it("measures against the record and only beats it when faster", () => {
+        const first = ProgressionUtils.finishSession(timedProfile(), now, { summary: perfect, elapsedMilliseconds: 95_000 }).profile;
+        const slower = ProgressionUtils.finishSession(first, now, { summary: perfect, elapsedMilliseconds: 99_000 });
+        expect(slower.clock).toMatchObject({ isNewRecord: false, referenceMilliseconds: 95_000, isWithinReference: false });
+
+        const faster = ProgressionUtils.finishSession(first, now, { summary: perfect, elapsedMilliseconds: 80_000 });
+        expect(faster.clock).toMatchObject({ isNewRecord: true, previousRecordMilliseconds: 95_000 });
+    });
+
+    it("never sets a record without a perfect session", () => {
+        const withMiss: SessionSummary = { ...perfect, correctAtFirstTry: 9 };
+        const result = ProgressionUtils.finishSession(timedProfile(), now, { summary: withMiss, elapsedMilliseconds: 40_000 });
+        expect(result.clock?.isNewRecord).toBe(false);
+        expect(result.profile.records).toEqual({});
+    });
+
+    it("reports nothing when the clock is off", () => {
+        expect(ProgressionUtils.finishSession(createTestProfile(), now, untimed).clock).toBeNull();
     });
 });

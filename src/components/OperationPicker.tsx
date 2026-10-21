@@ -14,7 +14,7 @@ export function OperationPicker({ operation, summaries, onChange }: OperationPic
 
     return (
         <fieldset>
-            <legend className="section-title">O que vamos praticar?</legend>
+            <legend className="visually-hidden">O que vamos praticar?</legend>
             <div className="operations">
                 {OperationsUtils.getValidOperations().map((option) => (
                     <label key={option} className={`operation operation--${option}`}>

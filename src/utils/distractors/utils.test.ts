@@ -25,7 +25,10 @@ describe("DistractorsUtils.getOptions", () => {
     for (const kind of kinds) {
         it(`gives 4 distinct, sensible options for every fact (${kind})`, () => {
             for (const fact of FactsUtils.getAll()) {
-                for (const [left, right] of [[fact.smallerFactor, fact.largerFactor], [fact.largerFactor, fact.smallerFactor]]) {
+                for (const [left, right] of [
+                    [fact.smallerFactor, fact.largerFactor],
+                    [fact.largerFactor, fact.smallerFactor]
+                ]) {
                     const question = multiplication(left, right, kind);
                     const options: number[] = DistractorsUtils.getOptions(question, random);
 
@@ -43,7 +46,14 @@ describe("DistractorsUtils.getOptions", () => {
 
     it("gives 4 distinct factors for every division", () => {
         for (const fact of FactsUtils.getAll()) {
-            const question = { operation: "division" as const, kind: "direct" as const, left: fact.product, right: fact.smallerFactor, result: fact.largerFactor, answer: fact.largerFactor };
+            const question = {
+                operation: "division" as const,
+                kind: "direct" as const,
+                left: fact.product,
+                right: fact.smallerFactor,
+                result: fact.largerFactor,
+                answer: fact.largerFactor
+            };
             const options: number[] = DistractorsUtils.getOptions(question, random);
             expect(new Set(options).size).toBe(4);
             expect(options).toContain(fact.largerFactor);

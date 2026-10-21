@@ -83,7 +83,13 @@ export function CoinIcon() {
 export function HelpIcon() {
     return (
         <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" />
+            <path
+                d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinejoin="round"
+            />
             <path d="M9.5 19h5M10.5 21.5h3" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
         </svg>
     );

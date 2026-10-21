@@ -1,20 +1,26 @@
 import { v4 as uuidv4 } from "uuid";
+import { ClockUtils, type ClockSettings } from "../clock/utils.ts";
 import { DifficultiesUtils, type Difficulty } from "../difficulties/utils.ts";
 import { FactsUtils } from "../facts/utils.ts";
 import type { LeitnerBoxes } from "../leitner/utils.ts";
 import type { Tracks } from "../levels/utils.ts";
 import { OperationsUtils, type ArithmeticOperation, type Operation } from "../operations/utils.ts";
 import { QuestionsUtils, type AnswerLayout, type PracticeMode } from "../questions/utils.ts";
+import type { Records } from "../records/utils.ts";
 import { StatsUtils, type PracticeStats } from "../stats/utils.ts";
 import { WalletUtils, type Wallet } from "../wallet/utils.ts";
 
 export interface ArithmeticSettings {
     difficulty: Difficulty;
     layout: AnswerLayout;
+    clock: ClockSettings;
 }
 
 export interface TablesSettings {
     tables: number[];
+    // No multiple choice: every answer is typed, even for facts still being learnt.
+    isAlwaysTyped: boolean;
+    clock: ClockSettings;
 }
 
 export interface MultiplicationSettings extends TablesSettings {
@@ -23,7 +29,6 @@ export interface MultiplicationSettings extends TablesSettings {
 
 export interface ProfileSettings {
     operation: Operation;
-    isTimerEnabled: boolean;
     addition: ArithmeticSettings;
     subtraction: ArithmeticSettings;
     multiplication: MultiplicationSettings;
@@ -42,6 +47,7 @@ export interface Profile {
     // The highest difficulty open in each operation; every one below it stays open.
     unlockedDifficulties: Record<ArithmeticOperation, Difficulty>;
     wallet: Wallet;
+    records: Records;
     stats: PracticeStats;
 }
 
@@ -55,7 +61,7 @@ export type ProfileNameProblem = "empty" | "too-long" | "taken";
 
 export class ProfilesUtils {
     public static getDataVersion(): number {
-        return 2;
+        return 3;
     }
 
     public static getMaxNameLength(): number {
@@ -67,15 +73,23 @@ export class ProfilesUtils {
     }
 
     public static createDefaultSettings(): ProfileSettings {
-        const arithmetic: ArithmeticSettings = { difficulty: DifficultiesUtils.getDefaultDifficulty(), layout: QuestionsUtils.getDefaultLayout() };
+        const arithmetic: ArithmeticSettings = {
+            difficulty: DifficultiesUtils.getDefaultDifficulty(),
+            layout: QuestionsUtils.getDefaultLayout(),
+            clock: ClockUtils.createDefault()
+        };
+        const tables: TablesSettings = { tables: FactsUtils.getDefaultTables(), isAlwaysTyped: false, clock: ClockUtils.createDefault() };
         return {
             operation: OperationsUtils.getDefaultOperation(),
-            isTimerEnabled: false,
             addition: arithmetic,
             subtraction: arithmetic,
-            multiplication: { tables: FactsUtils.getDefaultTables(), mode: QuestionsUtils.getDefaultMode() },
-            division: { tables: FactsUtils.getDefaultTables() }
+            multiplication: { ...tables, mode: QuestionsUtils.getDefaultMode() },
+            division: tables
         };
+    }
+
+    public static getClock(settings: ProfileSettings): ClockSettings {
+        return settings[settings.operation].clock;
     }
 
     public static createProfile(name: string): Profile {
@@ -88,6 +102,7 @@ export class ProfilesUtils {
             tracks: {},
             unlockedDifficulties: { addition: DifficultiesUtils.getDefaultDifficulty(), subtraction: DifficultiesUtils.getDefaultDifficulty() },
             wallet: WalletUtils.createInitial(),
+            records: {},
             stats: StatsUtils.createEmpty()
         };
     }

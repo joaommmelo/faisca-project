@@ -56,6 +56,16 @@ describe("QuestionsUtils.buildMultiplication", () => {
     });
 });
 
+describe("always typing", () => {
+    it("never offers multiple choice, not even for new facts or their retries", () => {
+        const question: Question = QuestionsUtils.buildMultiplication(factSevenEight, { mode: "direct", boxes: {}, isAlwaysTyped: true });
+        const division: Question = QuestionsUtils.buildDivision(factSevenEight, { boxes: {}, isAlwaysTyped: true });
+        expect(question.format).toBe("keypad");
+        expect(division.format).toBe("keypad");
+        expect(QuestionsUtils.buildRetry(question).format).toBe("keypad");
+    });
+});
+
 describe("QuestionsUtils.buildDivision", () => {
     it("is always exact and trains the multiplication fact", () => {
         const random = createSeededRandom(12);
@@ -92,7 +102,14 @@ describe("QuestionsUtils.buildArithmetic", () => {
     });
 
     it("follows the skill box when only the result is asked", () => {
-        const base = { operation: "subtraction" as const, difficulty: "easy" as const, skill: "borrow" as const, left: 13, right: 7, layout: "result" as const };
+        const base = {
+            operation: "subtraction" as const,
+            difficulty: "easy" as const,
+            skill: "borrow" as const,
+            left: 13,
+            right: 7,
+            layout: "result" as const
+        };
         expect(QuestionsUtils.buildArithmetic({ ...base, skillBoxes: {} }).format).toBe("choice");
         expect(QuestionsUtils.buildArithmetic({ ...base, skillBoxes: { "subtraction:easy:borrow": 3 } }).format).toBe("keypad");
     });

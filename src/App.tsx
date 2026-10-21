@@ -45,10 +45,10 @@ export function App() {
         setData((current) => ProfilesUtils.updateActive(current, change));
     };
 
-    const finishSession = (outcome: Omit<SessionOutcome, "offer">): void => {
-        const finished: FinishSessionResult = ProgressionUtils.finishSession(activeProfile, moment());
+    const finishSession = (outcome: Omit<SessionOutcome, "offer" | "clock">): void => {
+        const finished: FinishSessionResult = ProgressionUtils.finishSession(activeProfile, moment(), outcome);
         updateActiveProfile(() => finished.profile);
-        setView({ name: "summary", outcome: { ...outcome, offer: finished.offer } });
+        setView({ name: "summary", outcome: { ...outcome, offer: finished.offer, clock: finished.clock } });
     };
 
     switch (view.name) {

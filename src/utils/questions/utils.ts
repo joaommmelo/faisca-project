@@ -27,6 +27,8 @@ export interface Question {
     kind: QuestionKind;
     answer: number;
     format: AnswerFormat;
+    // False when the child asked to always type the answer, or writes it in columns.
+    allowsChoice: boolean;
     options: number[];
     isRetry: boolean;
     // The Leitner box this question trains: a fact ("7x8") for × and ÷, a skill ("addition:easy:carry") for + and −.
@@ -37,11 +39,13 @@ export interface Question {
 export interface BuildMultiplicationOptions {
     mode: PracticeMode;
     boxes: LeitnerBoxes;
+    isAlwaysTyped?: boolean;
     random?: RandomSource;
 }
 
 export interface BuildDivisionOptions {
     boxes: LeitnerBoxes;
+    isAlwaysTyped?: boolean;
     random?: RandomSource;
 }
 
@@ -90,6 +94,11 @@ export class QuestionsUtils {
         return box >= this.getKeypadMinBox() ? "keypad" : "choice";
     }
 
+    // Multiplication and division follow the fact's box, unless the child always types the answer.
+    public static getTablesAnswerFormat(box: number, isAlwaysTyped: boolean): AnswerFormat {
+        return isAlwaysTyped ? "keypad" : this.getAnswerFormat(box);
+    }
+
     public static getQuestionId(operation: Operation, left: number, right: number, kind: QuestionKind): string {
         return `${operation}:${left}${OperationsUtils.getSymbol(operation)}${right}:${kind}`;
     }
@@ -123,7 +132,8 @@ export class QuestionsUtils {
                 result: fact.product,
                 kind,
                 answer,
-                format: this.getAnswerFormat(LeitnerUtils.getBox(options.boxes, fact.id)),
+                format: this.getTablesAnswerFormat(LeitnerUtils.getBox(options.boxes, fact.id), options.isAlwaysTyped === true),
+                allowsChoice: options.isAlwaysTyped !== true,
                 options: [],
                 isRetry: false,
                 boxKey: fact.id,
@@ -147,7 +157,8 @@ export class QuestionsUtils {
                 result: quotient,
                 kind: "direct",
                 answer: quotient,
-                format: this.getAnswerFormat(LeitnerUtils.getBox(options.boxes, fact.id)),
+                format: this.getTablesAnswerFormat(LeitnerUtils.getBox(options.boxes, fact.id), options.isAlwaysTyped === true),
+                allowsChoice: options.isAlwaysTyped !== true,
                 options: [],
                 isRetry: false,
                 boxKey: fact.id,
@@ -173,6 +184,7 @@ export class QuestionsUtils {
                 kind: "direct",
                 answer: result,
                 format,
+                allowsChoice: options.layout !== "vertical",
                 options: [],
                 isRetry: false,
                 boxKey,
@@ -182,10 +194,15 @@ export class QuestionsUtils {
         );
     }
 
-    // The retry asks exactly the same thing again. After a miss the box is back at 1, so it comes as multiple
-    // choice, unless the child is writing the sum in columns.
+    // The retry asks exactly the same thing again. After a miss the box is low, so it comes as multiple choice,
+    // unless the child writes the sum in columns or always types the answer.
     public static buildRetry(question: Question, random: RandomSource = Math.random): Question {
-        const format: AnswerFormat = question.format === "vertical" ? "vertical" : "choice";
+        const format: AnswerFormat = (() => {
+            if (question.format === "vertical") {
+                return "vertical";
+            }
+            return question.allowsChoice ? "choice" : "keypad";
+        })();
         return this.withOptions({ ...question, format, isRetry: true }, random);
     }
 

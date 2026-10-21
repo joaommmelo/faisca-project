@@ -1,6 +1,7 @@
 import moment from "moment";
 import { useEffect, useEffectEvent, useId, useRef, useState, type ReactNode } from "react";
 import { ChoiceOptions } from "../components/ChoiceOptions.tsx";
+import { CoinStatus } from "../components/CoinStatus.tsx";
 import { Equation } from "../components/Equation.tsx";
 import { FeedbackSheet } from "../components/FeedbackSheet.tsx";
 import { HelpButton, type HelpControl } from "../components/HelpButton.tsx";
@@ -8,14 +9,17 @@ import { HintBubble } from "../components/HintBubble.tsx";
 import { CloseIcon } from "../components/Icons.tsx";
 import { KeypadAnswer } from "../components/KeypadAnswer.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
-import { Stopwatch } from "../components/Stopwatch.tsx";
+import { SessionClock } from "../components/SessionClock.tsx";
 import { TryAgainNote } from "../components/TryAgainNote.tsx";
 import { VerticalAnswer } from "../components/VerticalAnswer.tsx";
+import { ClockUtils, type ClockSettings } from "../utils/clock/utils.ts";
 import { HelpsUtils, type HelpUnavailableReason } from "../utils/helps/utils.ts";
 import { Messages } from "../utils/messages.ts";
-import type { Profile } from "../utils/profiles/utils.ts";
+import { OperationsUtils } from "../utils/operations/utils.ts";
+import { ProfilesUtils, type Profile } from "../utils/profiles/utils.ts";
 import { ProgressionUtils, type Milestone } from "../utils/progression/utils.ts";
 import type { Question } from "../utils/questions/utils.ts";
+import { RecordsUtils } from "../utils/records/utils.ts";
 import { SessionUtils, type AnswerRecord, type AttemptOutcome, type Session, type SessionOutcome } from "../utils/session/utils.ts";
 import { VerticalUtils } from "../utils/vertical/utils.ts";
 import { WalletUtils } from "../utils/wallet/utils.ts";
@@ -26,7 +30,7 @@ const PRAISE_DISPLAY_MILLISECONDS: number = 1000;
 interface SessionScreenProps {
     profile: Profile;
     onProfileChange: (profile: Profile) => void;
-    onFinish: (outcome: Omit<SessionOutcome, "offer">) => void;
+    onFinish: (outcome: Omit<SessionOutcome, "offer" | "clock">) => void;
     onExit: () => void;
 }
 
@@ -35,14 +39,19 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
     const questionHeadingRef = useRef<HTMLHeadingElement>(null);
     const [session, setSession] = useState<Session>(() => SessionUtils.create(profile));
     const [startedAt] = useState<number>(() => moment().valueOf());
+    // Read once: the record only changes when this session ends.
+    const [recordMilliseconds] = useState<number | null>(() => RecordsUtils.getBest(profile.records, RecordsUtils.getCategory(profile.settings)));
     const [answerMilestones, setAnswerMilestones] = useState<Milestone[]>([]);
     const [sessionMilestones, setSessionMilestones] = useState<Milestone[]>([]);
+    const [coinFlightKey, setCoinFlightKey] = useState<number | null>(null);
+    const [hiddenOptions, setHiddenOptions] = useState<number[]>([]);
     const [tryAgainText, setTryAgainText] = useState<string | null>(null);
     const [tryAgainCount, setTryAgainCount] = useState<number>(0);
     const [isExitConfirmOpen, setIsExitConfirmOpen] = useState<boolean>(false);
 
     const question: Question = SessionUtils.getCurrentQuestion(session);
     const record: AnswerRecord | null = SessionUtils.getCurrentRecord(session);
+    const clock: ClockSettings = ProfilesUtils.getClock(profile.settings);
     const isAutoAdvancing: boolean = record !== null && record.isCorrect && answerMilestones.length === 0;
 
     const submitAnswer = (givenAnswer: number): AttemptOutcome => {
@@ -50,9 +59,7 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
         setSession(result.session);
         if (result.record === null) {
             const wrongColumnCount: number =
-                question.format === "vertical"
-                    ? VerticalUtils.getWrongColumns(givenAnswer, question.answer, VerticalUtils.getColumnCount(question)).length
-                    : 0;
+                question.format === "vertical" ? VerticalUtils.getWrongColumns(givenAnswer, question.answer, VerticalUtils.getColumnCount(question)).length : 0;
             setTryAgainText(Messages.getTryAgain(question, tryAgainCount, wrongColumnCount));
             setTryAgainCount(tryAgainCount + 1);
             return result.outcome;
@@ -62,6 +69,9 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
         onProfileChange(applied.profile);
         setAnswerMilestones(applied.milestones);
         setSessionMilestones([...sessionMilestones, ...applied.milestones]);
+        if (applied.milestones.some((milestone) => milestone.kind === "coin")) {
+            setCoinFlightKey(session.records.length);
+        }
         setTryAgainText(null);
         return result.outcome;
     };
@@ -79,12 +89,13 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
         if (SessionUtils.isFinished(nextSession)) {
             onFinish({
                 summary: SessionUtils.getSummary(nextSession),
-                elapsedMilliseconds: profile.settings.isTimerEnabled ? moment().diff(startedAt) : null,
+                elapsedMilliseconds: clock.isEnabled ? moment().diff(startedAt) : null,
                 milestones: sessionMilestones
             });
             return;
         }
         setAnswerMilestones([]);
+        setHiddenOptions([]);
         setTryAgainText(null);
         setSession(nextSession);
     };
@@ -108,21 +119,36 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
 
     const unavailableReason: HelpUnavailableReason | null = HelpsUtils.getUnavailableReason(session, profile.wallet);
     const helpControl: HelpControl = {
-        canUse: HelpsUtils.canUse(session, question, profile.wallet),
+        canUse: HelpsUtils.canUse(session, profile.wallet),
         isPaid: session.isCurrentHelped,
         unavailableText: unavailableReason === null ? null : Messages.getHelpUnavailable(unavailableReason),
         onUse: requestHelp
     };
-    // Typed multiplications and divisions get one step: a neighbouring fact. Columns have their own steps.
-    const keypadHelp: ReactNode = (() => {
-        if (question.format !== "keypad" || !HelpsUtils.isAvailableFor(question) || record !== null) {
+
+    // One-step helps: two options fewer, a first step for + and −, a neighbouring fact for × and ÷.
+    // Columns have their own steps inside VerticalAnswer.
+    const oneStepHelp: ReactNode = (() => {
+        if (record !== null) {
             return null;
         }
-        if (session.isCurrentHelped) {
-            return <HintBubble text={Messages.getNeighbourHint(HelpsUtils.getNeighbourFact(question, profile.boxes))} />;
+        if (!session.isCurrentHelped) {
+            return <HelpButton control={helpControl} />;
         }
-        return <HelpButton control={helpControl} />;
+        if (question.format === "choice") {
+            return <HintBubble text={Messages.getChoiceHint()} />;
+        }
+        if (OperationsUtils.isArithmetic(question.operation)) {
+            return <HintBubble text={Messages.getArithmeticHint(question, HelpsUtils.getArithmeticHint(question))} />;
+        }
+        return <HintBubble text={Messages.getNeighbourHint(HelpsUtils.getNeighbourFact(question, profile.boxes))} />;
     })();
+    const useChoiceHelp: HelpControl = {
+        ...helpControl,
+        onUse: () => {
+            setHiddenOptions(HelpsUtils.getOptionsToHide(question, session.missedAttempts));
+            requestHelp();
+        }
+    };
 
     return (
         <main className={`screen screen--session screen--${question.operation}`}>
@@ -137,7 +163,7 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
                         `Pergunta ${SessionUtils.getFirstTryPosition(session)} de ${SessionUtils.getFirstTryTotal(session)}`
                     )}
                 </p>
-                {profile.settings.isTimerEnabled ? <Stopwatch startedAt={startedAt} /> : <span />}
+                <CoinStatus wallet={profile.wallet} flightKey={coinFlightKey} />
             </header>
 
             <div
@@ -150,6 +176,15 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
             >
                 <div className="progress-bar__fill" style={{ transform: `scaleX(${session.records.length / session.questions.length})` }} />
             </div>
+
+            {clock.isEnabled && (
+                <SessionClock
+                    startedAt={startedAt}
+                    settings={clock}
+                    referenceMilliseconds={ClockUtils.getReferenceMilliseconds(clock, recordMilliseconds)}
+                    hasRecord={recordMilliseconds !== null}
+                />
+            )}
 
             {isExitConfirmOpen ? (
                 <section className="card stack" role="alertdialog" aria-labelledby={exitTitleId}>
@@ -175,7 +210,7 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
                         <VerticalAnswer key={session.currentIndex} question={question} record={record} help={helpControl} onSubmit={submitAnswer} />
                     )}
                     {question.format === "keypad" && (
-                        <KeypadAnswer key={session.currentIndex} question={question} record={record} help={keypadHelp} onSubmit={submitAnswer} />
+                        <KeypadAnswer key={session.currentIndex} question={question} record={record} help={oneStepHelp} onSubmit={submitAnswer} />
                     )}
                     {question.format === "choice" && (
                         <>
@@ -184,15 +219,19 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
                                 options={question.options}
                                 answer={question.answer}
                                 missedAttempts={session.missedAttempts}
+                                hiddenOptions={hiddenOptions}
                                 record={record}
                                 onChoose={submitAnswer}
                             />
+                            {record === null && !session.isCurrentHelped ? <HelpButton control={useChoiceHelp} /> : oneStepHelp}
                         </>
                     )}
                     {tryAgainText !== null && record === null && <TryAgainNote key={tryAgainCount} text={tryAgainText} />}
                     {record !== null && (
                         <>
-                            {isAutoAdvancing && <button type="button" className="tap-to-continue" tabIndex={-1} aria-hidden="true" onClick={goToNextQuestion} />}
+                            {isAutoAdvancing && (
+                                <button type="button" className="tap-to-continue" tabIndex={-1} aria-hidden="true" onClick={goToNextQuestion} />
+                            )}
                             <FeedbackSheet
                                 key={session.currentIndex}
                                 feedback={Messages.getFeedback(record, { variant: session.records.length, hasRetryAhead: SessionUtils.hasRetryAhead(session) })}

@@ -75,9 +75,51 @@ describe("StorageUtils.load", () => {
         expect(profile.boxes).toEqual({ "7x8": 4, "3x3": 5 });
         expect(profile.stats).toEqual(versionOneData.profiles[0].stats);
         expect(profile.settings.operation).toBe("multiplication");
-        expect(profile.settings.multiplication).toEqual({ tables: [3, 7], mode: "mixed" });
-        expect(profile.settings.isTimerEnabled).toBe(true);
+        expect(profile.settings.multiplication).toMatchObject({ tables: [3, 7], mode: "mixed", isAlwaysTyped: false });
+        expect(profile.settings.multiplication.clock).toEqual({ isEnabled: true, direction: "up", reference: "default" });
         expect(profile.wallet).toEqual({ coins: 3, points: 0 });
+        expect(profile.records).toEqual({});
+    });
+
+    it("migrates v2 progress, giving every operation the old timer setting", () => {
+        const versionTwo = {
+            version: 2,
+            activeProfileId: "tomas-id",
+            profiles: [
+                {
+                    id: "tomas-id",
+                    name: "Tomás",
+                    settings: {
+                        operation: "subtraction",
+                        isTimerEnabled: false,
+                        addition: { difficulty: "medium", layout: "vertical" },
+                        subtraction: { difficulty: "hard", layout: "result" },
+                        multiplication: { tables: [7], mode: "direct" },
+                        division: { tables: [7, 8] }
+                    },
+                    boxes: { "7x8": 3 },
+                    skillBoxes: { "subtraction:hard:borrow": 4 },
+                    tracks: { "subtraction:hard": { level: 3, points: 12, recentAnswers: [], answersSinceSafetyNet: 2 } },
+                    unlockedDifficulties: { addition: "medium", subtraction: "hard" },
+                    wallet: { coins: 4, points: 6 },
+                    stats: versionOneData.profiles[0].stats
+                }
+            ]
+        };
+        stubStorage({ [StorageUtils.getStorageKey()]: JSON.stringify(versionTwo) });
+        const profile: Profile = StorageUtils.load().data.profiles[0];
+
+        expect(profile.settings.operation).toBe("subtraction");
+        expect(profile.settings.addition).toEqual({
+            difficulty: "medium",
+            layout: "vertical",
+            clock: { isEnabled: false, direction: "up", reference: "default" }
+        });
+        expect(profile.settings.division).toMatchObject({ tables: [7, 8], isAlwaysTyped: false });
+        expect(profile.skillBoxes).toEqual(versionTwo.profiles[0].skillBoxes);
+        expect(profile.tracks).toEqual(versionTwo.profiles[0].tracks);
+        expect(profile.unlockedDifficulties).toEqual({ addition: "medium", subtraction: "hard" });
+        expect(profile.wallet).toEqual({ coins: 4, points: 6 });
     });
 
     it("reports storage the browser blocks and keeps working", () => {

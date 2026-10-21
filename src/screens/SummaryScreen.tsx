@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Celebration } from "../components/Celebration.tsx";
-import { CoinIcon, StarIcon } from "../components/Icons.tsx";
+import { ClockIcon, CoinIcon, StarIcon } from "../components/Icons.tsx";
 import { Mascot, MascotMessage } from "../components/Mascot.tsx";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
 import { Messages, type OfferText } from "../utils/messages.ts";
@@ -22,6 +22,7 @@ export function SummaryScreen({ outcome, onAcceptOffer, onPlayAgain, onShowProgr
     const { summary, offer } = outcome;
     const coinsEarned: number = outcome.milestones.filter((milestone) => milestone.kind === "coin").length;
     const levelUps: Milestone[] = outcome.milestones.filter((milestone) => milestone.kind === "level-up");
+    const isNewRecord: boolean = outcome.clock !== null && outcome.clock.isNewRecord;
 
     return (
         <main className="screen screen--summary">
@@ -42,16 +43,35 @@ export function SummaryScreen({ outcome, onAcceptOffer, onPlayAgain, onShowProgr
                 </p>
                 <p className="score__label">certas à primeira</p>
                 {summary.helpedCount > 0 && <p className="score__time">{Messages.getHelpedCount(summary.helpedCount)}</p>}
-                {outcome.elapsedMilliseconds !== null && <p className="score__time">Tempo: {TimeUtils.formatElapsed(outcome.elapsedMilliseconds)}</p>}
             </section>
 
-            {(coinsEarned > 0 || levelUps.length > 0) && (
+            {outcome.clock !== null && (
+                <section className={isNewRecord ? "card clock-result clock-result--record" : "card clock-result"} aria-label="Tempo">
+                    <p className="clock-result__time">
+                        <ClockIcon />
+                        {TimeUtils.formatElapsed(outcome.clock.elapsedMilliseconds)}
+                    </p>
+                    {Messages.getClockOutcomeLines(outcome.clock).map((line) => (
+                        <p key={line} className="clock-result__line">
+                            {line}
+                        </p>
+                    ))}
+                </section>
+            )}
+
+            {(coinsEarned > 0 || levelUps.length > 0 || isNewRecord) && (
                 <section className="card rewards" aria-label="Conquistas deste jogo">
                     <ul className="milestones milestones--summary">
                         {coinsEarned > 0 && (
                             <li className="milestone milestone--coin">
                                 <CoinIcon />
                                 {coinsEarned === 1 ? "Ganhaste 1 moeda!" : `Ganhaste ${coinsEarned} moedas!`}
+                            </li>
+                        )}
+                        {isNewRecord && (
+                            <li className="milestone milestone--record">
+                                <StarIcon />
+                                Novo recorde!
                             </li>
                         )}
                         {levelUps.map((milestone, index) => (

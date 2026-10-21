@@ -1,6 +1,7 @@
 import { FactsUtils } from "../facts/utils.ts";
 import { LeitnerUtils, type LeitnerBoxes } from "../leitner/utils.ts";
 import type { Question } from "../questions/utils.ts";
+import { RandomUtils, type RandomSource } from "../random/utils.ts";
 import type { Session } from "../session/utils.ts";
 import type { VerticalColumn } from "../vertical/utils.ts";
 import { WalletUtils, type Wallet } from "../wallet/utils.ts";
@@ -15,6 +16,9 @@ export interface NeighbourFact {
     result: number;
 }
 
+// For a typed addition or subtraction: one easy step first (37 + 20 = 57, then + 5), or where to start counting.
+export type ArithmeticHint = { kind: "split"; firstStep: NeighbourFact; remaining: number } | { kind: "count"; start: number; steps: number; unit: 1 | 10 };
+
 // Why the help button is off: the piggy bank is empty, or this session's helps are used up.
 export type HelpUnavailableReason = "no-coins" | "limit";
 
@@ -23,18 +27,13 @@ export class HelpsUtils {
         return 3;
     }
 
-    // Columns in additions and subtractions, typed answers in multiplication and division. Multiple choice never.
-    public static isAvailableFor(question: Question): boolean {
-        if (question.format === "vertical") {
-            return true;
-        }
-        return question.format === "keypad" && (question.operation === "multiplication" || question.operation === "division");
+    // Multiple choice keeps the answer and one other option.
+    public static getOptionsLeftByHelp(): number {
+        return 2;
     }
 
-    public static canUse(session: Session, question: Question, wallet: Wallet): boolean {
-        if (!this.isAvailableFor(question)) {
-            return false;
-        }
+    // Every question has a help: fewer options, a first step, a neighbouring fact, or the column steps.
+    public static canUse(session: Session, wallet: Wallet): boolean {
         if (session.isCurrentHelped) {
             return true;
         }
@@ -49,6 +48,36 @@ export class HelpsUtils {
             return "limit";
         }
         return WalletUtils.canSpend(wallet) ? null : "no-coins";
+    }
+
+    // Hides wrong options not tried yet until only the answer and one other remain visible.
+    public static getOptionsToHide(question: Question, missedAttempts: number[], random: RandomSource = Math.random): number[] {
+        const untriedWrong: number[] = question.options.filter((option) => option !== question.answer && !missedAttempts.includes(option));
+        const visibleCount: number = untriedWrong.length + 1;
+        const hideCount: number = Math.max(visibleCount - this.getOptionsLeftByHelp(), 0);
+        return RandomUtils.shuffle(untriedWrong, random).slice(0, hideCount);
+    }
+
+    // Splits the number added or taken away so the first step is easy and the rest is small; never the answer itself.
+    public static getArithmeticHint(question: Question): ArithmeticHint {
+        const sign: number = question.operation === "addition" ? 1 : -1;
+        const { left, right } = question;
+        const units: number = right % 10;
+        if (right >= 10 && units === 0) {
+            return { kind: "count", start: left, steps: right / 10, unit: 10 };
+        }
+        if (right >= 10) {
+            const firstPart: number = right - units;
+            return { kind: "split", firstStep: { left, right: firstPart, result: left + sign * firstPart }, remaining: units };
+        }
+
+        // A single digit that crosses a ten goes to the ten first: 8 + 5 = 8 + 2 + 3; 13 − 7 = 13 − 3 − 4.
+        const toTen: number = sign === 1 ? 10 - (left % 10) : left % 10;
+        const crossesTen: boolean = toTen > 0 && toTen < right;
+        if (crossesTen) {
+            return { kind: "split", firstStep: { left, right: toTen, result: left + sign * toTen }, remaining: right - toTen };
+        }
+        return { kind: "count", start: left, steps: right, unit: 1 };
     }
 
     public static getVerticalSteps(column: VerticalColumn): VerticalHelpStep[] {

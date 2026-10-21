@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createSeededRandom } from "../../test/random.ts";
 import { FactsUtils, type Fact } from "../facts/utils.ts";
 import { QuestionsUtils, type Question } from "../questions/utils.ts";
 import type { Session } from "../session/utils.ts";
@@ -14,20 +15,74 @@ function freshSession(question: Question, helpsUsed: number = 0): Session {
 const keypadMultiplication: Question = { ...QuestionsUtils.buildMultiplication(factSevenEight, { mode: "direct", boxes: { "7x8": 4 } }), left: 7, right: 8 };
 
 describe("HelpsUtils.canUse", () => {
-    it("never helps with multiple choice", () => {
-        const choice: Question = QuestionsUtils.buildMultiplication(factSevenEight, { mode: "direct", boxes: {} });
-        expect(HelpsUtils.canUse(freshSession(choice), choice, { coins: 5, points: 0 })).toBe(false);
-    });
-
     it("costs a coin and stops at the session limit", () => {
-        expect(HelpsUtils.canUse(freshSession(keypadMultiplication), keypadMultiplication, { coins: 1, points: 0 })).toBe(true);
-        expect(HelpsUtils.canUse(freshSession(keypadMultiplication), keypadMultiplication, { coins: 0, points: 9 })).toBe(false);
-        expect(HelpsUtils.canUse(freshSession(keypadMultiplication, HelpsUtils.getMaxHelpsPerSession()), keypadMultiplication, { coins: 5, points: 0 })).toBe(false);
+        expect(HelpsUtils.canUse(freshSession(keypadMultiplication), { coins: 1, points: 0 })).toBe(true);
+        expect(HelpsUtils.canUse(freshSession(keypadMultiplication), { coins: 0, points: 9 })).toBe(false);
+        expect(HelpsUtils.getUnavailableReason(freshSession(keypadMultiplication), { coins: 0, points: 9 })).toBe("no-coins");
+        expect(HelpsUtils.canUse(freshSession(keypadMultiplication, HelpsUtils.getMaxHelpsPerSession()), { coins: 5, points: 0 })).toBe(false);
+        expect(HelpsUtils.getUnavailableReason(freshSession(keypadMultiplication, HelpsUtils.getMaxHelpsPerSession()), { coins: 5, points: 0 })).toBe("limit");
     });
 
     it("keeps helping on a question already paid for", () => {
         const paid: Session = { ...freshSession(keypadMultiplication, HelpsUtils.getMaxHelpsPerSession()), isCurrentHelped: true };
-        expect(HelpsUtils.canUse(paid, keypadMultiplication, { coins: 0, points: 0 })).toBe(true);
+        expect(HelpsUtils.canUse(paid, { coins: 0, points: 0 })).toBe(true);
+    });
+});
+
+describe("HelpsUtils.getOptionsToHide", () => {
+    const choice: Question = {
+        ...QuestionsUtils.buildMultiplication(factSevenEight, { mode: "direct", boxes: {} }),
+        left: 7,
+        right: 8,
+        options: [48, 56, 63, 65],
+        answer: 56
+    };
+
+    it("takes away 2 of the 4 options, never the answer", () => {
+        const hidden: number[] = HelpsUtils.getOptionsToHide(choice, [], createSeededRandom(1));
+        expect(hidden).toHaveLength(2);
+        expect(hidden).not.toContain(56);
+    });
+
+    it("after a miss leaves the answer and one other untried option", () => {
+        const hidden: number[] = HelpsUtils.getOptionsToHide(choice, [48], createSeededRandom(2));
+        expect(hidden).toHaveLength(1);
+        expect(hidden).not.toContain(56);
+        expect(hidden).not.toContain(48);
+    });
+});
+
+describe("HelpsUtils.getArithmeticHint", () => {
+    const build = (operation: "addition" | "subtraction", left: number, right: number): Question =>
+        QuestionsUtils.buildArithmetic({ operation, difficulty: "medium", skill: "carry", left, right, layout: "result", skillBoxes: {} });
+
+    it("adds the tens first and leaves the units", () => {
+        expect(HelpsUtils.getArithmeticHint(build("addition", 37, 25))).toEqual({
+            kind: "split",
+            firstStep: { left: 37, right: 20, result: 57 },
+            remaining: 5
+        });
+        expect(HelpsUtils.getArithmeticHint(build("subtraction", 52, 27))).toEqual({
+            kind: "split",
+            firstStep: { left: 52, right: 20, result: 32 },
+            remaining: 7
+        });
+    });
+
+    it("goes to the ten first when a single digit crosses it", () => {
+        expect(HelpsUtils.getArithmeticHint(build("addition", 8, 5))).toEqual({ kind: "split", firstStep: { left: 8, right: 2, result: 10 }, remaining: 3 });
+        expect(HelpsUtils.getArithmeticHint(build("subtraction", 13, 7))).toEqual({
+            kind: "split",
+            firstStep: { left: 13, right: 3, result: 10 },
+            remaining: 4
+        });
+    });
+
+    it("says where to start counting otherwise, and never gives the answer", () => {
+        expect(HelpsUtils.getArithmeticHint(build("addition", 3, 4))).toEqual({ kind: "count", start: 3, steps: 4, unit: 1 });
+        expect(HelpsUtils.getArithmeticHint(build("addition", 7, 3))).toEqual({ kind: "count", start: 7, steps: 3, unit: 1 });
+        expect(HelpsUtils.getArithmeticHint(build("subtraction", 20, 7))).toEqual({ kind: "count", start: 20, steps: 7, unit: 1 });
+        expect(HelpsUtils.getArithmeticHint(build("addition", 37, 20))).toEqual({ kind: "count", start: 37, steps: 2, unit: 10 });
     });
 });
 
@@ -44,7 +99,15 @@ describe("HelpsUtils.getNeighbourFact", () => {
 
 describe("HelpsUtils.getVerticalSteps", () => {
     it("shows the carry or the borrow only where there is one", () => {
-        const addition: Question = QuestionsUtils.buildArithmetic({ operation: "addition", difficulty: "medium", skill: "carry", left: 37, right: 25, layout: "vertical", skillBoxes: {} });
+        const addition: Question = QuestionsUtils.buildArithmetic({
+            operation: "addition",
+            difficulty: "medium",
+            skill: "carry",
+            left: 37,
+            right: 25,
+            layout: "vertical",
+            skillBoxes: {}
+        });
         const [units, tens] = VerticalUtils.getColumns(addition);
         expect(HelpsUtils.getVerticalSteps(units)).toEqual(["column", "digit"]);
         expect(HelpsUtils.getVerticalSteps(tens)).toEqual(["column", "marks", "digit"]);

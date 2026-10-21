@@ -11,6 +11,7 @@ const question: Question = {
     kind: "direct",
     answer: 56,
     format: "choice",
+    allowsChoice: true,
     options: [48, 56, 63, 65],
     isRetry: false,
     boxKey: "7x8",
@@ -52,8 +53,12 @@ describe("Messages.getSpokenQuestion", () => {
         expect(Messages.getSpokenQuestion(question)).toBe("Quanto é 7 vezes 8?");
         expect(Messages.getSpokenQuestion({ ...question, kind: "missing-left", answer: 7 })).toBe("Que número vezes 8 dá 56?");
         expect(Messages.getSpokenQuestion({ ...question, kind: "missing-right", answer: 8 })).toBe("7 vezes que número dá 56?");
-        expect(Messages.getSpokenQuestion({ ...question, operation: "division", left: 56, right: 7, result: 8, answer: 8 })).toBe("Quanto é 56 a dividir por 7?");
-        expect(Messages.getSpokenQuestion({ ...question, operation: "subtraction", left: 52, right: 27, result: 25, answer: 25 })).toBe("Quanto é 52 menos 27?");
+        expect(Messages.getSpokenQuestion({ ...question, operation: "division", left: 56, right: 7, result: 8, answer: 8 })).toBe(
+            "Quanto é 56 a dividir por 7?"
+        );
+        expect(Messages.getSpokenQuestion({ ...question, operation: "subtraction", left: 52, right: 27, result: 25, answer: 25 })).toBe(
+            "Quanto é 52 menos 27?"
+        );
     });
 });
 
@@ -70,5 +75,38 @@ describe("Messages.getSummaryHeadline", () => {
         expect(Messages.getSummaryHeadline(10, 10)).toBe("Perfeito! Acertaste todas!");
         expect(Messages.getSummaryHeadline(7, 10)).toBe("Muito bem! Estás a melhorar!");
         expect(Messages.getSummaryHeadline(2, 10)).toBe("Boa prática! Cada jogo ajuda a aprender.");
+    });
+});
+
+describe("Messages.getClockOutcomeLines", () => {
+    const base = {
+        elapsedMilliseconds: 72_000,
+        referenceMilliseconds: 180_000,
+        isAgainstRecord: false,
+        isWithinReference: true,
+        isPerfect: true,
+        isNewRecord: false,
+        previousRecordMilliseconds: null
+    };
+
+    it("celebrates a first or a new record", () => {
+        expect(Messages.getClockOutcomeLines({ ...base, isNewRecord: true })).toEqual(["Primeiro recorde nesta categoria!"]);
+        expect(Messages.getClockOutcomeLines({ ...base, isNewRecord: true, previousRecordMilliseconds: 80_000 })).toEqual(["Novo recorde! Antes era 1:20."]);
+    });
+
+    it("compares with the record or the default time without blame", () => {
+        const slowerThanRecord = {
+            ...base,
+            elapsedMilliseconds: 75_000,
+            referenceMilliseconds: 72_000,
+            isAgainstRecord: true,
+            isWithinReference: false,
+            previousRecordMilliseconds: 72_000
+        };
+        expect(Messages.getClockOutcomeLines(slowerThanRecord)).toEqual(["Ficaste a 0:03 do teu recorde, 1:12. Para a próxima!"]);
+        expect(Messages.getClockOutcomeLines({ ...base, elapsedMilliseconds: 190_000, isWithinReference: false, isPerfect: false })).toEqual([
+            "Mais 0:10 do que os 3 minutos. Para a próxima!",
+            "Os recordes contam quando acertas todas à primeira."
+        ]);
     });
 });
