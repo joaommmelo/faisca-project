@@ -11,7 +11,7 @@ function verticalQuestion(operation: "addition" | "subtraction", left: number, r
         left,
         right,
         layout: "vertical",
-        skillBoxes: {}
+        recentSkillAnswers: {}
     });
 }
 

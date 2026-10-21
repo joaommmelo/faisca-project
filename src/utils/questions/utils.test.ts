@@ -2,9 +2,13 @@ import { describe, expect, it } from "vitest";
 import { createSeededRandom } from "../../test/random.ts";
 import { FactsUtils, type Fact } from "../facts/utils.ts";
 import type { LeitnerBoxes } from "../leitner/utils.ts";
-import { QuestionsUtils, type PracticeMode, type Question } from "./utils.ts";
+import { QuestionsUtils, type PracticeMode, type Question, type RecentSkillAnswers } from "./utils.ts";
 
 const factSevenEight: Fact = FactsUtils.getAll().find((fact) => fact.id === "7x8") as Fact;
+
+function answers(count: number, isCorrect: boolean): boolean[] {
+    return Array.from({ length: count }, () => isCorrect);
+}
 
 function buildMany(count: number, mode: PracticeMode, boxes: LeitnerBoxes = {}): Question[] {
     const random = createSeededRandom(99);
@@ -94,7 +98,7 @@ describe("QuestionsUtils.buildForSkill", () => {
             left: 37,
             right: 25,
             layout: "vertical",
-            skillBoxes: {}
+            recentSkillAnswers: {}
         });
         expect(question.answer).toBe(62);
         expect(question.format).toBe("vertical");
@@ -102,7 +106,7 @@ describe("QuestionsUtils.buildForSkill", () => {
         expect(question.trackId).toBe("addition:medium");
     });
 
-    it("follows the skill box when only the result is asked", () => {
+    it("follows the skill's last answers when only the result is asked", () => {
         const base = {
             operation: "subtraction" as const,
             difficulty: "easy" as const,
@@ -111,8 +115,37 @@ describe("QuestionsUtils.buildForSkill", () => {
             right: 7,
             layout: "result" as const
         };
-        expect(QuestionsUtils.buildForSkill({ isAlwaysTyped: false, ...base, skillBoxes: {} }).format).toBe("choice");
-        expect(QuestionsUtils.buildForSkill({ isAlwaysTyped: false, ...base, skillBoxes: { "subtraction:easy:borrow": 3 } }).format).toBe("keypad");
+        const eightOfTen: RecentSkillAnswers = { "subtraction:easy:borrow": [...answers(8, true), ...answers(2, false)] };
+        expect(QuestionsUtils.buildForSkill({ isAlwaysTyped: false, ...base, recentSkillAnswers: {} }).format).toBe("choice");
+        expect(QuestionsUtils.buildForSkill({ isAlwaysTyped: false, ...base, recentSkillAnswers: eightOfTen }).format).toBe("keypad");
+    });
+});
+
+describe("QuestionsUtils.getSkillAnswerFormat", () => {
+    it("types a skill only once 8 of its last 10 answers are right", () => {
+        expect(QuestionsUtils.getSkillAnswerFormat({}, "addition:easy:carry")).toBe("choice");
+        expect(QuestionsUtils.getSkillAnswerFormat({ "addition:easy:carry": answers(7, true) }, "addition:easy:carry")).toBe("choice");
+        expect(QuestionsUtils.getSkillAnswerFormat({ "addition:easy:carry": answers(8, true) }, "addition:easy:carry")).toBe("keypad");
+    });
+
+    it("chooses again when the child starts missing", () => {
+        const typed: RecentSkillAnswers = { "addition:easy:carry": answers(10, true) };
+        const missed: RecentSkillAnswers = [false, false, false].reduce(
+            (recentSkillAnswers, isCorrect) => QuestionsUtils.recordSkillAnswer(recentSkillAnswers, "addition:easy:carry", isCorrect),
+            typed
+        );
+        expect(QuestionsUtils.getSkillAnswerFormat(typed, "addition:easy:carry")).toBe("keypad");
+        expect(QuestionsUtils.getSkillAnswerFormat(missed, "addition:easy:carry")).toBe("choice");
+    });
+});
+
+describe("QuestionsUtils.recordSkillAnswer", () => {
+    it("keeps the last 10 answers of that skill, oldest first, and leaves the others alone", () => {
+        const recentSkillAnswers: RecentSkillAnswers = { "addition:easy:carry": answers(10, true), "addition:easy:no-carry": [false] };
+        const recorded: RecentSkillAnswers = QuestionsUtils.recordSkillAnswer(recentSkillAnswers, "addition:easy:carry", false);
+        expect(recorded["addition:easy:carry"]).toEqual([...answers(9, true), false]);
+        expect(recorded["addition:easy:no-carry"]).toEqual([false]);
+        expect(recentSkillAnswers["addition:easy:carry"]).toEqual(answers(10, true));
     });
 });
 

@@ -6,6 +6,7 @@ import { LeitnerUtils, type LeitnerBoxes } from "../leitner/utils.ts";
 import { LevelsUtils, type RecentAnswer, type RecordTrackAnswerResult, type TrackProgress } from "../levels/utils.ts";
 import type { Operation } from "../operations/utils.ts";
 import { ProfilesUtils, type Profile } from "../profiles/utils.ts";
+import { QuestionsUtils, type RecentSkillAnswers } from "../questions/utils.ts";
 import { RecordsUtils, type RecordCategory, type RegisterTimeResult } from "../records/utils.ts";
 import { SessionUtils, type AnswerRecord, type SessionSummary } from "../session/utils.ts";
 import { StatsUtils } from "../stats/utils.ts";
@@ -91,6 +92,9 @@ export class ProgressionUtils {
         const isFact: boolean = question.boxType === "fact";
         const boxes: LeitnerBoxes = isFact ? LeitnerUtils.applyAnswer(profile.boxes, question.boxKey, isCorrect) : profile.boxes;
         const skillBoxes: LeitnerBoxes = isFact ? profile.skillBoxes : LeitnerUtils.applySkillAnswer(profile.skillBoxes, question.boxKey, isCorrect);
+        const recentSkillAnswers: RecentSkillAnswers = isFact
+            ? profile.recentSkillAnswers
+            : QuestionsUtils.recordSkillAnswer(profile.recentSkillAnswers, question.boxKey, isCorrect);
 
         const recentAnswer: RecentAnswer = { questionId: question.id, isCorrect, format: question.format };
         const trackResult: RecordTrackAnswerResult = LevelsUtils.recordAnswer(LevelsUtils.getTrack(profile.tracks, question.trackId), recentAnswer);
@@ -108,6 +112,7 @@ export class ProgressionUtils {
                 ...profile,
                 boxes,
                 skillBoxes,
+                recentSkillAnswers,
                 tracks: { ...profile.tracks, [question.trackId]: trackResult.track },
                 wallet: walletResult.wallet
             },

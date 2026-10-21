@@ -21,7 +21,7 @@ function additionQuestion(format: AnswerFormat = "vertical", left: number = 37):
         left: 3,
         right: 4,
         layout: "vertical",
-        skillBoxes: {}
+        recentSkillAnswers: {}
     });
     return { ...question, id: `addition:${left}+4:direct`, format, options: format === "choice" ? [6, 7, 8, 9] : [] };
 }
@@ -73,6 +73,13 @@ describe("ProgressionUtils.applyRecord", () => {
         expect(result.profile.wallet).toEqual(profile.wallet);
     });
 
+    it("adds the first try to the skill's last answers, which decide whether it is chosen or typed", () => {
+        const question: Question = additionQuestion();
+        const profile: Profile = createTestProfile({}, { recentSkillAnswers: { "addition:easy:no-carry": [true] } });
+        const result = ProgressionUtils.applyRecord(profile, record(question, { givenAnswers: [8, question.answer] }));
+        expect(result.profile.recentSkillAnswers).toEqual({ "addition:easy:no-carry": [true, false] });
+    });
+
     it("sends a missed multiplication fact back to box 1, as in v1", () => {
         const question: Question = QuestionsUtils.buildMultiplication(
             { id: "7x8", smallerFactor: 7, largerFactor: 8, product: 56 },
@@ -83,6 +90,7 @@ describe("ProgressionUtils.applyRecord", () => {
             record(question, { givenAnswers: [54, 55], isCorrect: false })
         );
         expect(result.profile.boxes["7x8"]).toBe(1);
+        expect(result.profile.recentSkillAnswers).toEqual({});
     });
 
     it("trains the shared multiplication box from a division", () => {
@@ -235,7 +243,7 @@ describe("ProgressionUtils with multiplication and division difficulties and mix
             right: 3,
             layout: "result",
             isAlwaysTyped: false,
-            skillBoxes: {}
+            recentSkillAnswers: {}
         });
         const result = ProgressionUtils.applyRecord(createTestProfile(), record(question));
         expect(result.profile.skillBoxes["multiplication:medium:carry"]).toBe(2);

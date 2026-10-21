@@ -250,7 +250,7 @@ export class SessionUtils {
                         right,
                         layout,
                         isAlwaysTyped,
-                        skillBoxes: profile.skillBoxes,
+                        recentSkillAnswers: profile.recentSkillAnswers,
                         random
                     });
                     if (!usedIds.includes(candidate.id)) {

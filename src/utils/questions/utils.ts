@@ -22,6 +22,9 @@ export type AnswerLayout = "result" | "vertical";
 // ("multiplication:medium:carry") whose box sums up every question of that kind.
 export type BoxType = "fact" | "skill";
 
+// The first tries of each skill's last answers that counted, oldest first, by skill id: { "addition:easy:carry": [true, false] }.
+export type RecentSkillAnswers = Record<string, boolean[]>;
+
 // left (operator) right = result, e.g. 56 ÷ 7 = 8. The answer is whichever term the kind hides.
 export interface Question {
     id: string;
@@ -63,7 +66,7 @@ export interface BuildSkillOptions {
     right: number;
     layout: AnswerLayout;
     isAlwaysTyped: boolean;
-    skillBoxes: LeitnerBoxes;
+    recentSkillAnswers: RecentSkillAnswers;
     random?: RandomSource;
 }
 
@@ -92,7 +95,7 @@ export class QuestionsUtils {
         return "result";
     }
 
-    // Box 3 means two right answers in a row: from there the child types the answer instead of choosing it.
+    // A fact in box 3 had two right answers in a row: from there the child types it instead of choosing it.
     public static getKeypadMinBox(): number {
         return 3;
     }
@@ -104,6 +107,27 @@ export class QuestionsUtils {
     // Multiplication and division follow the fact's box, unless the child always types the answer.
     public static getTablesAnswerFormat(box: number, isAlwaysTyped: boolean): AnswerFormat {
         return isAlwaysTyped ? "keypad" : this.getAnswerFormat(box);
+    }
+
+    // A skill sums up many different questions, so two right answers say little about it, and its box fills up in a
+    // single session. Its questions are typed once 8 of its last 10 answers are right, and chosen again when that drops.
+    public static getSkillAnswersWindow(): number {
+        return 10;
+    }
+
+    public static getSkillKeypadMinCorrect(): number {
+        return 8;
+    }
+
+    public static getSkillAnswerFormat(recentSkillAnswers: RecentSkillAnswers, skillId: string): AnswerFormat {
+        const answers: boolean[] = recentSkillAnswers[skillId] ?? [];
+        const correctCount: number = answers.filter((isCorrect) => isCorrect).length;
+        return correctCount >= this.getSkillKeypadMinCorrect() ? "keypad" : "choice";
+    }
+
+    public static recordSkillAnswer(recentSkillAnswers: RecentSkillAnswers, skillId: string, isCorrect: boolean): RecentSkillAnswers {
+        const answers: boolean[] = recentSkillAnswers[skillId] ?? [];
+        return { ...recentSkillAnswers, [skillId]: [...answers, isCorrect].slice(-this.getSkillAnswersWindow()) };
     }
 
     public static getQuestionId(operation: Operation, left: number, right: number, kind: QuestionKind): string {
@@ -186,7 +210,7 @@ export class QuestionsUtils {
             if (options.layout === "vertical") {
                 return "vertical";
             }
-            return options.isAlwaysTyped ? "keypad" : this.getAnswerFormat(LeitnerUtils.getBox(options.skillBoxes, boxKey));
+            return options.isAlwaysTyped ? "keypad" : this.getSkillAnswerFormat(options.recentSkillAnswers, boxKey);
         })();
 
         return this.withOptions(
@@ -210,8 +234,8 @@ export class QuestionsUtils {
         );
     }
 
-    // The retry asks exactly the same thing again. After a miss the box is low, so it comes as multiple choice,
-    // unless the child writes the sum in columns or always types the answer.
+    // The retry asks exactly the same thing again, as multiple choice after the miss, unless the child writes the
+    // sum in columns or always types the answer.
     public static buildRetry(question: Question, random: RandomSource = Math.random): Question {
         const format: AnswerFormat = (() => {
             if (question.format === "vertical") {

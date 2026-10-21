@@ -5,7 +5,7 @@ import { FactsUtils } from "../facts/utils.ts";
 import type { LeitnerBoxes } from "../leitner/utils.ts";
 import type { Tracks } from "../levels/utils.ts";
 import { OperationsUtils, type Operation } from "../operations/utils.ts";
-import { QuestionsUtils, type AnswerLayout, type PracticeMode } from "../questions/utils.ts";
+import { QuestionsUtils, type AnswerLayout, type PracticeMode, type RecentSkillAnswers } from "../questions/utils.ts";
 import type { Records } from "../records/utils.ts";
 import { StatsUtils, type PracticeStats } from "../stats/utils.ts";
 import { WalletUtils, type Wallet } from "../wallet/utils.ts";
@@ -59,6 +59,8 @@ export interface Profile {
     boxes: LeitnerBoxes;
     // Skills of every other practice ("addition:easy:carry", "division:hard:remainder").
     skillBoxes: LeitnerBoxes;
+    // What decides whether a skill's questions are chosen or typed.
+    recentSkillAnswers: RecentSkillAnswers;
     tracks: Tracks;
     // The highest difficulty open in each operation; every one below it stays open.
     unlockedDifficulties: Record<Operation, Difficulty>;
@@ -77,7 +79,7 @@ export type ProfileNameProblem = "empty" | "too-long" | "taken";
 
 export class ProfilesUtils {
     public static getDataVersion(): number {
-        return 4;
+        return 5;
     }
 
     // A mix of a single operation would just be that operation.
@@ -143,6 +145,7 @@ export class ProfilesUtils {
             settings: this.createDefaultSettings(),
             boxes: {},
             skillBoxes: {},
+            recentSkillAnswers: {},
             tracks: {},
             unlockedDifficulties: {
                 addition: DifficultiesUtils.getDefaultDifficulty(),

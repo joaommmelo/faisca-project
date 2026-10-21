@@ -54,7 +54,16 @@ describe("HelpsUtils.getOptionsToHide", () => {
 
 describe("HelpsUtils.getArithmeticHint", () => {
     const build = (operation: "addition" | "subtraction", left: number, right: number): Question =>
-        QuestionsUtils.buildForSkill({ isAlwaysTyped: false, operation, difficulty: "medium", skill: "carry", left, right, layout: "result", skillBoxes: {} });
+        QuestionsUtils.buildForSkill({
+            isAlwaysTyped: false,
+            operation,
+            difficulty: "medium",
+            skill: "carry",
+            left,
+            right,
+            layout: "result",
+            recentSkillAnswers: {}
+        });
 
     it("adds the tens first and leaves the units", () => {
         expect(HelpsUtils.getArithmeticHint(build("addition", 37, 25))).toEqual({
@@ -107,7 +116,7 @@ describe("HelpsUtils.getVerticalSteps", () => {
             left: 37,
             right: 25,
             layout: "vertical",
-            skillBoxes: {}
+            recentSkillAnswers: {}
         });
         const [units, tens] = VerticalUtils.getColumns(addition);
         expect(HelpsUtils.getVerticalSteps(units)).toEqual(["column", "digit"]);
@@ -117,7 +126,16 @@ describe("HelpsUtils.getVerticalSteps", () => {
 
 describe("HelpsUtils.getArithmeticHint with bigger numbers", () => {
     const build = (operation: "multiplication" | "division", left: number, right: number): Question =>
-        QuestionsUtils.buildForSkill({ operation, difficulty: "hard", skill: "no-carry", left, right, layout: "result", isAlwaysTyped: false, skillBoxes: {} });
+        QuestionsUtils.buildForSkill({
+            operation,
+            difficulty: "hard",
+            skill: "no-carry",
+            left,
+            right,
+            layout: "result",
+            isAlwaysTyped: false,
+            recentSkillAnswers: {}
+        });
 
     it("multiplies the biggest place first", () => {
         expect(HelpsUtils.getArithmeticHint(build("multiplication", 23, 4))).toEqual({

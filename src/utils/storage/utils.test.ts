@@ -123,7 +123,8 @@ describe("StorageUtils.load", () => {
         expect(profile.wallet).toEqual({ coins: 4, points: 6 });
     });
 
-    it("migrates v3 progress: the times tables become Fácil, with their level and records", () => {
+    it("migrates v3 progress: the times tables become Fácil, with their level and records, and each skill gets its last answers", () => {
+        const answer = (questionId: string, isCorrect: boolean) => ({ questionId, isCorrect, format: "keypad" });
         const clock = (isEnabled: boolean, direction: "up" | "down" = "up") => ({ isEnabled, direction, reference: "default" });
         const tablesCategory = { operation: "multiplication", difficulty: null, layout: null, tables: [2, 5], mode: "direct", isAlwaysTyped: false };
         const versionThree = {
@@ -143,8 +144,23 @@ describe("StorageUtils.load", () => {
                     boxes: { "2x5": 5 },
                     skillBoxes: { "addition:medium:carry": 3 },
                     tracks: {
-                        multiplication: { level: 2, points: 10, recentAnswers: [], answersSinceSafetyNet: 0 },
-                        "addition:medium": { level: 1, points: 4, recentAnswers: [], answersSinceSafetyNet: 0 }
+                        multiplication: { level: 2, points: 10, recentAnswers: [answer("multiplication:7×8:direct", true)], answersSinceSafetyNet: 0 },
+                        "addition:medium": {
+                            level: 1,
+                            points: 4,
+                            recentAnswers: [
+                                answer("addition:37+25:direct", true),
+                                answer("addition:32+25:direct", true),
+                                answer("addition:48+36:direct", false)
+                            ],
+                            answersSinceSafetyNet: 0
+                        },
+                        "subtraction:easy": {
+                            level: 2,
+                            points: 0,
+                            recentAnswers: [answer("subtraction:13−7:direct", true), answer("subtraction:18−5:direct", false)],
+                            answersSinceSafetyNet: 0
+                        }
                     },
                     unlockedDifficulties: { addition: "medium", subtraction: "easy" },
                     wallet: { coins: 2, points: 4 },
@@ -162,11 +178,47 @@ describe("StorageUtils.load", () => {
         expect(profile.settings.mix.operations).toEqual(["addition", "subtraction", "multiplication", "division"]);
         expect(profile.settings.addition.clock.isEnabled).toBe(true);
         expect(profile.settings.subtraction.clock).toEqual({ isEnabled: false, direction: "down", reference: "default" });
-        expect(Object.keys(profile.tracks).sort()).toEqual(["addition:medium", "multiplication:easy"]);
+        expect(Object.keys(profile.tracks).sort()).toEqual(["addition:medium", "multiplication:easy", "subtraction:easy"]);
         expect(profile.tracks["multiplication:easy"].level).toBe(2);
+        expect(profile.recentSkillAnswers).toEqual({
+            "addition:medium:carry": [true, false],
+            "addition:medium:no-carry": [true],
+            "subtraction:easy:borrow": [true],
+            "subtraction:easy:no-borrow": [false]
+        });
         expect(profile.unlockedDifficulties).toEqual({ addition: "medium", subtraction: "easy", multiplication: "easy", division: "easy" });
         expect(Object.values(profile.records)).toEqual([{ category: { ...tablesCategory, kind: "operation", difficulty: "easy" }, milliseconds: 61_000 }]);
         expect(Object.keys(profile.records)).toEqual(["multiplication:easy::2-5:direct:"]);
+    });
+
+    it("migrates v4 progress: each skill gets its last answers from its track, and nothing else changes", () => {
+        const answer = (questionId: string, isCorrect: boolean) => ({ questionId, isCorrect, format: "keypad" });
+        const track = (recentAnswers: ReturnType<typeof answer>[]) => ({ level: 2, points: 6, recentAnswers, answersSinceSafetyNet: 3 });
+        const { recentSkillAnswers: _, ...current } = ProfilesUtils.createProfile("Rui");
+        const versionFourProfile = {
+            ...current,
+            skillBoxes: { "multiplication:medium:carry": 5 },
+            tracks: {
+                "multiplication:easy": track([answer("multiplication:7×8:direct", false)]),
+                "multiplication:medium": track([answer("multiplication:27×4:direct", true), answer("multiplication:31×2:direct", true)]),
+                "division:medium": track([answer("division:84÷4:direct", false)]),
+                "addition:easy": track([answer("addition:12+5:direct", true)])
+            }
+        };
+        stubStorage({ [StorageUtils.getStorageKey()]: JSON.stringify({ version: 4, activeProfileId: current.id, profiles: [versionFourProfile] }) });
+        const { data, status } = StorageUtils.load();
+
+        expect(status).toBe("saved");
+        expect(data.version).toBe(ProfilesUtils.getDataVersion());
+        expect(data.profiles[0]).toEqual({
+            ...versionFourProfile,
+            recentSkillAnswers: {
+                "multiplication:medium:carry": [true],
+                "multiplication:medium:no-carry": [true],
+                "division:medium:no-remainder": [false],
+                "addition:easy:no-carry": [true]
+            }
+        });
     });
 
     it("reports storage the browser blocks and keeps working", () => {

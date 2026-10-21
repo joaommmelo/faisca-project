@@ -1,10 +1,11 @@
+import { ArithmeticUtils } from "../arithmetic/utils.ts";
 import { ClockUtils, type ClockDirection, type ClockReference, type ClockSettings } from "../clock/utils.ts";
 import type { Difficulty } from "../difficulties/utils.ts";
 import type { LeitnerBoxes } from "../leitner/utils.ts";
 import type { Tracks } from "../levels/utils.ts";
 import { OperationsUtils, type Operation } from "../operations/utils.ts";
-import type { AppData, Profile } from "../profiles/utils.ts";
-import type { AnswerLayout, PracticeMode } from "../questions/utils.ts";
+import type { AppData, Profile, ProfileSettings } from "../profiles/utils.ts";
+import { QuestionsUtils, type AnswerLayout, type PracticeMode, type RecentSkillAnswers } from "../questions/utils.ts";
 import { RecordsUtils, type BestTime, type RecordCategory, type Records } from "../records/utils.ts";
 import type { PracticeStats } from "../stats/utils.ts";
 import type { Wallet } from "../wallet/utils.ts";
@@ -92,6 +93,26 @@ interface VersionThreeData {
     activeProfileId: string | null;
 }
 
+// v4 decided multiple choice or keypad by the box alone, so it kept no answers per skill.
+interface VersionFourProfile {
+    id: string;
+    name: string;
+    settings: ProfileSettings;
+    boxes: LeitnerBoxes;
+    skillBoxes: LeitnerBoxes;
+    tracks: Tracks;
+    unlockedDifficulties: Record<Operation, Difficulty>;
+    wallet: Wallet;
+    records: Records;
+    stats: PracticeStats;
+}
+
+interface VersionFourData {
+    version: 4;
+    profiles: VersionFourProfile[];
+    activeProfileId: string | null;
+}
+
 export class MigrationsUtils {
     public static getOldestMigratableVersion(): number {
         return 1;
@@ -105,8 +126,14 @@ export class MigrationsUtils {
             }
             return data.version === 2 ? (data as VersionTwoData) : null;
         })();
-        const versionThree: VersionThreeData = versionTwo === null ? (data as VersionThreeData) : this.fromVersionTwo(versionTwo);
-        return this.fromVersionThree(versionThree);
+        const versionThree: VersionThreeData | null = (() => {
+            if (versionTwo !== null) {
+                return this.fromVersionTwo(versionTwo);
+            }
+            return data.version === 3 ? (data as VersionThreeData) : null;
+        })();
+        const versionFour: VersionFourData = versionThree === null ? (data as VersionFourData) : this.fromVersionThree(versionThree);
+        return this.fromVersionFour(versionFour);
     }
 
     // v1 only knew multiplication: its boxes, tables, mode, timer and stats carry over unchanged.
@@ -162,11 +189,11 @@ export class MigrationsUtils {
     // v4 gives multiplication and division difficulties: what they practised so far, the times tables, becomes Fácil,
     // with its level and records. It adds the mix, and switches on every clock nobody had touched, because the clock
     // now starts on (counting up to 3 minutes).
-    private static fromVersionThree(data: VersionThreeData): AppData {
+    private static fromVersionThree(data: VersionThreeData): VersionFourData {
         return {
             version: 4,
             activeProfileId: data.activeProfileId,
-            profiles: data.profiles.map((profile): Profile => {
+            profiles: data.profiles.map((profile): VersionFourProfile => {
                 const { settings } = profile;
                 const withDefaultClock = (clock: VersionThreeClock): ClockSettings => {
                     const isUntouched: boolean = !clock.isEnabled && clock.direction === "up" && clock.reference === "default";
@@ -204,5 +231,37 @@ export class MigrationsUtils {
                 };
             })
         };
+    }
+
+    // v5 decides multiple choice or keypad by each skill's last answers, rebuilt from what the tracks already kept.
+    private static fromVersionFour(data: VersionFourData): AppData {
+        return {
+            version: 5,
+            activeProfileId: data.activeProfileId,
+            profiles: data.profiles.map((profile): Profile => ({ ...profile, recentSkillAnswers: this.rebuildRecentSkillAnswers(profile.tracks) }))
+        };
+    }
+
+    // Each track ("addition:easy", "multiplication:medium") remembers its last answers, and their question ids
+    // ("addition:37+5:direct", "multiplication:27×4:direct") say which skill they trained. The times tables (Fácil
+    // × and ÷) have no skills.
+    private static rebuildRecentSkillAnswers(tracks: Tracks): RecentSkillAnswers {
+        const skillAnswers: { skillId: string; isCorrect: boolean }[] = Object.entries(tracks)
+            .map(([trackId, track]) => {
+                const [operation, difficulty] = trackId.split(":") as [Operation, Difficulty];
+                return { operation, difficulty, track };
+            })
+            .filter(({ operation, difficulty }) => !OperationsUtils.usesTables(operation, difficulty))
+            .flatMap(({ operation, difficulty, track }) => {
+                return track.recentAnswers.map((answer) => {
+                    const [left, right]: number[] = answer.questionId.split(":")[1].split(/\D/).map(Number);
+                    const skillId: string = ArithmeticUtils.getSkillId(operation, difficulty, ArithmeticUtils.classify(operation, left, right));
+                    return { skillId, isCorrect: answer.isCorrect };
+                });
+            });
+        return skillAnswers.reduce(
+            (recentSkillAnswers: RecentSkillAnswers, answer) => QuestionsUtils.recordSkillAnswer(recentSkillAnswers, answer.skillId, answer.isCorrect),
+            {}
+        );
     }
 }
