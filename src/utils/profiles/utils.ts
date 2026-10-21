@@ -83,6 +83,21 @@ export class ProfilesUtils {
         return { ...data, profiles: data.profiles.map((profile) => (profile.id === updatedProfile.id ? updatedProfile : profile)) };
     }
 
+    public static updateActive(data: AppData, change: (profile: Profile) => Profile): AppData {
+        const activeProfile: Profile | null = this.getActive(data);
+        if (activeProfile === null) {
+            throw new Error("There is no active profile to update.");
+        }
+        return this.update(data, change(activeProfile));
+    }
+
+    public static toggleTable(tables: number[], table: number): number[] {
+        if (tables.includes(table)) {
+            return tables.filter((selectedTable) => selectedTable !== table);
+        }
+        return [...tables, table].sort((first, second) => first - second);
+    }
+
     public static remove(data: AppData, profileId: string): AppData {
         const profiles: Profile[] = data.profiles.filter((profile) => profile.id !== profileId);
         const activeProfileId: string | null = (() => {

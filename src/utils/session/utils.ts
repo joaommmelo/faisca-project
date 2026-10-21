@@ -39,6 +39,11 @@ export interface SessionSummary {
     factsToReinforce: Question[];
 }
 
+export interface SessionOutcome {
+    summary: SessionSummary;
+    elapsedMilliseconds: number | null;
+}
+
 export class SessionUtils {
     public static getQuestionsPerSession(): number {
         return 10;

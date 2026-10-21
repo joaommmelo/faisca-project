@@ -53,6 +53,29 @@ describe("ProfilesUtils.select and update", () => {
     });
 });
 
+describe("ProfilesUtils.updateActive", () => {
+    it("changes only the active profile", () => {
+        const data: AppData = dataWith("Rita", "Tomás");
+        const updated: AppData = ProfilesUtils.updateActive(data, (profile) => ({ ...profile, boxes: { "2x2": 2 } }));
+        expect(updated.profiles[0].boxes).toEqual({});
+        expect(updated.profiles[1].boxes).toEqual({ "2x2": 2 });
+    });
+
+    it("refuses to run without an active profile", () => {
+        expect(() => ProfilesUtils.updateActive(ProfilesUtils.createEmptyData(), (profile) => profile)).toThrow();
+    });
+});
+
+describe("ProfilesUtils.toggleTable", () => {
+    it("adds a table keeping the list in order", () => {
+        expect(ProfilesUtils.toggleTable([2, 10], 5)).toEqual([2, 5, 10]);
+    });
+
+    it("removes a selected table", () => {
+        expect(ProfilesUtils.toggleTable([2, 5, 10], 5)).toEqual([2, 10]);
+    });
+});
+
 describe("ProfilesUtils.remove", () => {
     it("activates another profile when the active one is removed", () => {
         const data: AppData = dataWith("Rita", "Tomás");

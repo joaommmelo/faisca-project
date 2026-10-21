@@ -1,0 +1,86 @@
+import { useEffect, useEffectEvent } from "react";
+import { KeypadUtils } from "../utils/keypad/utils.ts";
+import { CheckIcon, EraseIcon } from "./Icons.tsx";
+
+interface NumericKeypadProps {
+    value: string;
+    isDisabled: boolean;
+    onChange: (value: string) => void;
+    onConfirm: () => void;
+}
+
+const DIGIT_ROWS: string[][] = [
+    ["1", "2", "3"],
+    ["4", "5", "6"],
+    ["7", "8", "9"]
+];
+
+// On-screen keypad so tablets and phones never open their own keyboard.
+// A physical keyboard also works (digits, Backspace, Enter) for keyboard-only users.
+export function NumericKeypad({ value, isDisabled, onChange, onConfirm }: NumericKeypadProps) {
+    const pressDigit = (digit: string): void => onChange(KeypadUtils.appendDigit(value, digit));
+    const erase = (): void => onChange(KeypadUtils.eraseDigit(value));
+    const confirm = (): void => {
+        if (KeypadUtils.canConfirm(value)) {
+            onConfirm();
+        }
+    };
+
+    const handlePhysicalKey = useEffectEvent((event: KeyboardEvent) => {
+        if (event.repeat) {
+            return;
+        }
+        if (/^[0-9]$/.test(event.key)) {
+            event.preventDefault();
+            pressDigit(event.key);
+            return;
+        }
+        if (event.key === "Backspace") {
+            event.preventDefault();
+            erase();
+            return;
+        }
+        // A focused button already turns Enter into its own click.
+        if (event.key === "Enter" && !(event.target instanceof HTMLButtonElement)) {
+            event.preventDefault();
+            confirm();
+        }
+    });
+
+    useEffect(() => {
+        if (isDisabled) {
+            return;
+        }
+        const listener = (event: KeyboardEvent): void => handlePhysicalKey(event);
+        window.addEventListener("keydown", listener);
+        return () => window.removeEventListener("keydown", listener);
+    }, [isDisabled]);
+
+    return (
+        <div className="keypad" role="group" aria-label="Teclado numérico">
+            <output className="visually-hidden" aria-live="polite">
+                {value.length === 0 ? "Ainda sem resposta" : `A tua resposta: ${value}`}
+            </output>
+            {DIGIT_ROWS.flat().map((digit) => (
+                <button key={digit} type="button" className="keypad__key" disabled={isDisabled} onClick={() => pressDigit(digit)}>
+                    {digit}
+                </button>
+            ))}
+            <button type="button" className="keypad__key keypad__key--erase" aria-label="Apagar" disabled={isDisabled} onClick={erase}>
+                <EraseIcon />
+            </button>
+            <button type="button" className="keypad__key" disabled={isDisabled} onClick={() => pressDigit("0")}>
+                0
+            </button>
+            <button
+                type="button"
+                className="keypad__key keypad__key--confirm"
+                aria-label="Confirmar"
+                disabled={isDisabled || !KeypadUtils.canConfirm(value)}
+                onClick={confirm}
+            >
+                <CheckIcon />
+            </button>
+        </div>
+    );
+}
