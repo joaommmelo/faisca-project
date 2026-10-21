@@ -623,7 +623,7 @@ fieldset {
 
 .session-header {
     display: grid;
-    grid-template-columns: 48px 1fr auto;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 8px;
 }
@@ -632,6 +632,53 @@ fieldset {
     text-align: center;
     color: var(--color-text-muted);
     font-weight: 800;
+}
+
+.exit-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 48px;
+    padding: 6px 14px 6px 10px;
+    border: 2px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-weight: 900;
+}
+
+.exit-confirm__choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+}
+
+.exit-confirm__choice {
+    flex-direction: column;
+    min-height: 112px;
+    padding: var(--space-3);
+    border: 3px solid;
+    font-size: 1.15rem;
+    text-align: center;
+}
+
+.exit-confirm__choice .icon {
+    width: 2em;
+    height: 2em;
+}
+
+.exit-confirm__choice--leave {
+    --button-shadow: var(--color-fur-dark);
+    border-color: var(--color-fur-dark);
+    background: var(--color-accent-soft);
+    color: var(--color-fur-dark);
+}
+
+.exit-confirm__choice--stay {
+    --button-shadow: var(--color-primary-pressed);
+    border-color: var(--color-primary-pressed);
+    background: var(--color-primary);
+    color: #ffffff;
 }
 
 .retry-badge {
@@ -811,28 +858,26 @@ fieldset {
     color: #ffffff;
 }
 
+/* Inline, right under the question: above the keypad or the options, never covering them. It sits above the
+   invisible tap-to-continue layer so "Seguinte" stays directly tappable. */
 .feedback {
-    position: fixed;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    position: relative;
     z-index: 10;
-    padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+    padding: var(--space-4);
+    border: 3px solid var(--color-success);
+    border-radius: var(--radius-lg);
     background: var(--color-success-soft);
-    border-top: 4px solid var(--color-success);
 }
 
 .feedback--wrong {
+    border-color: var(--color-warm);
     background: var(--color-warm-soft);
-    border-top-color: var(--color-warm);
 }
 
 .feedback__inner {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    max-width: 640px;
-    margin: 0 auto;
 }
 
 .feedback__message {
@@ -854,7 +899,7 @@ fieldset {
     font-weight: 800;
 }
 
-/* On phones the question stays at the top so the feedback sheet covers empty space; tablets centre it. */
+/* On phones the question stays at the top; tablets centre it. */
 @media (min-width: 600px) and (min-height: 800px) {
     .session-body {
         justify-content: center;
@@ -1040,34 +1085,34 @@ fieldset {
 
 /* Operation colours: every screen of an operation picks up its ink and soft tone. */
 
-.operation--addition,
+.practice--addition,
+.mix-option--addition,
 .card--addition,
-.screen--addition,
-.button--play-addition {
+.screen--addition {
     --op-ink: var(--op-addition);
     --op-soft: var(--op-addition-soft);
 }
 
-.operation--subtraction,
+.practice--subtraction,
+.mix-option--subtraction,
 .card--subtraction,
-.screen--subtraction,
-.button--play-subtraction {
+.screen--subtraction {
     --op-ink: var(--op-subtraction);
     --op-soft: var(--op-subtraction-soft);
 }
 
-.operation--multiplication,
+.practice--multiplication,
+.mix-option--multiplication,
 .card--multiplication,
-.screen--multiplication,
-.button--play-multiplication {
+.screen--multiplication {
     --op-ink: var(--op-multiplication);
     --op-soft: var(--op-multiplication-soft);
 }
 
-.operation--division,
+.practice--division,
+.mix-option--division,
 .card--division,
-.screen--division,
-.button--play-division {
+.screen--division {
     --op-ink: var(--op-division);
     --op-soft: var(--op-division-soft);
 }
@@ -1089,6 +1134,18 @@ fieldset {
     border-radius: var(--radius-md);
     background: var(--color-accent-soft);
     font-weight: 800;
+}
+
+.install-steps {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding-left: 1.4em;
+    font-weight: 700;
+}
+
+.install-steps .icon {
+    vertical-align: -0.2em;
 }
 
 .piggy {
@@ -1168,18 +1225,33 @@ fieldset {
     transform-origin: left center;
 }
 
-.operations {
+.practice--mix,
+.card--mix,
+.screen--mix {
+    --op-ink: var(--color-fur-dark);
+    --op-soft: var(--color-accent-soft);
+}
+
+.practices {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
-.operation {
+.practices__mix {
+    grid-column: 1 / -1;
+}
+
+.practice {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 6px;
+    width: 100%;
     min-height: 136px;
     padding: var(--space-3) var(--space-2);
     border: 3px solid var(--color-border);
@@ -1187,26 +1259,20 @@ fieldset {
     background: var(--color-surface);
     box-shadow: 0 5px 0 var(--color-border);
     text-align: center;
-    cursor: pointer;
-    user-select: none;
 }
 
-.operation:has(input:checked) {
-    border-color: var(--op-ink);
-    background: var(--op-soft);
-    box-shadow: 0 5px 0 var(--op-ink);
-}
-
-.operation:active {
+.practice:active {
     transform: translateY(3px);
+    box-shadow: 0 2px 0 var(--color-border);
 }
 
-.operation:has(input:focus-visible) {
-    outline: 3px solid var(--color-text);
-    outline-offset: 3px;
+.practice--mix {
+    min-height: 96px;
+    flex-direction: row;
+    gap: var(--space-3);
 }
 
-.operation__symbol {
+.practice__symbol {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1220,33 +1286,155 @@ fieldset {
     line-height: 1;
 }
 
-.operation__name {
+.practice__symbol--mix {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 60px;
+    font-size: 1.3rem;
+}
+
+.practice__name {
     font-size: clamp(1rem, 4.4vw, 1.25rem);
     font-weight: 900;
     line-height: 1.15;
 }
 
-.operation__summary {
+.practice__summary {
     color: var(--color-text-muted);
     font-size: 0.9rem;
     font-weight: 800;
 }
 
-.button--play[class*="button--play-"] {
-    --button-shadow: var(--color-accent-pressed);
+/* Setup: one operation or the mix, before playing */
+
+.setup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
 }
+
+.setup-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: 1.9rem;
+    font-weight: 900;
+    line-height: 1.1;
+}
+
+.setup-title__symbol {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 56px;
+    height: 56px;
+    padding: 0 10px;
+    border-radius: var(--radius-md);
+    background: var(--op-ink);
+    color: #ffffff;
+    font-size: 2rem;
+}
+
+.more-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 52px;
+    padding: 8px 4px;
+    border: 0;
+    border-top: 2px solid var(--color-border);
+    background: transparent;
+    color: var(--color-primary);
+    font-size: 1.1rem;
+    font-weight: 900;
+}
+
+.more-options__chevron {
+    width: 12px;
+    height: 12px;
+    border-right: 3px solid currentColor;
+    border-bottom: 3px solid currentColor;
+    transform: rotate(45deg);
+}
+
+.more-options[aria-expanded="true"] .more-options__chevron {
+    transform: rotate(225deg);
+}
+
+.mix-options {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+}
+
+@media (min-width: 560px) {
+    .mix-options {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.mix-option {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: var(--space-2);
+    align-items: center;
+    min-height: 72px;
+    padding: var(--space-2) var(--space-3);
+    border: 3px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    text-align: left;
+}
+
+.mix-option[aria-pressed="true"] {
+    border-style: solid;
+    border-color: var(--op-ink);
+    background: var(--op-soft);
+    color: var(--color-text);
+}
+
+.mix-option__symbol {
+    grid-row: span 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    background: var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 1.6rem;
+    font-weight: 900;
+}
+
+.mix-option[aria-pressed="true"] .mix-option__symbol {
+    background: var(--op-ink);
+    color: #ffffff;
+}
+
+.mix-option__name {
+    font-weight: 900;
+}
+
+.mix-option__difficulty {
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.mix-option__name,
+.mix-option__difficulty {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
 
 /* Session: try again, helps, milestones */
 
 .session-body {
     position: relative;
-}
-
-.equation--addition .equation__slot:not(.equation__slot--answered),
-.equation--subtraction .equation__slot:not(.equation__slot--answered),
-.equation--division .equation__slot:not(.equation__slot--answered) {
-    border-color: var(--op-ink);
-    color: var(--op-ink);
 }
 
 .try-again {
@@ -1279,6 +1467,18 @@ fieldset {
     border: 2px solid var(--color-accent-pressed);
     color: var(--color-fur-dark);
     font-size: 1.15rem;
+}
+
+.button--help:disabled {
+    opacity: 1;
+    border-color: var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+}
+
+.button--help:disabled .icon--coin {
+    filter: grayscale(1);
+    opacity: 0.6;
 }
 
 .help__cost {
@@ -1391,30 +1591,13 @@ fieldset {
     text-decoration-color: var(--op-ink);
 }
 
-.vertical__mark,
-.vertical__mark-space {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    min-height: 48px;
-    padding: 0;
-}
-
+/* Written by the help only, small above the digits, like by hand. Blue, never warm: it is not a miss. */
 .vertical__mark {
-    border: 2px dashed var(--color-border);
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--op-ink);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    color: var(--color-primary);
     font-size: 1.4rem;
-    font-weight: 900;
-}
-
-.vertical__mark[aria-pressed="true"],
-.vertical__mark:not(:empty) {
-    border-style: solid;
-    border-color: var(--op-ink);
-    background: var(--op-soft);
 }
 
 .vertical__line {
@@ -1428,7 +1611,7 @@ fieldset {
 .vertical__result {
     height: auto;
     min-height: 1.5em;
-    border: 3px dashed var(--op-ink);
+    border: 3px dashed var(--color-primary);
     background: var(--color-surface);
     color: var(--color-text);
     font: inherit;
@@ -1441,9 +1624,9 @@ fieldset {
 .vertical__result--cursor {
     border-style: solid;
     border-width: 4px;
-    border-color: var(--op-ink);
-    background: var(--op-soft);
-    box-shadow: 0 4px 0 var(--op-ink);
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    box-shadow: 0 4px 0 var(--color-primary-pressed);
 }
 
 .vertical__result--answered {
@@ -1478,6 +1661,27 @@ fieldset {
 }
 
 /* Summary: offers and rewards */
+
+/* "Início" and "Jogar outra vez" stay in view at the bottom of the summary, however long it is. */
+.summary-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: var(--space-3);
+    margin: 0 -16px;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: linear-gradient(to bottom, transparent, var(--color-bg) 30%);
+}
+
+.summary-actions .button {
+    min-height: 64px;
+}
+
+.summary-actions .button--play {
+    font-size: 1.4rem;
+}
 
 .offer {
     display: flex;
@@ -1525,8 +1729,8 @@ fieldset {
 }
 
 .feedback .celebration {
-    inset: -60px 0 auto;
-    height: 120px;
+    inset: -40px 0 auto;
+    height: 100px;
 }
 
 .celebration__spark {
@@ -1849,7 +2053,7 @@ fieldset {
     .choice,
     .keypad__key,
     .table-toggle,
-    .operation {
+    .practice {
         transition: transform 80ms, box-shadow 80ms;
     }
 
@@ -1859,7 +2063,7 @@ fieldset {
     }
 
     .feedback {
-        animation: slide-up 180ms ease-out;
+        animation: rise-in 200ms ease-out;
     }
 
     .feedback--correct .feedback__title {
@@ -1945,12 +2149,6 @@ fieldset {
 
     .celebration {
         display: none;
-    }
-}
-
-@keyframes slide-up {
-    from {
-        transform: translateY(100%);
     }
 }
 

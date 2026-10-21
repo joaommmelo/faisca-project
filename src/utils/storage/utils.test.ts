@@ -74,14 +74,14 @@ describe("StorageUtils.load", () => {
         expect(profile.name).toBe("Rita");
         expect(profile.boxes).toEqual({ "7x8": 4, "3x3": 5 });
         expect(profile.stats).toEqual(versionOneData.profiles[0].stats);
-        expect(profile.settings.operation).toBe("multiplication");
+        expect(profile.settings.practice).toBe("multiplication");
         expect(profile.settings.multiplication).toMatchObject({ tables: [3, 7], mode: "mixed", isAlwaysTyped: false });
         expect(profile.settings.multiplication.clock).toEqual({ isEnabled: true, direction: "up", reference: "default" });
         expect(profile.wallet).toEqual({ coins: 3, points: 0 });
         expect(profile.records).toEqual({});
     });
 
-    it("migrates v2 progress, giving every operation the old timer setting", () => {
+    it("migrates v2 progress, switching on every clock nobody had touched", () => {
         const versionTwo = {
             version: 2,
             activeProfileId: "tomas-id",
@@ -109,17 +109,64 @@ describe("StorageUtils.load", () => {
         stubStorage({ [StorageUtils.getStorageKey()]: JSON.stringify(versionTwo) });
         const profile: Profile = StorageUtils.load().data.profiles[0];
 
-        expect(profile.settings.operation).toBe("subtraction");
+        expect(profile.settings.practice).toBe("subtraction");
         expect(profile.settings.addition).toEqual({
             difficulty: "medium",
             layout: "vertical",
-            clock: { isEnabled: false, direction: "up", reference: "default" }
+            clock: { isEnabled: true, direction: "up", reference: "default" }
         });
         expect(profile.settings.division).toMatchObject({ tables: [7, 8], isAlwaysTyped: false });
         expect(profile.skillBoxes).toEqual(versionTwo.profiles[0].skillBoxes);
         expect(profile.tracks).toEqual(versionTwo.profiles[0].tracks);
-        expect(profile.unlockedDifficulties).toEqual({ addition: "medium", subtraction: "hard" });
+        expect(profile.unlockedDifficulties).toEqual({ addition: "medium", subtraction: "hard", multiplication: "easy", division: "easy" });
+        expect(profile.settings.multiplication.difficulty).toBe("easy");
         expect(profile.wallet).toEqual({ coins: 4, points: 6 });
+    });
+
+    it("migrates v3 progress: the times tables become Fácil, with their level and records", () => {
+        const clock = (isEnabled: boolean, direction: "up" | "down" = "up") => ({ isEnabled, direction, reference: "default" });
+        const tablesCategory = { operation: "multiplication", difficulty: null, layout: null, tables: [2, 5], mode: "direct", isAlwaysTyped: false };
+        const versionThree = {
+            version: 3,
+            activeProfileId: "ana-id",
+            profiles: [
+                {
+                    id: "ana-id",
+                    name: "Ana",
+                    settings: {
+                        operation: "division",
+                        addition: { difficulty: "medium", layout: "result", clock: clock(false) },
+                        subtraction: { difficulty: "easy", layout: "vertical", clock: clock(false, "down") },
+                        multiplication: { tables: [2, 5], mode: "direct", isAlwaysTyped: true, clock: clock(true) },
+                        division: { tables: [3], isAlwaysTyped: false, clock: clock(false) }
+                    },
+                    boxes: { "2x5": 5 },
+                    skillBoxes: { "addition:medium:carry": 3 },
+                    tracks: {
+                        multiplication: { level: 2, points: 10, recentAnswers: [], answersSinceSafetyNet: 0 },
+                        "addition:medium": { level: 1, points: 4, recentAnswers: [], answersSinceSafetyNet: 0 }
+                    },
+                    unlockedDifficulties: { addition: "medium", subtraction: "easy" },
+                    wallet: { coins: 2, points: 4 },
+                    records: { "multiplication:::2-5:direct:": { category: tablesCategory, milliseconds: 61_000 } },
+                    stats: versionOneData.profiles[0].stats
+                }
+            ]
+        };
+        stubStorage({ [StorageUtils.getStorageKey()]: JSON.stringify(versionThree) });
+        const profile: Profile = StorageUtils.load().data.profiles[0];
+
+        expect(profile.settings.practice).toBe("division");
+        expect(profile.settings.multiplication).toMatchObject({ difficulty: "easy", tables: [2, 5], isAlwaysTyped: true });
+        expect(profile.settings.division.difficulty).toBe("easy");
+        expect(profile.settings.mix.operations).toEqual(["addition", "subtraction", "multiplication", "division"]);
+        expect(profile.settings.addition.clock.isEnabled).toBe(true);
+        expect(profile.settings.subtraction.clock).toEqual({ isEnabled: false, direction: "down", reference: "default" });
+        expect(Object.keys(profile.tracks).sort()).toEqual(["addition:medium", "multiplication:easy"]);
+        expect(profile.tracks["multiplication:easy"].level).toBe(2);
+        expect(profile.unlockedDifficulties).toEqual({ addition: "medium", subtraction: "easy", multiplication: "easy", division: "easy" });
+        expect(Object.values(profile.records)).toEqual([{ category: { ...tablesCategory, kind: "operation", difficulty: "easy" }, milliseconds: 61_000 }]);
+        expect(Object.keys(profile.records)).toEqual(["multiplication:easy::2-5:direct:"]);
     });
 
     it("reports storage the browser blocks and keeps working", () => {

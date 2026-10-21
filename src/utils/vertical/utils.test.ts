@@ -3,7 +3,16 @@ import { QuestionsUtils, type Question } from "../questions/utils.ts";
 import { VerticalUtils, type VerticalEntry } from "./utils.ts";
 
 function verticalQuestion(operation: "addition" | "subtraction", left: number, right: number): Question {
-    return QuestionsUtils.buildArithmetic({ operation, difficulty: "hard", skill: "no-carry", left, right, layout: "vertical", skillBoxes: {} });
+    return QuestionsUtils.buildForSkill({
+        isAlwaysTyped: false,
+        operation,
+        difficulty: "hard",
+        skill: "no-carry",
+        left,
+        right,
+        layout: "vertical",
+        skillBoxes: {}
+    });
 }
 
 function typeAll(entry: VerticalEntry, digitsFromUnits: number[]): VerticalEntry {
@@ -63,11 +72,5 @@ describe("VerticalUtils entry", () => {
 
     it("treats an empty spare cell as nothing", () => {
         expect(VerticalUtils.getWrongColumns(VerticalUtils.getValue(typeAll(VerticalUtils.createEntry(3), [2, 6])), 62, 3)).toEqual([]);
-    });
-
-    it("keeps the child's marks unchecked", () => {
-        const marked: VerticalEntry = VerticalUtils.toggleMark(VerticalUtils.createEntry(3), 1);
-        expect(marked.marks).toEqual([false, true, false]);
-        expect(VerticalUtils.toggleMark(marked, 1).marks).toEqual([false, false, false]);
     });
 });

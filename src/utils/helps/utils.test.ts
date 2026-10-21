@@ -54,7 +54,7 @@ describe("HelpsUtils.getOptionsToHide", () => {
 
 describe("HelpsUtils.getArithmeticHint", () => {
     const build = (operation: "addition" | "subtraction", left: number, right: number): Question =>
-        QuestionsUtils.buildArithmetic({ operation, difficulty: "medium", skill: "carry", left, right, layout: "result", skillBoxes: {} });
+        QuestionsUtils.buildForSkill({ isAlwaysTyped: false, operation, difficulty: "medium", skill: "carry", left, right, layout: "result", skillBoxes: {} });
 
     it("adds the tens first and leaves the units", () => {
         expect(HelpsUtils.getArithmeticHint(build("addition", 37, 25))).toEqual({
@@ -99,7 +99,8 @@ describe("HelpsUtils.getNeighbourFact", () => {
 
 describe("HelpsUtils.getVerticalSteps", () => {
     it("shows the carry or the borrow only where there is one", () => {
-        const addition: Question = QuestionsUtils.buildArithmetic({
+        const addition: Question = QuestionsUtils.buildForSkill({
+            isAlwaysTyped: false,
             operation: "addition",
             difficulty: "medium",
             skill: "carry",
@@ -111,5 +112,41 @@ describe("HelpsUtils.getVerticalSteps", () => {
         const [units, tens] = VerticalUtils.getColumns(addition);
         expect(HelpsUtils.getVerticalSteps(units)).toEqual(["column", "digit"]);
         expect(HelpsUtils.getVerticalSteps(tens)).toEqual(["column", "marks", "digit"]);
+    });
+});
+
+describe("HelpsUtils.getArithmeticHint with bigger numbers", () => {
+    const build = (operation: "multiplication" | "division", left: number, right: number): Question =>
+        QuestionsUtils.buildForSkill({ operation, difficulty: "hard", skill: "no-carry", left, right, layout: "result", isAlwaysTyped: false, skillBoxes: {} });
+
+    it("multiplies the biggest place first", () => {
+        expect(HelpsUtils.getArithmeticHint(build("multiplication", 23, 4))).toEqual({
+            kind: "partial",
+            firstStep: { left: 20, right: 4, result: 80 },
+            rest: { left: 3, right: 4 }
+        });
+        expect(HelpsUtils.getArithmeticHint(build("multiplication", 157, 6))).toEqual({
+            kind: "partial",
+            firstStep: { left: 100, right: 6, result: 600 },
+            rest: { left: 57, right: 6 }
+        });
+    });
+
+    it("divides an easy multiple first", () => {
+        expect(HelpsUtils.getArithmeticHint(build("division", 72, 4))).toEqual({
+            kind: "partial",
+            firstStep: { left: 40, right: 4, result: 10 },
+            rest: { left: 32, right: 4 }
+        });
+        expect(HelpsUtils.getArithmeticHint(build("division", 412, 4))).toEqual({
+            kind: "partial",
+            firstStep: { left: 400, right: 4, result: 100 },
+            rest: { left: 12, right: 4 }
+        });
+    });
+
+    it("drops the zeros of a round number instead of giving the answer", () => {
+        expect(HelpsUtils.getArithmeticHint(build("multiplication", 20, 4))).toEqual({ kind: "round", base: { left: 2, right: 4, result: 8 }, zeros: 1 });
+        expect(HelpsUtils.getArithmeticHint(build("division", 80, 4))).toEqual({ kind: "round", base: { left: 8, right: 4, result: 2 }, zeros: 1 });
     });
 });

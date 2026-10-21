@@ -12,22 +12,11 @@ interface VerticalProblemProps {
     revealedMarks: number[];
     isAnswered: boolean;
     onSelectCell: (column: number) => void;
-    onToggleMark: (column: number) => void;
 }
 
-// A written sum: the marks row ("e vai 1", borrows), the two numbers with the operator on the left, the line,
-// and one cell per digit for the result. Columns are stored units first and drawn left to right.
-export function VerticalProblem({
-    question,
-    columns,
-    entry,
-    wrongColumns,
-    highlightedColumn,
-    revealedMarks,
-    isAnswered,
-    onSelectCell,
-    onToggleMark
-}: VerticalProblemProps) {
+// A written sum: the two numbers with the operator on the left, the line, and one cell per digit for the result.
+// Above them, only once the help shows it, the 1 that comes in or the borrow. Columns are stored units first and drawn left to right.
+export function VerticalProblem({ question, columns, entry, wrongColumns, highlightedColumn, revealedMarks, isAnswered, onSelectCell }: VerticalProblemProps) {
     const drawnColumns: number[] = columns.map((_, column) => column).reverse();
     const isAddition: boolean = question.operation === "addition";
     const getColumnClassName = (column: number): string => {
@@ -41,35 +30,26 @@ export function VerticalProblem({
         return classNames.join(" ");
     };
     const getMarkText = (column: number): string => {
-        const isRevealed: boolean = revealedMarks.includes(column);
-        if (isRevealed && !isAddition && columns[column].workingTop !== null) {
+        if (!revealedMarks.includes(column)) {
+            return "";
+        }
+        if (columns[column].workingTop !== null) {
             return String(columns[column].workingTop);
         }
-        if (entry.marks[column] || (isRevealed && columns[column].carryIn)) {
-            return "1";
-        }
-        return "";
+        return columns[column].carryIn ? "1" : "";
     };
 
     return (
         <div className="vertical" style={{ gridTemplateColumns: `auto repeat(${columns.length}, var(--vertical-cell))` }}>
-            <span className="vertical__operator" aria-hidden="true" />
-            {drawnColumns.map((column) =>
-                isAddition && column === 0 ? (
-                    <span key={`mark-${column}`} className="vertical__mark-space" aria-hidden="true" />
-                ) : (
-                    <button
-                        key={`mark-${column}`}
-                        type="button"
-                        className="vertical__mark"
-                        aria-label={`Marca nas ${Messages.getColumnName(column)}`}
-                        aria-pressed={entry.marks[column]}
-                        disabled={isAnswered}
-                        onClick={() => onToggleMark(column)}
-                    >
-                        {getMarkText(column)}
-                    </button>
-                )
+            {revealedMarks.length > 0 && (
+                <>
+                    <span className="vertical__operator" aria-hidden="true" />
+                    {drawnColumns.map((column) => (
+                        <span key={`mark-${column}`} className="vertical__mark" aria-hidden="true">
+                            {getMarkText(column)}
+                        </span>
+                    ))}
+                </>
             )}
 
             <span className="vertical__operator" aria-hidden="true" />

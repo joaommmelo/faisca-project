@@ -1,6 +1,6 @@
 # Faísca
 
-Web app para crianças praticarem somas, subtrações, tabuadas e divisões com o Faísca, um cão castanho. React + TypeScript + Vite, sem backend: o progresso fica no `localStorage` do dispositivo. Instalável como app (PWA) e funciona sem rede.
+Web app para crianças praticarem somas, subtrações, multiplicações e divisões, das tabuadas a números maiores, sozinhas ou misturadas, com o Faísca, um cão castanho. React + TypeScript + Vite, sem backend: o progresso fica no `localStorage` do dispositivo. Instalável como app (PWA) e funciona sem rede.
 
 As regras do motor, as decisões de produto e as convenções de código estão em [`CLAUDE.md`](CLAUDE.md).
 
@@ -24,7 +24,7 @@ npm run lint       # oxlint
 npm run build      # verifica os tipos (tsc) e gera docs/
 ```
 
-Os testes cobrem o motor (`src/utils/`): geradores por operação, competências, perguntas, distratores, sessão, níveis, moedas, desbloqueio, rede de segurança, ajudas, conta na vertical, relógio, recordes, perfis, armazenamento e as migrações de dados.
+Os testes cobrem o motor (`src/utils/`): geradores por operação e dificuldade, competências, perguntas, distratores, sessões simples e misturadas, níveis, moedas, desbloqueio, rede de segurança, ajudas, conta na vertical, relógio, recordes, perfis, armazenamento e as migrações de dados.
 
 ## Deploy
 

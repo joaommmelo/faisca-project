@@ -102,3 +102,30 @@ export function StarIcon() {
         </svg>
     );
 }
+
+export function HomeIcon() {
+    return (
+        <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M3.5 11L12 4l8.5 7" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M6 9.5V20h4.5v-5.5h3V20H18V9.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+export function PlayIcon() {
+    return (
+        <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M8 5.5v13l10.5-6.5z" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+// The iOS share symbol, so the install steps point at the button the child will see.
+export function ShareIcon() {
+    return (
+        <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 14V3M8 6.5L12 2.5l4 4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M8.5 10H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-1.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+        </svg>
+    );
+}

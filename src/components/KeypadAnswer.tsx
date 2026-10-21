@@ -8,12 +8,14 @@ import { NumericKeypad } from "./NumericKeypad.tsx";
 interface KeypadAnswerProps {
     question: Question;
     record: AnswerRecord | null;
+    // The result or the second-chance note, shown right under the question.
+    status: ReactNode;
     help: ReactNode;
     onSubmit: (givenAnswer: number) => AttemptOutcome;
 }
 
 // Typing the answer. Mount it with a key per question so every question starts empty.
-export function KeypadAnswer({ question, record, help, onSubmit }: KeypadAnswerProps) {
+export function KeypadAnswer({ question, record, status, help, onSubmit }: KeypadAnswerProps) {
     const [typedAnswer, setTypedAnswer] = useState<string>("");
 
     const confirm = (): void => {
@@ -25,6 +27,7 @@ export function KeypadAnswer({ question, record, help, onSubmit }: KeypadAnswerP
     return (
         <>
             <Equation question={question} typedAnswer={typedAnswer} isAnswered={record !== null} />
+            {status}
             {help}
             <NumericKeypad
                 announcement={typedAnswer.length === 0 ? "Ainda sem resposta" : `A tua resposta: ${typedAnswer}`}

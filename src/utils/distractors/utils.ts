@@ -3,7 +3,13 @@ import { FactsUtils } from "../facts/utils.ts";
 import type { Question } from "../questions/utils.ts";
 import { RandomUtils, type RandomSource } from "../random/utils.ts";
 
-type DistractorSource = Pick<Question, "operation" | "kind" | "left" | "right" | "result" | "answer">;
+type DistractorSource = Pick<Question, "operation" | "kind" | "left" | "right" | "result" | "answer" | "boxType">;
+
+interface DistractorCandidates {
+    close: number[];
+    fallback: number[];
+    isPlausible: (value: number) => boolean;
+}
 
 export class DistractorsUtils {
     public static getOptionsCount(): number {
@@ -20,33 +26,44 @@ export class DistractorsUtils {
     }
 
     public static getDistractors(question: DistractorSource, random: RandomSource = Math.random): number[] {
-        const isFactorAnswer: boolean = question.operation === "division" || (question.operation === "multiplication" && question.kind !== "direct");
-        const closeCandidates: number[] = (() => {
-            if (isFactorAnswer) {
-                return this.getCloseFactors(question);
-            }
-            return question.operation === "multiplication" ? this.getCloseProducts(question) : this.getCloseResults(question);
-        })();
-        const fallbackCandidates: number[] = (() => {
-            if (isFactorAnswer) {
-                return this.getFallbackFactors(question);
-            }
-            return question.operation === "multiplication" ? this.getFallbackProducts(question) : this.getFallbackResults(question);
-        })();
-        const isPlausible = (value: number): boolean => (isFactorAnswer ? FactsUtils.isValidFactor(value) : value > 0);
+        const candidates: DistractorCandidates = this.getCandidates(question);
         const distractorsCount: number = this.getOptionsCount() - 1;
 
         const distractors: number[] = [];
-        for (const candidate of [...RandomUtils.shuffle(closeCandidates, random), ...fallbackCandidates]) {
+        for (const candidate of [...RandomUtils.shuffle(candidates.close, random), ...candidates.fallback]) {
             if (distractors.length === distractorsCount) {
                 break;
             }
-            if (candidate === question.answer || distractors.includes(candidate) || !isPlausible(candidate)) {
+            if (candidate === question.answer || distractors.includes(candidate) || !candidates.isPlausible(candidate)) {
                 continue;
             }
             distractors.push(candidate);
         }
         return distractors;
+    }
+
+    // Times-table facts keep their own slips; every other question gets the slips of its operation.
+    private static getCandidates(question: DistractorSource): DistractorCandidates {
+        const isPositive = (value: number): boolean => value > 0;
+        if (question.boxType === "fact") {
+            const isFactorAnswer: boolean = question.operation === "division" || question.kind !== "direct";
+            if (isFactorAnswer) {
+                return {
+                    close: this.getCloseFactors(question),
+                    fallback: this.getFallbackFactors(question),
+                    isPlausible: (value) => FactsUtils.isValidFactor(value)
+                };
+            }
+            return { close: this.getCloseProducts(question), fallback: this.getFallbackProducts(question), isPlausible: isPositive };
+        }
+        switch (question.operation) {
+            case "multiplication":
+                return { close: this.getCloseBigProducts(question), fallback: this.getFallbackResults(question), isPlausible: isPositive };
+            case "division":
+                return { close: this.getCloseQuotients(question), fallback: this.getFallbackResults(question), isPlausible: isPositive };
+            default:
+                return { close: this.getCloseResults(question), fallback: this.getFallbackResults(question), isPlausible: isPositive };
+        }
     }
 
     // The slips a child really makes on 7 × 8: a neighbour in the table (7 × 7, 7 × 9), an off-by-one, swapped digits.
@@ -120,6 +137,36 @@ export class DistractorsUtils {
             fallbacks.push(question.answer - distance, question.answer + distance);
         }
         return fallbacks;
+    }
+
+    // The slips on 23 × 4 or 157 × 6: one group too many or too few, a ten off, forgetting the carries, swapped digits.
+    private static getCloseBigProducts(question: DistractorSource): number[] {
+        const smallFactor: number = Math.min(question.left, question.right);
+        return [
+            question.answer - smallFactor,
+            question.answer + smallFactor,
+            question.answer - 10,
+            question.answer + 10,
+            this.getForgottenCarrySlip(question),
+            ...this.getSwappedDigits(question.answer)
+        ];
+    }
+
+    // The slips on 72 ÷ 4: off by one or by a ten, swapped digits.
+    private static getCloseQuotients(question: DistractorSource): number[] {
+        return [question.answer - 1, question.answer + 1, question.answer - 10, question.answer + 10, ...this.getSwappedDigits(question.answer)];
+    }
+
+    // Writing each product without what was carried: 27 × 4 → 88 instead of 108, 157 × 6 → 602 instead of 942.
+    private static getForgottenCarrySlip(question: DistractorSource): number {
+        const bigFactor: number = Math.max(question.left, question.right);
+        const smallFactor: number = Math.min(question.left, question.right);
+        const digits: number[] = ArithmeticUtils.getDigits(bigFactor);
+        return digits.reduce((slip, digit, column) => {
+            const product: number = digit * smallFactor;
+            const written: number = column === digits.length - 1 ? product : product % 10;
+            return slip + written * 10 ** column;
+        }, 0);
     }
 
     // Working each column alone: forgetting the carry on 37 + 25 gives 52; taking the smaller digit from the larger on 52 − 27 gives 35.

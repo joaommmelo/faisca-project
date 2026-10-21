@@ -21,8 +21,6 @@ export interface VerticalColumn {
 export interface VerticalEntry {
     digits: (number | null)[];
     cursor: number;
-    // The child's own "e vai 1" and borrow marks. They help the child and are never checked.
-    marks: boolean[];
 }
 
 export class VerticalUtils {
@@ -72,7 +70,7 @@ export class VerticalUtils {
     }
 
     public static createEntry(columnCount: number): VerticalEntry {
-        return { digits: Array.from({ length: columnCount }, () => null), cursor: 0, marks: Array.from({ length: columnCount }, () => false) };
+        return { digits: Array.from({ length: columnCount }, () => null), cursor: 0 };
     }
 
     // Writes in the cursor's cell and moves left, like writing a column sum by hand.
@@ -92,10 +90,6 @@ export class VerticalUtils {
             throw new Error(`No column ${column}.`);
         }
         return { ...entry, cursor: column };
-    }
-
-    public static toggleMark(entry: VerticalEntry, column: number): VerticalEntry {
-        return { ...entry, marks: entry.marks.map((mark, index) => (index === column ? !mark : mark)) };
     }
 
     // Written from the units up with no gaps; the cells on the left may stay empty.

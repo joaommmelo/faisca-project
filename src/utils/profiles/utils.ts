@@ -4,48 +4,64 @@ import { DifficultiesUtils, type Difficulty } from "../difficulties/utils.ts";
 import { FactsUtils } from "../facts/utils.ts";
 import type { LeitnerBoxes } from "../leitner/utils.ts";
 import type { Tracks } from "../levels/utils.ts";
-import { OperationsUtils, type ArithmeticOperation, type Operation } from "../operations/utils.ts";
+import { OperationsUtils, type Operation } from "../operations/utils.ts";
 import { QuestionsUtils, type AnswerLayout, type PracticeMode } from "../questions/utils.ts";
 import type { Records } from "../records/utils.ts";
 import { StatsUtils, type PracticeStats } from "../stats/utils.ts";
 import { WalletUtils, type Wallet } from "../wallet/utils.ts";
 
-export interface ArithmeticSettings {
+export interface AdditiveSettings {
     difficulty: Difficulty;
     layout: AnswerLayout;
     clock: ClockSettings;
 }
 
-export interface TablesSettings {
+export interface MultiplicativeSettings {
+    difficulty: Difficulty;
+    // Fácil only: the times tables to practise.
     tables: number[];
     // No multiple choice: every answer is typed, even for facts still being learnt.
     isAlwaysTyped: boolean;
     clock: ClockSettings;
 }
 
-export interface MultiplicationSettings extends TablesSettings {
+export interface MultiplicationSettings extends MultiplicativeSettings {
+    // Fácil only: also the inverse questions (? × 8 = 56).
     mode: PracticeMode;
 }
 
-export interface ProfileSettings {
-    operation: Operation;
-    addition: ArithmeticSettings;
-    subtraction: ArithmeticSettings;
-    multiplication: MultiplicationSettings;
-    division: TablesSettings;
+// What Jogar starts: one operation, or a mix of several.
+export type Practice = Operation | "mix";
+
+// Each question of a mix comes from one of these operations, at that operation's own settings.
+export interface MixSettings {
+    operations: Operation[];
+    clock: ClockSettings;
 }
+
+export interface ProfileSettings {
+    practice: Practice;
+    addition: AdditiveSettings;
+    subtraction: AdditiveSettings;
+    multiplication: MultiplicationSettings;
+    division: MultiplicativeSettings;
+    mix: MixSettings;
+}
+
+// Why Jogar is off: a times-table practice with no table chosen, or a mix with fewer than two operations.
+export type PlayProblem = "no-tables" | "too-few-operations";
 
 export interface Profile {
     id: string;
     name: string;
     settings: ProfileSettings;
-    // Multiplication facts ("7x8"), shared by division.
+    // Times-table facts ("7x8"), shared by Fácil multiplication and division.
     boxes: LeitnerBoxes;
-    // Addition and subtraction skills ("addition:easy:carry").
+    // Skills of every other practice ("addition:easy:carry", "division:hard:remainder").
     skillBoxes: LeitnerBoxes;
     tracks: Tracks;
     // The highest difficulty open in each operation; every one below it stays open.
-    unlockedDifficulties: Record<ArithmeticOperation, Difficulty>;
+    unlockedDifficulties: Record<Operation, Difficulty>;
     wallet: Wallet;
     records: Records;
     stats: PracticeStats;
@@ -61,7 +77,12 @@ export type ProfileNameProblem = "empty" | "too-long" | "taken";
 
 export class ProfilesUtils {
     public static getDataVersion(): number {
-        return 3;
+        return 4;
+    }
+
+    // A mix of a single operation would just be that operation.
+    public static getMinMixOperations(): number {
+        return 2;
     }
 
     public static getMaxNameLength(): number {
@@ -73,23 +94,46 @@ export class ProfilesUtils {
     }
 
     public static createDefaultSettings(): ProfileSettings {
-        const arithmetic: ArithmeticSettings = {
+        const additive: AdditiveSettings = {
             difficulty: DifficultiesUtils.getDefaultDifficulty(),
             layout: QuestionsUtils.getDefaultLayout(),
             clock: ClockUtils.createDefault()
         };
-        const tables: TablesSettings = { tables: FactsUtils.getDefaultTables(), isAlwaysTyped: false, clock: ClockUtils.createDefault() };
+        const multiplicative: MultiplicativeSettings = {
+            difficulty: DifficultiesUtils.getDefaultDifficulty(),
+            tables: FactsUtils.getDefaultTables(),
+            isAlwaysTyped: false,
+            clock: ClockUtils.createDefault()
+        };
         return {
-            operation: OperationsUtils.getDefaultOperation(),
-            addition: arithmetic,
-            subtraction: arithmetic,
-            multiplication: { ...tables, mode: QuestionsUtils.getDefaultMode() },
-            division: tables
+            practice: OperationsUtils.getDefaultOperation(),
+            addition: additive,
+            subtraction: additive,
+            multiplication: { ...multiplicative, mode: QuestionsUtils.getDefaultMode() },
+            division: multiplicative,
+            mix: { operations: OperationsUtils.getValidOperations(), clock: ClockUtils.createDefault() }
         };
     }
 
+    public static getPracticeOperations(settings: ProfileSettings): Operation[] {
+        return settings.practice === "mix" ? settings.mix.operations : [settings.practice];
+    }
+
+    public static getDifficulty(settings: ProfileSettings, operation: Operation): Difficulty {
+        return settings[operation].difficulty;
+    }
+
     public static getClock(settings: ProfileSettings): ClockSettings {
-        return settings[settings.operation].clock;
+        return settings.practice === "mix" ? settings.mix.clock : settings[settings.practice].clock;
+    }
+
+    // Multiplication and division always ask for the result; only additions and subtractions go in columns.
+    public static getLayout(settings: ProfileSettings, operation: Operation): AnswerLayout {
+        return OperationsUtils.isAdditive(operation) ? settings[operation].layout : "result";
+    }
+
+    public static isAlwaysTyped(settings: ProfileSettings, operation: Operation): boolean {
+        return OperationsUtils.isMultiplicative(operation) ? settings[operation].isAlwaysTyped : false;
     }
 
     public static createProfile(name: string): Profile {
@@ -100,7 +144,12 @@ export class ProfilesUtils {
             boxes: {},
             skillBoxes: {},
             tracks: {},
-            unlockedDifficulties: { addition: DifficultiesUtils.getDefaultDifficulty(), subtraction: DifficultiesUtils.getDefaultDifficulty() },
+            unlockedDifficulties: {
+                addition: DifficultiesUtils.getDefaultDifficulty(),
+                subtraction: DifficultiesUtils.getDefaultDifficulty(),
+                multiplication: DifficultiesUtils.getDefaultDifficulty(),
+                division: DifficultiesUtils.getDefaultDifficulty()
+            },
             wallet: WalletUtils.createInitial(),
             records: {},
             stats: StatsUtils.createEmpty()
@@ -160,12 +209,31 @@ export class ProfilesUtils {
         return [...tables, table].sort((first, second) => first - second);
     }
 
-    // Multiplication and division need at least one table; additions and subtractions are always ready.
     public static canPlay(settings: ProfileSettings): boolean {
-        if (OperationsUtils.isArithmetic(settings.operation)) {
-            return true;
+        return this.getPlayProblem(settings) === null;
+    }
+
+    // The times tables need at least one table chosen, also inside a mix; a mix needs two operations.
+    public static getPlayProblem(settings: ProfileSettings): PlayProblem | null {
+        const operations: Operation[] = this.getPracticeOperations(settings);
+        if (settings.practice === "mix" && operations.length < this.getMinMixOperations()) {
+            return "too-few-operations";
         }
-        return settings[settings.operation].tables.length > 0;
+        const isMissingTables: boolean = operations.some(
+            (operation) =>
+                OperationsUtils.isMultiplicative(operation) &&
+                OperationsUtils.usesTables(operation, settings[operation].difficulty) &&
+                settings[operation].tables.length === 0
+        );
+        return isMissingTables ? "no-tables" : null;
+    }
+
+    // Keeps the operations in menu order.
+    public static toggleMixOperation(operations: Operation[], operation: Operation): Operation[] {
+        if (operations.includes(operation)) {
+            return operations.filter((selected) => selected !== operation);
+        }
+        return OperationsUtils.getValidOperations().filter((candidate) => candidate === operation || operations.includes(candidate));
     }
 
     public static remove(data: AppData, profileId: string): AppData {

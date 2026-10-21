@@ -4,7 +4,7 @@ import { DistractorsUtils } from "../distractors/utils.ts";
 import type { Fact } from "../facts/utils.ts";
 import { LeitnerUtils, type LeitnerBoxes } from "../leitner/utils.ts";
 import { LevelsUtils } from "../levels/utils.ts";
-import { OperationsUtils, type ArithmeticOperation, type Operation } from "../operations/utils.ts";
+import { OperationsUtils, type Operation } from "../operations/utils.ts";
 import { RandomUtils, type RandomSource } from "../random/utils.ts";
 
 export type PracticeMode = "direct" | "mixed";
@@ -15,7 +15,12 @@ export type QuestionKind = "direct" | "missing-left" | "missing-right";
 export type AnswerFormat = "choice" | "keypad" | "vertical";
 
 // How the child prefers to answer additions and subtractions: just the result, or the written column method.
+// Multiplication and division always ask for the result.
 export type AnswerLayout = "result" | "vertical";
+
+// fact: a times-table fact with its own box ("7x8"), shared by × and ÷ in Fácil. skill: a kind of calculation
+// ("multiplication:medium:carry") whose box sums up every question of that kind.
+export type BoxType = "fact" | "skill";
 
 // left (operator) right = result, e.g. 56 ÷ 7 = 8. The answer is whichever term the kind hides.
 export interface Question {
@@ -31,7 +36,8 @@ export interface Question {
     allowsChoice: boolean;
     options: number[];
     isRetry: boolean;
-    // The Leitner box this question trains: a fact ("7x8") for × and ÷, a skill ("addition:easy:carry") for + and −.
+    // The Leitner box this question trains: a fact ("7x8") for the times tables, a skill ("addition:easy:carry") otherwise.
+    boxType: BoxType;
     boxKey: string;
     trackId: string;
 }
@@ -49,13 +55,14 @@ export interface BuildDivisionOptions {
     random?: RandomSource;
 }
 
-export interface BuildArithmeticOptions {
-    operation: ArithmeticOperation;
+export interface BuildSkillOptions {
+    operation: Operation;
     difficulty: Difficulty;
     skill: Skill;
     left: number;
     right: number;
     layout: AnswerLayout;
+    isAlwaysTyped: boolean;
     skillBoxes: LeitnerBoxes;
     random?: RandomSource;
 }
@@ -136,8 +143,9 @@ export class QuestionsUtils {
                 allowsChoice: options.isAlwaysTyped !== true,
                 options: [],
                 isRetry: false,
+                boxType: "fact",
                 boxKey: fact.id,
-                trackId: LevelsUtils.getTrackId("multiplication", null)
+                trackId: LevelsUtils.getTrackId("multiplication", "easy")
             },
             random
         );
@@ -161,18 +169,25 @@ export class QuestionsUtils {
                 allowsChoice: options.isAlwaysTyped !== true,
                 options: [],
                 isRetry: false,
+                boxType: "fact",
                 boxKey: fact.id,
-                trackId: LevelsUtils.getTrackId("division", null)
+                trackId: LevelsUtils.getTrackId("division", "easy")
             },
             random
         );
     }
 
-    public static buildArithmetic(options: BuildArithmeticOptions): Question {
+    // Additions and subtractions of every difficulty, and multiplications and divisions with bigger numbers.
+    public static buildForSkill(options: BuildSkillOptions): Question {
         const random: RandomSource = options.random ?? Math.random;
         const boxKey: string = ArithmeticUtils.getSkillId(options.operation, options.difficulty, options.skill);
         const result: number = OperationsUtils.calculate(options.operation, options.left, options.right);
-        const format: AnswerFormat = options.layout === "vertical" ? "vertical" : this.getAnswerFormat(LeitnerUtils.getBox(options.skillBoxes, boxKey));
+        const format: AnswerFormat = (() => {
+            if (options.layout === "vertical") {
+                return "vertical";
+            }
+            return options.isAlwaysTyped ? "keypad" : this.getAnswerFormat(LeitnerUtils.getBox(options.skillBoxes, boxKey));
+        })();
 
         return this.withOptions(
             {
@@ -184,9 +199,10 @@ export class QuestionsUtils {
                 kind: "direct",
                 answer: result,
                 format,
-                allowsChoice: options.layout !== "vertical",
+                allowsChoice: options.layout !== "vertical" && !options.isAlwaysTyped,
                 options: [],
                 isRetry: false,
+                boxType: "skill",
                 boxKey,
                 trackId: LevelsUtils.getTrackId(options.operation, options.difficulty)
             },

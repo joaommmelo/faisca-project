@@ -9,7 +9,7 @@ import { SessionUtils, type Session } from "./utils.ts";
 
 function multiplicationProfile(boxes: LeitnerBoxes = {}, tables: number[] = [7]): Profile {
     const defaults = ProfilesUtils.createDefaultSettings();
-    return createTestProfile({ operation: "multiplication", multiplication: { ...defaults.multiplication, tables, mode: "mixed" } }, { boxes });
+    return createTestProfile({ practice: "multiplication", multiplication: { ...defaults.multiplication, tables, mode: "mixed" } }, { boxes });
 }
 
 function createSession(seed: number = 1): Session {
@@ -58,7 +58,7 @@ describe("SessionUtils.create", () => {
     it("asks exact divisions from the chosen tables", () => {
         const defaults = ProfilesUtils.createDefaultSettings();
         const session: Session = SessionUtils.create(
-            createTestProfile({ operation: "division", division: { ...defaults.division, tables: [6] } }),
+            createTestProfile({ practice: "division", division: { ...defaults.division, tables: [6] } }),
             createSeededRandom(3)
         );
         for (const question of session.questions) {
@@ -69,7 +69,7 @@ describe("SessionUtils.create", () => {
     });
 
     it("asks only the skills the level has opened, without repeating a question", () => {
-        const profile: Profile = createTestProfile({ operation: "addition" });
+        const profile: Profile = createTestProfile({ practice: "addition" });
         const session: Session = SessionUtils.create(profile, createSeededRandom(5));
         expect(session.questions).toHaveLength(10);
         expect(new Set(session.questions.map((question) => question.id)).size).toBe(10);
@@ -79,7 +79,7 @@ describe("SessionUtils.create", () => {
     it("reinforces the weaker skill once a level opens more", () => {
         const random = createSeededRandom(9);
         const profile: Profile = createTestProfile(
-            { operation: "subtraction" },
+            { practice: "subtraction" },
             {
                 tracks: { "subtraction:easy": { level: 2, points: 0, recentAnswers: [], answersSinceSafetyNet: 0 } },
                 skillBoxes: { "subtraction:easy:no-borrow": 5, "subtraction:easy:borrow": 1 }
@@ -213,5 +213,47 @@ describe("a full session", () => {
         const missed: Session = finishCurrent(createSession(), false);
         expect(SessionUtils.getFirstTryPosition(missed)).toBe(1);
         expect(SessionUtils.getFirstTryTotal(missed)).toBe(10);
+    });
+});
+
+describe("SessionUtils.create with bigger numbers and mixes", () => {
+    const defaults = ProfilesUtils.createDefaultSettings();
+
+    it("practises skills, not facts, in Médio multiplication", () => {
+        const profile: Profile = createTestProfile({ practice: "multiplication", multiplication: { ...defaults.multiplication, difficulty: "medium" } });
+        const session: Session = SessionUtils.create(profile, createSeededRandom(8));
+        expect(session.questions).toHaveLength(10);
+        expect(session.questions.every((question) => question.boxType === "skill" && question.trackId === "multiplication:medium")).toBe(true);
+        expect(session.questions.every((question) => Math.max(question.left, question.right) >= ArithmeticUtils.getMinBigFactor())).toBe(true);
+    });
+
+    it("keeps typing every answer when asked, also with bigger numbers", () => {
+        const profile: Profile = createTestProfile({ practice: "division", division: { ...defaults.division, difficulty: "hard", isAlwaysTyped: true } });
+        const session: Session = SessionUtils.create(profile, createSeededRandom(9));
+        expect(session.questions.every((question) => question.format === "keypad" && question.left % question.right === 0)).toBe(true);
+    });
+
+    it("shares a mix out evenly between the chosen operations", () => {
+        const profile: Profile = createTestProfile({ practice: "mix", mix: { ...defaults.mix, operations: ["addition", "multiplication", "division"] } });
+        const session: Session = SessionUtils.create(profile, createSeededRandom(10));
+        const counts: number[] = ["addition", "multiplication", "division"].map(
+            (operation) => session.questions.filter((question) => question.operation === operation).length
+        );
+        expect(session.questions).toHaveLength(10);
+        expect([...counts].sort()).toEqual([3, 3, 4]);
+        expect(session.questions.every((question) => question.operation !== "subtraction")).toBe(true);
+    });
+
+    it("uses each operation's own settings inside a mix", () => {
+        const profile: Profile = createTestProfile({
+            practice: "mix",
+            mix: { ...defaults.mix, operations: ["subtraction", "multiplication"] },
+            subtraction: { ...defaults.subtraction, layout: "vertical" }
+        });
+        const session: Session = SessionUtils.create(profile, createSeededRandom(12));
+        const subtractions: Question[] = session.questions.filter((question) => question.operation === "subtraction");
+        const multiplications: Question[] = session.questions.filter((question) => question.operation === "multiplication");
+        expect(subtractions.every((question) => question.format === "vertical")).toBe(true);
+        expect(multiplications.every((question) => question.boxType === "fact")).toBe(true);
     });
 });

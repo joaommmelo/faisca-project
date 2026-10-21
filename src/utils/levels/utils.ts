@@ -8,7 +8,7 @@ export interface RecentAnswer {
     format: AnswerFormat;
 }
 
-// One per operation and difficulty ("addition:easy"); multiplication and division have a single track each.
+// One per operation and difficulty ("addition:easy", "multiplication:medium"). Subir de dificuldade keeps the others.
 export interface TrackProgress {
     level: number;
     points: number;
@@ -44,8 +44,8 @@ export class LevelsUtils {
         return 40;
     }
 
-    public static getTrackId(operation: Operation, difficulty: Difficulty | null): string {
-        return difficulty === null ? operation : `${operation}:${difficulty}`;
+    public static getTrackId(operation: Operation, difficulty: Difficulty): string {
+        return `${operation}:${difficulty}`;
     }
 
     public static createTrack(): TrackProgress {

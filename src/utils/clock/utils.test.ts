@@ -5,8 +5,9 @@ const up: ClockSettings = { isEnabled: true, direction: "up", reference: "defaul
 const down: ClockSettings = { isEnabled: true, direction: "down", reference: "record" };
 
 describe("ClockUtils", () => {
-    it("is off by default and counts up when switched on", () => {
-        expect(ClockUtils.createDefault()).toEqual({ isEnabled: false, direction: "up", reference: "default" });
+    it("is on by default, counting up towards 3 minutes", () => {
+        expect(ClockUtils.createDefault()).toEqual({ isEnabled: true, direction: "up", reference: "default" });
+        expect(ClockUtils.getDefaultMilliseconds()).toBe(180_000);
     });
 
     it("uses the record as reference, or 3 minutes while there is none", () => {

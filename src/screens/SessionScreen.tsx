@@ -3,10 +3,10 @@ import { useEffect, useEffectEvent, useId, useRef, useState, type ReactNode } fr
 import { ChoiceOptions } from "../components/ChoiceOptions.tsx";
 import { CoinStatus } from "../components/CoinStatus.tsx";
 import { Equation } from "../components/Equation.tsx";
-import { FeedbackSheet } from "../components/FeedbackSheet.tsx";
+import { FeedbackPanel } from "../components/FeedbackPanel.tsx";
 import { HelpButton, type HelpControl } from "../components/HelpButton.tsx";
 import { HintBubble } from "../components/HintBubble.tsx";
-import { CloseIcon } from "../components/Icons.tsx";
+import { CloseIcon, HomeIcon, PlayIcon } from "../components/Icons.tsx";
 import { KeypadAnswer } from "../components/KeypadAnswer.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
 import { SessionClock } from "../components/SessionClock.tsx";
@@ -15,7 +15,6 @@ import { VerticalAnswer } from "../components/VerticalAnswer.tsx";
 import { ClockUtils, type ClockSettings } from "../utils/clock/utils.ts";
 import { HelpsUtils, type HelpUnavailableReason } from "../utils/helps/utils.ts";
 import { Messages } from "../utils/messages.ts";
-import { OperationsUtils } from "../utils/operations/utils.ts";
 import { ProfilesUtils, type Profile } from "../utils/profiles/utils.ts";
 import { ProgressionUtils, type Milestone } from "../utils/progression/utils.ts";
 import type { Question } from "../utils/questions/utils.ts";
@@ -24,8 +23,11 @@ import { SessionUtils, type AnswerRecord, type AttemptOutcome, type Session, typ
 import { VerticalUtils } from "../utils/vertical/utils.ts";
 import { WalletUtils } from "../utils/wallet/utils.ts";
 
-// The whole reward stays within a second; touching the screen moves on sooner. Misses and milestones wait for "Seguinte".
+// Every result moves on by itself after a short while; touching the screen or "Seguinte" moves on sooner.
+// A praise stays within a second, a milestone a little longer, and a correction long enough to read the answer.
 const PRAISE_DISPLAY_MILLISECONDS: number = 1000;
+const MILESTONE_DISPLAY_MILLISECONDS: number = 2000;
+const CORRECTION_DISPLAY_MILLISECONDS: number = 2500;
 
 interface SessionScreenProps {
     profile: Profile;
@@ -52,7 +54,15 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
     const question: Question = SessionUtils.getCurrentQuestion(session);
     const record: AnswerRecord | null = SessionUtils.getCurrentRecord(session);
     const clock: ClockSettings = ProfilesUtils.getClock(profile.settings);
-    const isAutoAdvancing: boolean = record !== null && record.isCorrect && answerMilestones.length === 0;
+    const autoAdvanceMilliseconds: number | null = (() => {
+        if (record === null) {
+            return null;
+        }
+        if (!record.isCorrect) {
+            return CORRECTION_DISPLAY_MILLISECONDS;
+        }
+        return answerMilestones.length > 0 ? MILESTONE_DISPLAY_MILLISECONDS : PRAISE_DISPLAY_MILLISECONDS;
+    })();
 
     const submitAnswer = (givenAnswer: number): AttemptOutcome => {
         const result = SessionUtils.submitAnswer(session, givenAnswer);
@@ -100,15 +110,15 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
         setSession(nextSession);
     };
 
-    const continueAfterPraise = useEffectEvent(() => goToNextQuestion());
+    const continueAfterFeedback = useEffectEvent(() => goToNextQuestion());
 
     useEffect(() => {
-        if (!isAutoAdvancing || isExitConfirmOpen) {
+        if (autoAdvanceMilliseconds === null || isExitConfirmOpen) {
             return;
         }
-        const timeoutId: number = window.setTimeout(() => continueAfterPraise(), PRAISE_DISPLAY_MILLISECONDS);
+        const timeoutId: number = window.setTimeout(() => continueAfterFeedback(), autoAdvanceMilliseconds);
         return () => window.clearTimeout(timeoutId);
-    }, [isAutoAdvancing, isExitConfirmOpen]);
+    }, [autoAdvanceMilliseconds, isExitConfirmOpen, session.currentIndex]);
 
     useEffect(() => {
         if (isExitConfirmOpen || questionHeadingRef.current === null) {
@@ -125,7 +135,7 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
         onUse: requestHelp
     };
 
-    // One-step helps: two options fewer, a first step for + and −, a neighbouring fact for × and ÷.
+    // One-step helps: two options fewer, a neighbouring fact for the times tables, a first step for everything else.
     // Columns have their own steps inside VerticalAnswer.
     const oneStepHelp: ReactNode = (() => {
         if (record !== null) {
@@ -137,10 +147,28 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
         if (question.format === "choice") {
             return <HintBubble text={Messages.getChoiceHint()} />;
         }
-        if (OperationsUtils.isArithmetic(question.operation)) {
-            return <HintBubble text={Messages.getArithmeticHint(question, HelpsUtils.getArithmeticHint(question))} />;
+        if (question.boxType === "fact") {
+            return <HintBubble text={Messages.getNeighbourHint(HelpsUtils.getNeighbourFact(question, profile.boxes))} />;
         }
-        return <HintBubble text={Messages.getNeighbourHint(HelpsUtils.getNeighbourFact(question, profile.boxes))} />;
+        return <HintBubble text={Messages.getArithmeticHint(question, HelpsUtils.getArithmeticHint(question))} />;
+    })();
+    // The result, or the second-chance note, sits right under the question so it is never hidden.
+    const status: ReactNode = (() => {
+        if (record !== null) {
+            return (
+                <FeedbackPanel
+                    key={session.currentIndex}
+                    feedback={Messages.getFeedback(record, { variant: session.records.length, hasRetryAhead: SessionUtils.hasRetryAhead(session) })}
+                    isCorrect={record.isCorrect}
+                    milestones={answerMilestones}
+                    onContinue={goToNextQuestion}
+                />
+            );
+        }
+        if (tryAgainText !== null) {
+            return <TryAgainNote key={tryAgainCount} text={tryAgainText} />;
+        }
+        return null;
     })();
     const useChoiceHelp: HelpControl = {
         ...helpControl,
@@ -153,8 +181,9 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
     return (
         <main className={`screen screen--session screen--${question.operation}`}>
             <header className="session-header">
-                <button type="button" className="icon-button" aria-label="Sair do jogo" onClick={() => setIsExitConfirmOpen(true)}>
+                <button type="button" className="exit-button" onClick={() => setIsExitConfirmOpen(true)}>
                     <CloseIcon />
+                    Sair
                 </button>
                 <p className="session-header__label">
                     {question.isRetry ? (
@@ -187,17 +216,25 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
             )}
 
             {isExitConfirmOpen ? (
-                <section className="card stack" role="alertdialog" aria-labelledby={exitTitleId}>
+                <section className="card stack exit-confirm" role="alertdialog" aria-labelledby={exitTitleId}>
                     <MascotMessage mood="encourage" size={72}>
                         <span id={exitTitleId}>Queres sair do jogo?</span>
                     </MascotMessage>
                     <p className="hint">O que já fizeste fica guardado.</p>
-                    <div className="actions-row">
-                        <button type="button" className="button button--primary" autoFocus onClick={() => setIsExitConfirmOpen(false)}>
-                            Continuar a jogar
+                    {/* Yes and no answer the question directly, side by side and equally big, so neither looks like the wrong one. */}
+                    <div className="exit-confirm__choices">
+                        <button type="button" className="button exit-confirm__choice exit-confirm__choice--leave" onClick={onExit}>
+                            <HomeIcon />
+                            Sim, sair do jogo
                         </button>
-                        <button type="button" className="button button--secondary" onClick={onExit}>
-                            Sair
+                        <button
+                            type="button"
+                            className="button exit-confirm__choice exit-confirm__choice--stay"
+                            autoFocus
+                            onClick={() => setIsExitConfirmOpen(false)}
+                        >
+                            <PlayIcon />
+                            Não, continuar a jogar
                         </button>
                     </div>
                 </section>
@@ -207,14 +244,29 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
                         {Messages.getSpokenQuestion(question)}
                     </h1>
                     {question.format === "vertical" && (
-                        <VerticalAnswer key={session.currentIndex} question={question} record={record} help={helpControl} onSubmit={submitAnswer} />
+                        <VerticalAnswer
+                            key={session.currentIndex}
+                            question={question}
+                            record={record}
+                            status={status}
+                            help={helpControl}
+                            onSubmit={submitAnswer}
+                        />
                     )}
                     {question.format === "keypad" && (
-                        <KeypadAnswer key={session.currentIndex} question={question} record={record} help={oneStepHelp} onSubmit={submitAnswer} />
+                        <KeypadAnswer
+                            key={session.currentIndex}
+                            question={question}
+                            record={record}
+                            status={status}
+                            help={oneStepHelp}
+                            onSubmit={submitAnswer}
+                        />
                     )}
                     {question.format === "choice" && (
                         <>
                             <Equation question={question} typedAnswer="" isAnswered={record !== null} />
+                            {status}
                             <ChoiceOptions
                                 options={question.options}
                                 answer={question.answer}
@@ -226,21 +278,7 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
                             {record === null && !session.isCurrentHelped ? <HelpButton control={useChoiceHelp} /> : oneStepHelp}
                         </>
                     )}
-                    {tryAgainText !== null && record === null && <TryAgainNote key={tryAgainCount} text={tryAgainText} />}
-                    {record !== null && (
-                        <>
-                            {isAutoAdvancing && (
-                                <button type="button" className="tap-to-continue" tabIndex={-1} aria-hidden="true" onClick={goToNextQuestion} />
-                            )}
-                            <FeedbackSheet
-                                key={session.currentIndex}
-                                feedback={Messages.getFeedback(record, { variant: session.records.length, hasRetryAhead: SessionUtils.hasRetryAhead(session) })}
-                                isCorrect={record.isCorrect}
-                                milestones={answerMilestones}
-                                onContinue={goToNextQuestion}
-                            />
-                        </>
-                    )}
+                    {record !== null && <button type="button" className="tap-to-continue" tabIndex={-1} aria-hidden="true" onClick={goToNextQuestion} />}
                 </div>
             )}
         </main>

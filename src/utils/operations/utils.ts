@@ -1,9 +1,12 @@
+import type { Difficulty } from "../difficulties/utils.ts";
+
 export type Operation = "addition" | "subtraction" | "multiplication" | "division";
 
-// Practised by difficulty (Fácil, Médio, Difícil); multiplication and division are practised by times table.
-export type ArithmeticOperation = "addition" | "subtraction";
+// Addition and subtraction: the result typed, or the written column method.
+export type AdditiveOperation = "addition" | "subtraction";
 
-export type TablesOperation = "multiplication" | "division";
+// Multiplication and division: the times tables in Fácil, bigger numbers in Médio and Difícil.
+export type MultiplicativeOperation = "multiplication" | "division";
 
 export class OperationsUtils {
     public static getValidOperations(): Operation[] {
@@ -18,8 +21,17 @@ export class OperationsUtils {
         return "multiplication";
     }
 
-    public static isArithmetic(operation: Operation): operation is ArithmeticOperation {
+    public static isAdditive(operation: Operation): operation is AdditiveOperation {
         return operation === "addition" || operation === "subtraction";
+    }
+
+    public static isMultiplicative(operation: Operation): operation is MultiplicativeOperation {
+        return !this.isAdditive(operation);
+    }
+
+    // Fácil multiplication and division practise the times tables fact by fact; everything else practises skills.
+    public static usesTables(operation: Operation, difficulty: Difficulty): boolean {
+        return this.isMultiplicative(operation) && difficulty === "easy";
     }
 
     public static getSymbol(operation: Operation): string {

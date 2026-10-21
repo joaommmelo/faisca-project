@@ -97,15 +97,16 @@ export function SummaryScreen({ outcome, onAcceptOffer, onPlayAgain, onShowProgr
                 )}
             </section>
 
-            <div className="stack">
+            <button type="button" className="button button--secondary button--block" onClick={onShowProgress}>
+                Ver progresso
+            </button>
+
+            <div className="summary-actions">
+                <button type="button" className="button button--secondary" onClick={onHome}>
+                    Início
+                </button>
                 <button type="button" className="button button--play" onClick={onPlayAgain}>
                     Jogar outra vez
-                </button>
-                <button type="button" className="button button--secondary button--block" onClick={onShowProgress}>
-                    Ver progresso
-                </button>
-                <button type="button" className="button button--ghost" onClick={onHome}>
-                    Início
                 </button>
             </div>
         </main>

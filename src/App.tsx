@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { HomeScreen } from "./screens/HomeScreen.tsx";
 import { ProgressScreen } from "./screens/ProgressScreen.tsx";
 import { SessionScreen } from "./screens/SessionScreen.tsx";
+import { SetupScreen } from "./screens/SetupScreen.tsx";
 import { SummaryScreen } from "./screens/SummaryScreen.tsx";
 import { WelcomeScreen } from "./screens/WelcomeScreen.tsx";
 import { ProfilesUtils, type AppData, type Profile } from "./utils/profiles/utils.ts";
@@ -10,7 +11,7 @@ import { ProgressionUtils, type FinishSessionResult } from "./utils/progression/
 import type { SessionOutcome } from "./utils/session/utils.ts";
 import { StorageUtils, type LoadResult } from "./utils/storage/utils.ts";
 
-type View = { name: "home" } | { name: "session" } | { name: "summary"; outcome: SessionOutcome } | { name: "progress" };
+type View = { name: "home" } | { name: "setup" } | { name: "session" } | { name: "summary"; outcome: SessionOutcome } | { name: "progress" };
 
 export function App() {
     const [stored] = useState<LoadResult>(() => StorageUtils.load());
@@ -74,6 +75,15 @@ export function App() {
                     onHome={() => setView({ name: "home" })}
                 />
             );
+        case "setup":
+            return (
+                <SetupScreen
+                    profile={activeProfile}
+                    onSettingsChange={(settings) => updateActiveProfile((profile) => ({ ...profile, settings }))}
+                    onPlay={() => setView({ name: "session" })}
+                    onBack={() => setView({ name: "home" })}
+                />
+            );
         case "progress":
             return <ProgressScreen profile={activeProfile} onBack={() => setView({ name: "home" })} />;
         default:
@@ -86,8 +96,10 @@ export function App() {
                     onSelectProfile={(profileId) => setData(ProfilesUtils.select(data, profileId))}
                     onCreateProfile={(name) => setData(ProfilesUtils.add(data, name))}
                     onDeleteProfile={(profileId) => setData(ProfilesUtils.remove(data, profileId))}
-                    onSettingsChange={(settings) => updateActiveProfile((profile) => ({ ...profile, settings }))}
-                    onPlay={() => setView({ name: "session" })}
+                    onChoosePractice={(practice) => {
+                        updateActiveProfile((profile) => ({ ...profile, settings: { ...profile.settings, practice } }));
+                        setView({ name: "setup" });
+                    }}
                     onShowProgress={() => setView({ name: "progress" })}
                 />
             );

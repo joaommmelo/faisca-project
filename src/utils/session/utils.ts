@@ -2,10 +2,11 @@ import { ArithmeticUtils, type Skill } from "../arithmetic/utils.ts";
 import { FactsUtils, type Fact } from "../facts/utils.ts";
 import { LeitnerUtils } from "../leitner/utils.ts";
 import { LevelsUtils } from "../levels/utils.ts";
-import { OperationsUtils, type ArithmeticOperation, type Operation, type TablesOperation } from "../operations/utils.ts";
-import type { Profile } from "../profiles/utils.ts";
+import type { Difficulty } from "../difficulties/utils.ts";
+import { OperationsUtils, type MultiplicativeOperation, type Operation } from "../operations/utils.ts";
+import { ProfilesUtils, type Profile } from "../profiles/utils.ts";
 import type { ClockOutcome, Milestone, SessionOffer } from "../progression/utils.ts";
-import { QuestionsUtils, type Question } from "../questions/utils.ts";
+import { QuestionsUtils, type AnswerLayout, type Question } from "../questions/utils.ts";
 import { RandomUtils, type RandomSource } from "../random/utils.ts";
 
 // A finished question: every attempt given, and whether the last one was right.
@@ -72,10 +73,9 @@ export class SessionUtils {
     }
 
     public static create(profile: Profile, random: RandomSource = Math.random): Session {
-        const operation: Operation = profile.settings.operation;
-        const questions: Question[] = OperationsUtils.isArithmetic(operation)
-            ? this.createArithmeticQuestions(profile, operation, random)
-            : this.createTablesQuestions(profile, operation, random);
+        const operations: Operation[] = ProfilesUtils.getPracticeOperations(profile.settings);
+        const questions: Question[] =
+            operations.length === 1 ? this.createOperationQuestions(profile, operations[0], random) : this.createMixedQuestions(profile, operations, random);
         return { questions, currentIndex: 0, records: [], missedAttempts: [], isCurrentHelped: false, helpsUsed: 0 };
     }
 
@@ -180,7 +180,29 @@ export class SessionUtils {
         return [...session.questions.slice(0, retryIndex), retry, ...session.questions.slice(retryIndex)];
     }
 
-    private static createTablesQuestions(profile: Profile, operation: TablesOperation, random: RandomSource): Question[] {
+    // A full session of one operation, at that operation's own settings.
+    private static createOperationQuestions(profile: Profile, operation: Operation, random: RandomSource): Question[] {
+        const difficulty: Difficulty = ProfilesUtils.getDifficulty(profile.settings, operation);
+        if (OperationsUtils.isMultiplicative(operation) && OperationsUtils.usesTables(operation, difficulty)) {
+            return this.createTablesQuestions(profile, operation, random);
+        }
+        return this.createSkillQuestions(profile, operation, difficulty, random);
+    }
+
+    // The questions are shared out as evenly as possible (10 between 4 operations: 3, 3, 2, 2, the extra ones to
+    // operations drawn at random), then shuffled. Each operation still draws its weakest facts or skills first.
+    private static createMixedQuestions(profile: Profile, operations: Operation[], random: RandomSource): Question[] {
+        const total: number = this.getQuestionsPerSession();
+        const baseCount: number = Math.floor(total / operations.length);
+        const operationsWithExtra: Operation[] = RandomUtils.shuffle(operations, random).slice(0, total % operations.length);
+        const questions: Question[] = operations.flatMap((operation) => {
+            const count: number = baseCount + (operationsWithExtra.includes(operation) ? 1 : 0);
+            return this.createOperationQuestions(profile, operation, random).slice(0, count);
+        });
+        return RandomUtils.shuffle(questions, random);
+    }
+
+    private static createTablesQuestions(profile: Profile, operation: MultiplicativeOperation, random: RandomSource): Question[] {
         const facts: Fact[] = FactsUtils.getForTables(profile.settings[operation].tables);
         if (facts.length === 0) {
             throw new Error("Choose at least one table to start a session.");
@@ -201,8 +223,9 @@ export class SessionUtils {
     }
 
     // Each question trains one of the skills the level has opened, the weakest ones more often.
-    private static createArithmeticQuestions(profile: Profile, operation: ArithmeticOperation, random: RandomSource): Question[] {
-        const { difficulty, layout } = profile.settings[operation];
+    private static createSkillQuestions(profile: Profile, operation: Operation, difficulty: Difficulty, random: RandomSource): Question[] {
+        const layout: AnswerLayout = ProfilesUtils.getLayout(profile.settings, operation);
+        const isAlwaysTyped: boolean = ProfilesUtils.isAlwaysTyped(profile.settings, operation);
         const level: number = LevelsUtils.getTrack(profile.tracks, LevelsUtils.getTrackId(operation, difficulty)).level;
         const skills: Skill[] = ArithmeticUtils.getOpenSkills(operation, difficulty, level);
 
@@ -219,7 +242,17 @@ export class SessionUtils {
                 let candidate: Question | null = null;
                 for (let attempt = 0; attempt < this.getMaxDrawAttempts(); attempt++) {
                     const { left, right } = ArithmeticUtils.generate(operation, difficulty, skill, random);
-                    candidate = QuestionsUtils.buildArithmetic({ operation, difficulty, skill, left, right, layout, skillBoxes: profile.skillBoxes, random });
+                    candidate = QuestionsUtils.buildForSkill({
+                        operation,
+                        difficulty,
+                        skill,
+                        left,
+                        right,
+                        layout,
+                        isAlwaysTyped,
+                        skillBoxes: profile.skillBoxes,
+                        random
+                    });
                     if (!usedIds.includes(candidate.id)) {
                         return candidate;
                     }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { HelpsUtils, type VerticalHelpStep } from "../utils/helps/utils.ts";
 import { Messages } from "../utils/messages.ts";
 import type { Question } from "../utils/questions/utils.ts";
@@ -12,6 +12,8 @@ import { VerticalProblem } from "./VerticalProblem.tsx";
 interface VerticalAnswerProps {
     question: Question;
     record: AnswerRecord | null;
+    // The result or the second-chance note, shown right under the sum.
+    status: ReactNode;
     help: HelpControl;
     onSubmit: (givenAnswer: number) => AttemptOutcome;
 }
@@ -22,7 +24,7 @@ interface HelpProgress {
 }
 
 // Writing a sum in columns. Mount it with a key per question so every question starts with empty cells.
-export function VerticalAnswer({ question, record, help, onSubmit }: VerticalAnswerProps) {
+export function VerticalAnswer({ question, record, status, help, onSubmit }: VerticalAnswerProps) {
     const columns: VerticalColumn[] = VerticalUtils.getColumns(question);
     const [entry, setEntry] = useState<VerticalEntry>(() => VerticalUtils.createEntry(columns.length));
     const [wrongColumns, setWrongColumns] = useState<number[]>([]);
@@ -62,9 +64,10 @@ export function VerticalAnswer({ question, record, help, onSubmit }: VerticalAns
             setRevealedMarks([...revealedMarks, ...VerticalUtils.getHelpMarkColumns(columns, column)]);
         }
         if (step === "digit" && resultDigit !== null) {
-            const written: VerticalEntry = VerticalUtils.revealDigit(entry, column, resultDigit);
-            const needsCarryMark: boolean = columns[column].carryOut && !written.marks[column + 1];
-            setEntry(needsCarryMark ? VerticalUtils.toggleMark(written, column + 1) : written);
+            setEntry(VerticalUtils.revealDigit(entry, column, resultDigit));
+            if (columns[column].carryOut) {
+                setRevealedMarks([...revealedMarks, column + 1]);
+            }
         }
     };
 
@@ -88,8 +91,8 @@ export function VerticalAnswer({ question, record, help, onSubmit }: VerticalAns
                 revealedMarks={revealedMarks}
                 isAnswered={isAnswered}
                 onSelectCell={(column) => setEntry(VerticalUtils.moveCursor(entry, column))}
-                onToggleMark={(column) => setEntry(VerticalUtils.toggleMark(entry, column))}
             />
+            {status}
             {!isAnswered && <HelpButton control={{ ...help, onUse: showNextHelpStep }} />}
             {hintText !== null && <HintBubble text={hintText} />}
             <NumericKeypad

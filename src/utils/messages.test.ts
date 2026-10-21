@@ -14,6 +14,7 @@ const question: Question = {
     allowsChoice: true,
     options: [48, 56, 63, 65],
     isRetry: false,
+    boxType: "fact",
     boxKey: "7x8",
     trackId: "multiplication"
 };
@@ -108,5 +109,39 @@ describe("Messages.getClockOutcomeLines", () => {
             "Mais 0:10 do que os 3 minutos. Para a próxima!",
             "Os recordes contam quando acertas todas à primeira."
         ]);
+    });
+});
+
+describe("Messages for bigger numbers and mixes", () => {
+    it("describes each difficulty in a few words", () => {
+        expect(Messages.getDifficultyDetail("addition", "medium")).toBe("até 100");
+        expect(Messages.getDifficultyDetail("multiplication", "easy")).toBe("tabuadas");
+        expect(Messages.getDifficultyDetail("multiplication", "medium")).toBe("como 23 × 4");
+        expect(Messages.getDifficultyDetail("division", "hard")).toBe("como 936 ÷ 4");
+    });
+
+    it("names the operation in an offer, because it can come from a mix", () => {
+        expect(Messages.getOfferText({ kind: "unlock", operation: "division", difficulty: "medium" }).text).toBe(
+            "Já podes experimentar a Divisão no Médio, com contas como 84 ÷ 4."
+        );
+    });
+
+    it("words the first-step hints", () => {
+        const multiplication: Question = { ...question, left: 23, right: 4, result: 92, answer: 92, boxType: "skill" };
+        const division: Question = { ...question, operation: "division", left: 72, right: 4, result: 18, answer: 18, boxType: "skill" };
+        expect(
+            Messages.getArithmeticHint(multiplication, { kind: "partial", firstStep: { left: 20, right: 4, result: 80 }, rest: { left: 3, right: 4 } })
+        ).toBe("Pista: 20 × 4 = 80. Agora junta 3 × 4.");
+        expect(Messages.getArithmeticHint(division, { kind: "partial", firstStep: { left: 40, right: 4, result: 10 }, rest: { left: 32, right: 4 } })).toBe(
+            "Pista: 40 ÷ 4 = 10. Agora faz 32 ÷ 4 e junta."
+        );
+        expect(Messages.getArithmeticHint(multiplication, { kind: "round", base: { left: 2, right: 4, result: 8 }, zeros: 1 })).toBe(
+            "Pista: 2 × 4 = 8. Agora junta um zero."
+        );
+    });
+
+    it("says why Jogar is off", () => {
+        expect(Messages.getPlayProblem("too-few-operations")).toBe("Escolhe pelo menos 2 contas para misturar.");
+        expect(Messages.getPlayProblem("no-tables")).toBe("Escolhe pelo menos uma tabuada.");
     });
 });

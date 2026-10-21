@@ -1,3 +1,4 @@
+import { InstallCard } from "../components/InstallCard.tsx";
 import { Logo } from "../components/Logo.tsx";
 import { Mascot } from "../components/Mascot.tsx";
 import { ProfileForm } from "../components/ProfileForm.tsx";
@@ -19,6 +20,7 @@ export function WelcomeScreen({ data, onCreateProfile }: WelcomeScreenProps) {
             <section className="card">
                 <ProfileForm data={data} title={Messages.getWelcomeQuestion()} submitLabel="Começar" onSubmit={onCreateProfile} />
             </section>
+            <InstallCard />
         </main>
     );
 }

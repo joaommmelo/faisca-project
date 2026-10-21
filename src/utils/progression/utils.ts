@@ -4,7 +4,7 @@ import { ClockUtils, type ClockSettings } from "../clock/utils.ts";
 import { DifficultiesUtils, type Difficulty } from "../difficulties/utils.ts";
 import { LeitnerUtils, type LeitnerBoxes } from "../leitner/utils.ts";
 import { LevelsUtils, type RecentAnswer, type RecordTrackAnswerResult, type TrackProgress } from "../levels/utils.ts";
-import { OperationsUtils, type ArithmeticOperation, type Operation } from "../operations/utils.ts";
+import type { Operation } from "../operations/utils.ts";
 import { ProfilesUtils, type Profile } from "../profiles/utils.ts";
 import { RecordsUtils, type RecordCategory, type RegisterTimeResult } from "../records/utils.ts";
 import { SessionUtils, type AnswerRecord, type SessionSummary } from "../session/utils.ts";
@@ -18,8 +18,12 @@ export interface ApplyRecordResult {
     milestones: Milestone[];
 }
 
-// What the end of a session proposes: the next difficulty, or a step back after a hard run.
-export type SessionOffer = { kind: "unlock"; difficulty: Difficulty } | { kind: "safety-net"; difficulty: Difficulty };
+// What the end of a session proposes for the operation just played: the next difficulty, or a step back after a hard run.
+export interface SessionOffer {
+    kind: "unlock" | "safety-net";
+    operation: Operation;
+    difficulty: Difficulty;
+}
 
 // How the session went against the clock, when it was on.
 export interface ClockOutcome {
@@ -36,6 +40,11 @@ export interface ClockOutcome {
 export interface FinishedSession {
     summary: SessionSummary;
     elapsedMilliseconds: number | null;
+}
+
+interface OfferTarget {
+    operation: Operation;
+    difficulty: Difficulty;
 }
 
 interface TimedProfile {
@@ -79,9 +88,9 @@ export class ProgressionUtils {
 
         const { question } = record;
         const isCorrect: boolean = SessionUtils.isFirstTryCorrect(record);
-        const isTablesQuestion: boolean = !OperationsUtils.isArithmetic(question.operation);
-        const boxes: LeitnerBoxes = isTablesQuestion ? LeitnerUtils.applyAnswer(profile.boxes, question.boxKey, isCorrect) : profile.boxes;
-        const skillBoxes: LeitnerBoxes = isTablesQuestion ? profile.skillBoxes : LeitnerUtils.applySkillAnswer(profile.skillBoxes, question.boxKey, isCorrect);
+        const isFact: boolean = question.boxType === "fact";
+        const boxes: LeitnerBoxes = isFact ? LeitnerUtils.applyAnswer(profile.boxes, question.boxKey, isCorrect) : profile.boxes;
+        const skillBoxes: LeitnerBoxes = isFact ? profile.skillBoxes : LeitnerUtils.applySkillAnswer(profile.skillBoxes, question.boxKey, isCorrect);
 
         const recentAnswer: RecentAnswer = { questionId: question.id, isCorrect, format: question.format };
         const trackResult: RecordTrackAnswerResult = LevelsUtils.recordAnswer(LevelsUtils.getTrack(profile.tracks, question.trackId), recentAnswer);
@@ -112,32 +121,39 @@ export class ProgressionUtils {
     public static finishSession(profile: Profile, now: moment.Moment, finished: FinishedSession): FinishSessionResult {
         const timed: TimedProfile = this.registerClock(profile, finished);
         const counted: Profile = { ...timed.profile, stats: StatsUtils.registerSession(profile.stats, now) };
-        const operation: Operation = counted.settings.operation;
-        if (!OperationsUtils.isArithmetic(operation)) {
-            return { profile: counted, offer: null, clock: timed.clock };
-        }
-
-        const unlockable: Difficulty | null = this.getUnlockableDifficulty(counted, operation);
-        if (unlockable !== null) {
+        // A mix checks each of its operations; the first unlock wins over any safety net.
+        const operations: Operation[] = ProfilesUtils.getPracticeOperations(counted.settings);
+        const unlock: OfferTarget | null = this.findTarget(operations, (operation) => this.getUnlockableDifficulty(counted, operation));
+        if (unlock !== null) {
             return {
-                profile: { ...counted, unlockedDifficulties: { ...counted.unlockedDifficulties, [operation]: unlockable } },
-                offer: { kind: "unlock", difficulty: unlockable },
+                profile: { ...counted, unlockedDifficulties: { ...counted.unlockedDifficulties, [unlock.operation]: unlock.difficulty } },
+                offer: { kind: "unlock", ...unlock },
                 clock: timed.clock
             };
         }
 
-        const saferDifficulty: Difficulty | null = this.getSafetyNetDifficulty(counted, operation);
-        if (saferDifficulty !== null) {
-            const trackId: string = LevelsUtils.getTrackId(operation, counted.settings[operation].difficulty);
+        const saferTarget: OfferTarget | null = this.findTarget(operations, (operation) => this.getSafetyNetDifficulty(counted, operation));
+        if (saferTarget !== null) {
+            const trackId: string = LevelsUtils.getTrackId(saferTarget.operation, ProfilesUtils.getDifficulty(counted.settings, saferTarget.operation));
             const track: TrackProgress = LevelsUtils.getTrack(counted.tracks, trackId);
             return {
                 profile: { ...counted, tracks: { ...counted.tracks, [trackId]: { ...track, answersSinceSafetyNet: 0 } } },
-                offer: { kind: "safety-net", difficulty: saferDifficulty },
+                offer: { kind: "safety-net", ...saferTarget },
                 clock: timed.clock
             };
         }
 
         return { profile: counted, offer: null, clock: timed.clock };
+    }
+
+    private static findTarget(operations: Operation[], getDifficulty: (operation: Operation) => Difficulty | null): OfferTarget | null {
+        for (const operation of operations) {
+            const difficulty: Difficulty | null = getDifficulty(operation);
+            if (difficulty !== null) {
+                return { operation, difficulty };
+            }
+        }
+        return null;
     }
 
     // The reference is read before this session's time is registered, so it matches what the clock showed.
@@ -170,18 +186,20 @@ export class ProgressionUtils {
         };
     }
 
-    // Either offer is accepted by playing its difficulty; nothing is lost in the one left behind.
+    // Either offer is accepted by playing its operation at its difficulty, on its own even after a mix; nothing is
+    // lost in the one left behind.
     public static acceptOffer(profile: Profile, offer: SessionOffer): Profile {
-        const operation: Operation = profile.settings.operation;
-        if (!OperationsUtils.isArithmetic(operation)) {
-            return profile;
-        }
-        return { ...profile, settings: { ...profile.settings, [operation]: { ...profile.settings[operation], difficulty: offer.difficulty } } };
+        const { operation } = offer;
+        return {
+            ...profile,
+            settings: { ...profile.settings, practice: operation, [operation]: { ...profile.settings[operation], difficulty: offer.difficulty } }
+        };
     }
 
     // Only from the highest open difficulty, and only once all its skills are open, so no skill is skipped.
-    public static getUnlockableDifficulty(profile: Profile, operation: ArithmeticOperation): Difficulty | null {
-        const difficulty: Difficulty = profile.settings[operation].difficulty;
+    // The times tables have no skills: the answers alone decide.
+    public static getUnlockableDifficulty(profile: Profile, operation: Operation): Difficulty | null {
+        const difficulty: Difficulty = ProfilesUtils.getDifficulty(profile.settings, operation);
         const next: Difficulty | null = DifficultiesUtils.getNext(difficulty);
         if (next === null || difficulty !== profile.unlockedDifficulties[operation]) {
             return null;
@@ -202,8 +220,8 @@ export class ProgressionUtils {
         return isReady ? next : null;
     }
 
-    public static getSafetyNetDifficulty(profile: Profile, operation: ArithmeticOperation): Difficulty | null {
-        const difficulty: Difficulty = profile.settings[operation].difficulty;
+    public static getSafetyNetDifficulty(profile: Profile, operation: Operation): Difficulty | null {
+        const difficulty: Difficulty = ProfilesUtils.getDifficulty(profile.settings, operation);
         const previous: Difficulty | null = DifficultiesUtils.getPrevious(difficulty);
         if (previous === null) {
             return null;

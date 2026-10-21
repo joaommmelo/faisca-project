@@ -43,6 +43,11 @@ export class DifficultiesUtils {
         }
     }
 
+    // Numbers in the hundreds (chains of carries, zeros to borrow from or inside a result) only appear in Difícil.
+    public static hasHundreds(difficulty: Difficulty): boolean {
+        return this.getLimit(difficulty) > 100;
+    }
+
     public static getNext(difficulty: Difficulty): Difficulty | null {
         const difficulties: Difficulty[] = this.getValidDifficulties();
         const index: number = difficulties.indexOf(difficulty);

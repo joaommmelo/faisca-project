@@ -4,15 +4,25 @@ import type { ProfileSettings } from "../profiles/utils.ts";
 import type { AnswerLayout, PracticeMode } from "../questions/utils.ts";
 import type { SessionSummary } from "../session/utils.ts";
 
-// Sessions only compare with sessions played the same way: same difficulty and layout, or same tables and mode.
-export interface RecordCategory {
+// Sessions only compare with sessions played the same way: same operation and difficulty, plus the same layout,
+// or the same tables and mode when practising the times tables, and the same way of answering.
+export interface OperationCategory {
+    kind: "operation";
     operation: Operation;
-    difficulty: Difficulty | null;
+    difficulty: Difficulty;
     layout: AnswerLayout | null;
     tables: number[] | null;
     mode: PracticeMode | null;
     isAlwaysTyped: boolean;
 }
+
+// A mix compares with mixes of the same operations, each played the same way.
+export interface MixCategory {
+    kind: "mix";
+    parts: OperationCategory[];
+}
+
+export type RecordCategory = OperationCategory | MixCategory;
 
 export interface BestTime {
     category: RecordCategory;
@@ -30,20 +40,33 @@ export interface RegisterTimeResult {
 
 export class RecordsUtils {
     public static getCategory(settings: ProfileSettings): RecordCategory {
-        const operation: Operation = settings.operation;
-        if (OperationsUtils.isArithmetic(operation)) {
-            const { difficulty, layout } = settings[operation];
-            return { operation, difficulty, layout, tables: null, mode: null, isAlwaysTyped: false };
+        if (settings.practice === "mix") {
+            return { kind: "mix", parts: settings.mix.operations.map((operation) => this.getOperationCategory(settings, operation)) };
         }
-        const { tables, isAlwaysTyped } = settings[operation];
+        return this.getOperationCategory(settings, settings.practice);
+    }
+
+    public static getOperationCategory(settings: ProfileSettings, operation: Operation): OperationCategory {
+        if (OperationsUtils.isAdditive(operation)) {
+            const { difficulty, layout } = settings[operation];
+            return { kind: "operation", operation, difficulty, layout, tables: null, mode: null, isAlwaysTyped: false };
+        }
+        const { difficulty, tables, isAlwaysTyped } = settings[operation];
+        if (!OperationsUtils.usesTables(operation, difficulty)) {
+            return { kind: "operation", operation, difficulty, layout: null, tables: null, mode: null, isAlwaysTyped };
+        }
         const mode: PracticeMode | null = operation === "multiplication" ? settings.multiplication.mode : null;
-        return { operation, difficulty: null, layout: null, tables: [...tables].sort((first, second) => first - second), mode, isAlwaysTyped };
+        const sortedTables: number[] = [...tables].sort((first, second) => first - second);
+        return { kind: "operation", operation, difficulty, layout: null, tables: sortedTables, mode, isAlwaysTyped };
     }
 
     public static getCategoryId(category: RecordCategory): string {
+        if (category.kind === "mix") {
+            return ["mix", ...category.parts.map((part) => this.getCategoryId(part))].join("|");
+        }
         return [
             category.operation,
-            category.difficulty ?? "",
+            category.difficulty,
             category.layout ?? "",
             category.tables === null ? "" : category.tables.join("-"),
             category.mode ?? "",

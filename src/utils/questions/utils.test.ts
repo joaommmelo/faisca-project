@@ -84,9 +84,10 @@ describe("QuestionsUtils.buildDivision", () => {
     });
 });
 
-describe("QuestionsUtils.buildArithmetic", () => {
+describe("QuestionsUtils.buildForSkill", () => {
     it("writes in columns when the child chose the vertical layout", () => {
-        const question: Question = QuestionsUtils.buildArithmetic({
+        const question: Question = QuestionsUtils.buildForSkill({
+            isAlwaysTyped: false,
             operation: "addition",
             difficulty: "medium",
             skill: "carry",
@@ -110,8 +111,8 @@ describe("QuestionsUtils.buildArithmetic", () => {
             right: 7,
             layout: "result" as const
         };
-        expect(QuestionsUtils.buildArithmetic({ ...base, skillBoxes: {} }).format).toBe("choice");
-        expect(QuestionsUtils.buildArithmetic({ ...base, skillBoxes: { "subtraction:easy:borrow": 3 } }).format).toBe("keypad");
+        expect(QuestionsUtils.buildForSkill({ isAlwaysTyped: false, ...base, skillBoxes: {} }).format).toBe("choice");
+        expect(QuestionsUtils.buildForSkill({ isAlwaysTyped: false, ...base, skillBoxes: { "subtraction:easy:borrow": 3 } }).format).toBe("keypad");
     });
 });
 

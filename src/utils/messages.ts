@@ -1,10 +1,10 @@
 import type { Skill } from "./arithmetic/utils.ts";
 import { ClockUtils, type ClockDirection, type ClockReference, type ClockSettings } from "./clock/utils.ts";
 import { DifficultiesUtils, type Difficulty } from "./difficulties/utils.ts";
-import { HelpsUtils, type ArithmeticHint, type HelpUnavailableReason, type NeighbourFact, type VerticalHelpStep } from "./helps/utils.ts";
+import { HelpsUtils, type ArithmeticHint, type HelpUnavailableReason, type Calculation, type VerticalHelpStep } from "./helps/utils.ts";
 import { OperationsUtils, type Operation } from "./operations/utils.ts";
 import type { ClockOutcome, Milestone, SessionOffer } from "./progression/utils.ts";
-import { ProfilesUtils, type ProfileNameProblem } from "./profiles/utils.ts";
+import { ProfilesUtils, type PlayProblem, type Practice, type ProfileNameProblem } from "./profiles/utils.ts";
 import type { AnswerLayout, PracticeMode, Question } from "./questions/utils.ts";
 import type { RecordCategory } from "./records/utils.ts";
 import { SessionUtils, type AnswerRecord } from "./session/utils.ts";
@@ -103,6 +103,21 @@ export class Messages {
         }
     }
 
+    public static getMixName(): string {
+        return "Misturado";
+    }
+
+    public static getPracticeName(practice: Practice): string {
+        return practice === "mix" ? this.getMixName() : this.getOperationName(practice);
+    }
+
+    public static getPlayProblem(problem: PlayProblem): string {
+        if (problem === "too-few-operations") {
+            return `Escolhe pelo menos ${ProfilesUtils.getMinMixOperations()} contas para misturar.`;
+        }
+        return "Escolhe pelo menos uma tabuada.";
+    }
+
     public static getDifficultyName(difficulty: Difficulty): string {
         switch (difficulty) {
             case "easy":
@@ -114,8 +129,19 @@ export class Messages {
         }
     }
 
-    public static getDifficultyRange(difficulty: Difficulty): string {
-        return `até ${DifficultiesUtils.getLimit(difficulty)}`;
+    // What a difficulty asks, in a few words: a range for + and −, an example for × and ÷.
+    public static getDifficultyDetail(operation: Operation, difficulty: Difficulty): string {
+        if (OperationsUtils.isAdditive(operation)) {
+            return `até ${DifficultiesUtils.getLimit(difficulty)}`;
+        }
+        if (OperationsUtils.usesTables(operation, difficulty)) {
+            return "tabuadas";
+        }
+        const examples: Record<"multiplication" | "division", Record<"medium" | "hard", string>> = {
+            multiplication: { medium: "como 23 × 4", hard: "como 157 × 6" },
+            division: { medium: "como 84 ÷ 4", hard: "como 936 ÷ 4" }
+        };
+        return examples[operation][difficulty === "medium" ? "medium" : "hard"];
     }
 
     public static getLayoutLabel(layout: AnswerLayout): string {
@@ -134,8 +160,14 @@ export class Messages {
                 return "Sem empréstimo";
             case "borrow":
                 return "Com empréstimo";
-            default:
+            case "borrow-across-zero":
                 return "Empréstimo através do zero";
+            case "no-remainder":
+                return "Sem resto pelo caminho";
+            case "remainder":
+                return "Com resto pelo caminho";
+            default:
+                return "Zero no resultado";
         }
     }
 
@@ -144,10 +176,7 @@ export class Messages {
     }
 
     // The home screen's one-line summary of an operation: where the child is, not every level.
-    public static getOperationSummary(difficulty: Difficulty | null, level: number): string {
-        if (difficulty === null) {
-            return this.getLevelName(level);
-        }
+    public static getOperationSummary(difficulty: Difficulty, level: number): string {
         return `${this.getDifficultyName(difficulty)} · ${this.getLevelName(level).toLocaleLowerCase("pt-PT")}`;
     }
 
@@ -194,18 +223,29 @@ export class Messages {
 
     public static getArithmeticHint(question: Question, hint: ArithmeticHint): string {
         const symbol: string = OperationsUtils.getSymbol(question.operation);
-        if (hint.kind === "split") {
-            const { firstStep } = hint;
-            return `Pista: ${firstStep.left} ${symbol} ${firstStep.right} = ${firstStep.result}. Agora ${symbol} ${hint.remaining}.`;
+        switch (hint.kind) {
+            case "split":
+                return `Pista: ${hint.firstStep.left} ${symbol} ${hint.firstStep.right} = ${hint.firstStep.result}. Agora ${symbol} ${hint.remaining}.`;
+            case "partial": {
+                const firstStep: string = `${hint.firstStep.left} ${symbol} ${hint.firstStep.right} = ${hint.firstStep.result}`;
+                const rest: string = `${hint.rest.left} ${symbol} ${hint.rest.right}`;
+                return question.operation === "division" ? `Pista: ${firstStep}. Agora faz ${rest} e junta.` : `Pista: ${firstStep}. Agora junta ${rest}.`;
+            }
+            case "round": {
+                const zeros: string = hint.zeros === 1 ? "um zero" : `${hint.zeros} zeros`;
+                return `Pista: ${hint.base.left} ${symbol} ${hint.base.right} = ${hint.base.result}. Agora junta ${zeros}.`;
+            }
+            default: {
+                const direction: string = question.operation === "addition" ? "para a frente" : "para trás";
+                if (hint.unit === 10) {
+                    return `Pista: começa no ${hint.start} e conta ${hint.steps === 1 ? "1 dezena" : `${hint.steps} dezenas`} ${direction}.`;
+                }
+                return `Pista: começa no ${hint.start} e conta ${hint.steps} ${direction}.`;
+            }
         }
-        const direction: string = question.operation === "addition" ? "para a frente" : "para trás";
-        if (hint.unit === 10) {
-            return `Pista: começa no ${hint.start} e conta ${hint.steps === 1 ? "1 dezena" : `${hint.steps} dezenas`} ${direction}.`;
-        }
-        return `Pista: começa no ${hint.start} e conta ${hint.steps} ${direction}.`;
     }
 
-    public static getNeighbourHint(fact: NeighbourFact): string {
+    public static getNeighbourHint(fact: Calculation): string {
         return `Pista: ${fact.left} × ${fact.right} = ${fact.result}`;
     }
 
@@ -258,19 +298,21 @@ export class Messages {
         return helpedCount === 1 ? "1 com ajuda" : `${helpedCount} com ajuda`;
     }
 
+    // Names the operation too, because the offer can come from a mix.
     public static getOfferText(offer: SessionOffer): OfferText {
         const difficultyName: string = this.getDifficultyName(offer.difficulty);
+        const operationName: string = this.getOperationName(offer.operation);
         if (offer.kind === "unlock") {
             return {
                 title: "Desafio desbloqueado!",
-                text: `Já podes experimentar o ${difficultyName}, com contas ${this.getDifficultyRange(offer.difficulty)}.`,
+                text: `Já podes experimentar a ${operationName} no ${difficultyName}, com contas ${this.getDifficultyDetail(offer.operation, offer.difficulty)}.`,
                 acceptLabel: `Experimentar o ${difficultyName}`,
                 declineLabel: "Agora não"
             };
         }
         return {
             title: "Esta foi puxada!",
-            text: `Queres praticar um bocadinho no ${difficultyName}? Não perdes nível nem moedas.`,
+            text: `Queres praticar um bocadinho a ${operationName} no ${difficultyName}? Não perdes nível nem moedas.`,
             acceptLabel: `Praticar no ${difficultyName}`,
             declineLabel: "Continuar aqui"
         };
@@ -326,10 +368,13 @@ export class Messages {
     }
 
     public static getRecordCategoryName(category: RecordCategory): string {
-        const parts: string[] = [this.getOperationName(category.operation)];
-        if (category.difficulty !== null) {
-            parts.push(this.getDifficultyName(category.difficulty));
+        if (category.kind === "mix") {
+            const operations: string = category.parts
+                .map((part) => `${this.getOperationName(part.operation)} ${this.getDifficultyName(part.difficulty)}`)
+                .join(", ");
+            return `${this.getMixName()} · ${operations}`;
         }
+        const parts: string[] = [this.getOperationName(category.operation), this.getDifficultyName(category.difficulty)];
         if (category.layout !== null) {
             parts.push(category.layout === "vertical" ? "na vertical" : "só o resultado");
         }

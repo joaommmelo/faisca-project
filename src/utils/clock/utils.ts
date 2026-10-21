@@ -27,8 +27,9 @@ export class ClockUtils {
         return ["default", "record"];
     }
 
+    // On by default, counting up towards 3 minutes. It can always be switched off.
     public static createDefault(): ClockSettings {
-        return { isEnabled: false, direction: "up", reference: "default" };
+        return { isEnabled: true, direction: "up", reference: "default" };
     }
 
     public static getDefaultMinutes(): number {

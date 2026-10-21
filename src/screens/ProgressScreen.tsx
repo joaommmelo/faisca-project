@@ -8,7 +8,7 @@ import { ArithmeticUtils } from "../utils/arithmetic/utils.ts";
 import { DifficultiesUtils } from "../utils/difficulties/utils.ts";
 import { LevelsUtils } from "../utils/levels/utils.ts";
 import { Messages } from "../utils/messages.ts";
-import type { ArithmeticOperation } from "../utils/operations/utils.ts";
+import { OperationsUtils, type Operation } from "../utils/operations/utils.ts";
 import type { Profile } from "../utils/profiles/utils.ts";
 import { ProgressUtils } from "../utils/progress/utils.ts";
 import type { BestTime } from "../utils/records/utils.ts";
@@ -65,23 +65,9 @@ export function ProgressScreen({ profile, onBack }: ProgressScreenProps) {
 
             <RecordsCard profile={profile} />
 
-            <ArithmeticProgress profile={profile} operation="addition" />
-            <ArithmeticProgress profile={profile} operation="subtraction" />
-
-            <section className="card card--multiplication">
-                <h2 className="section-title">{Messages.getOperationName("multiplication")}</h2>
-                <LevelMeter track={LevelsUtils.getTrack(profile.tracks, LevelsUtils.getTrackId("multiplication", null))} />
-                <p className="hint hint--left">
-                    {masteredCount} de {ProgressUtils.getTotalFacts()} contas de cor
-                </p>
-                <ProgressMap boxes={profile.boxes} />
-            </section>
-
-            <section className="card card--division">
-                <h2 className="section-title">{Messages.getOperationName("division")}</h2>
-                <LevelMeter track={LevelsUtils.getTrack(profile.tracks, LevelsUtils.getTrackId("division", null))} />
-                <p className="hint hint--left">As divisões treinam as mesmas contas do mapa da multiplicação.</p>
-            </section>
+            {OperationsUtils.getValidOperations().map((operation) => (
+                <OperationProgress key={operation} profile={profile} operation={operation} />
+            ))}
         </main>
     );
 }
@@ -109,13 +95,14 @@ function RecordsCard({ profile }: { profile: Profile }) {
     );
 }
 
-interface ArithmeticProgressProps {
+interface OperationProgressProps {
     profile: Profile;
-    operation: ArithmeticOperation;
+    operation: Operation;
 }
 
-// One row per difficulty: its level and how each skill is going. Locked difficulties show what is ahead.
-function ArithmeticProgress({ profile, operation }: ArithmeticProgressProps) {
+// One row per difficulty: its level and how each skill is going, or the times-table map in Fácil × and ÷.
+// Locked difficulties show what is ahead.
+function OperationProgress({ profile, operation }: OperationProgressProps) {
     return (
         <section className={`card card--${operation}`}>
             <h2 className="section-title">{Messages.getOperationName(operation)}</h2>
@@ -126,11 +113,12 @@ function ArithmeticProgress({ profile, operation }: ArithmeticProgressProps) {
                         <li key={difficulty} className="difficulty-progress__item">
                             <p className="difficulty-progress__name">
                                 {Messages.getDifficultyName(difficulty)}
-                                <span className="difficulty-progress__range"> {Messages.getDifficultyRange(difficulty)}</span>
+                                <span className="difficulty-progress__range"> {Messages.getDifficultyDetail(operation, difficulty)}</span>
                             </p>
                             {isUnlocked ? (
                                 <>
                                     <LevelMeter track={LevelsUtils.getTrack(profile.tracks, LevelsUtils.getTrackId(operation, difficulty))} />
+                                    {OperationsUtils.usesTables(operation, difficulty) && <TablesProgress profile={profile} operation={operation} />}
                                     <ul className="skills">
                                         {ArithmeticUtils.getSkills(operation, difficulty).map((skill) => {
                                             const mastery: number = ProgressUtils.getMastery(
@@ -158,5 +146,25 @@ function ArithmeticProgress({ profile, operation }: ArithmeticProgressProps) {
                 })}
             </ul>
         </section>
+    );
+}
+
+interface TablesProgressProps {
+    profile: Profile;
+    operation: Operation;
+}
+
+// Division in Fácil trains the same facts as multiplication, so the map lives with multiplication only.
+function TablesProgress({ profile, operation }: TablesProgressProps) {
+    if (operation === "division") {
+        return <p className="hint hint--left">As divisões treinam as mesmas contas do mapa da multiplicação.</p>;
+    }
+    return (
+        <>
+            <p className="hint hint--left">
+                {ProgressUtils.countMastered(profile.boxes)} de {ProgressUtils.getTotalFacts()} contas de cor
+            </p>
+            <ProgressMap boxes={profile.boxes} />
+        </>
     );
 }

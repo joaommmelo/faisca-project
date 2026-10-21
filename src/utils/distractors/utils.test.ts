@@ -3,19 +3,19 @@ import { createSeededRandom } from "../../test/random.ts";
 import { ArithmeticUtils } from "../arithmetic/utils.ts";
 import { DifficultiesUtils } from "../difficulties/utils.ts";
 import { FactsUtils } from "../facts/utils.ts";
-import type { ArithmeticOperation } from "../operations/utils.ts";
+import type { AdditiveOperation } from "../operations/utils.ts";
 import type { QuestionKind } from "../questions/utils.ts";
 import { DistractorsUtils } from "./utils.ts";
 
 function multiplication(left: number, right: number, kind: QuestionKind = "direct") {
     const result: number = left * right;
     const answer: number = kind === "direct" ? result : kind === "missing-left" ? left : right;
-    return { operation: "multiplication" as const, kind, left, right, result, answer };
+    return { operation: "multiplication" as const, kind, left, right, result, answer, boxType: "fact" as const };
 }
 
-function arithmetic(operation: ArithmeticOperation, left: number, right: number) {
+function arithmetic(operation: AdditiveOperation, left: number, right: number) {
     const result: number = operation === "addition" ? left + right : left - right;
-    return { operation, kind: "direct" as const, left, right, result, answer: result };
+    return { operation, kind: "direct" as const, left, right, result, answer: result, boxType: "skill" as const };
 }
 
 describe("DistractorsUtils.getOptions", () => {
@@ -52,7 +52,8 @@ describe("DistractorsUtils.getOptions", () => {
                 left: fact.product,
                 right: fact.smallerFactor,
                 result: fact.largerFactor,
-                answer: fact.largerFactor
+                answer: fact.largerFactor,
+                boxType: "fact" as const
             };
             const options: number[] = DistractorsUtils.getOptions(question, random);
             expect(new Set(options).size).toBe(4);
@@ -62,7 +63,7 @@ describe("DistractorsUtils.getOptions", () => {
     });
 
     it("gives 4 distinct positive options for additions and subtractions of every difficulty", () => {
-        for (const operation of ["addition", "subtraction"] as ArithmeticOperation[]) {
+        for (const operation of ["addition", "subtraction"] as AdditiveOperation[]) {
             for (const difficulty of DifficultiesUtils.getValidDifficulties()) {
                 for (const skill of ArithmeticUtils.getSkills(operation, difficulty)) {
                     for (let attempt = 0; attempt < 50; attempt++) {
@@ -114,5 +115,37 @@ describe("DistractorsUtils.getDistractors", () => {
         const subtractionSlips = new Set(Array.from({ length: 40 }, () => DistractorsUtils.getDistractors(arithmetic("subtraction", 52, 27), random)).flat());
         expect(additionSlips.has(52)).toBe(true);
         expect(subtractionSlips.has(35)).toBe(true);
+    });
+});
+
+describe("DistractorsUtils with bigger multiplications and divisions", () => {
+    const random = createSeededRandom(77);
+    const skillQuestion = (operation: "multiplication" | "division", left: number, right: number) => {
+        const result: number = operation === "multiplication" ? left * right : left / right;
+        return { operation, kind: "direct" as const, left, right, result, answer: result, boxType: "skill" as const };
+    };
+
+    it("gives 4 distinct positive options for every skill and difficulty", () => {
+        for (const operation of ["multiplication", "division"] as const) {
+            for (const difficulty of ["medium", "hard"] as const) {
+                for (const skill of ArithmeticUtils.getSkills(operation, difficulty)) {
+                    for (let attempt = 0; attempt < 50; attempt++) {
+                        const { left, right } = ArithmeticUtils.generate(operation, difficulty, skill, random);
+                        const question = skillQuestion(operation, left, right);
+                        const options: number[] = DistractorsUtils.getOptions(question, random);
+                        expect(new Set(options).size).toBe(4);
+                        expect(options).toContain(question.answer);
+                        expect(options.every((option) => option > 0)).toBe(true);
+                    }
+                }
+            }
+        }
+    });
+
+    it("offers forgetting the carries as a slip", () => {
+        const slips = (left: number, right: number): Set<number> =>
+            new Set(Array.from({ length: 40 }, () => DistractorsUtils.getDistractors(skillQuestion("multiplication", left, right), random)).flat());
+        expect(slips(27, 4).has(88)).toBe(true);
+        expect(slips(157, 6).has(602)).toBe(true);
     });
 });

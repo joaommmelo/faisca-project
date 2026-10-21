@@ -13,7 +13,8 @@ const perfect: SessionSummary = { correctAtFirstTry: 10, helpedCount: 0, firstTr
 const untimed: FinishedSession = { summary: perfect, elapsedMilliseconds: null };
 
 function additionQuestion(format: AnswerFormat = "vertical", left: number = 37): Question {
-    const question: Question = QuestionsUtils.buildArithmetic({
+    const question: Question = QuestionsUtils.buildForSkill({
+        isAlwaysTyped: false,
         operation: "addition",
         difficulty: "easy",
         skill: "no-carry",
@@ -37,7 +38,7 @@ function profileAt(difficulty: Difficulty, track: Partial<TrackProgress>, unlock
     const base: Profile = createTestProfile();
     return {
         ...base,
-        settings: { ...base.settings, operation: "addition", addition: { ...base.settings.addition, difficulty } },
+        settings: { ...base.settings, practice: "addition", addition: { ...base.settings.addition, difficulty } },
         unlockedDifficulties: { ...base.unlockedDifficulties, addition: unlocked },
         tracks: { [`addition:${difficulty}`]: { level: 2, points: 0, recentAnswers: [], answersSinceSafetyNet: 0, ...track } }
     };
@@ -88,7 +89,7 @@ describe("ProgressionUtils.applyRecord", () => {
         const division: Question = QuestionsUtils.buildDivision({ id: "7x8", smallerFactor: 7, largerFactor: 8, product: 56 }, { boxes: {} });
         const result = ProgressionUtils.applyRecord(createTestProfile(), record(division));
         expect(result.profile.boxes["7x8"]).toBe(2);
-        expect(result.profile.tracks.division.points).toBe(division.format === "choice" ? 1 : 2);
+        expect(result.profile.tracks["division:easy"].points).toBe(division.format === "choice" ? 1 : 2);
     });
 
     it("celebrates a coin when the fifth right answer lands", () => {
@@ -148,7 +149,7 @@ describe("ProgressionUtils.getSafetyNetDifficulty", () => {
 describe("ProgressionUtils.finishSession", () => {
     it("unlocks right away and lets the child decide when to play it", () => {
         const result = ProgressionUtils.finishSession(profileAt("easy", { recentAnswers: answers(20, 18) }), now, untimed);
-        expect(result.offer).toEqual({ kind: "unlock", difficulty: "medium" });
+        expect(result.offer).toEqual({ kind: "unlock", operation: "addition", difficulty: "medium" });
         expect(result.profile.unlockedDifficulties.addition).toBe("medium");
         expect(result.profile.settings.addition.difficulty).toBe("easy");
         expect(result.profile.stats.sessionsCompleted).toBe(1);
@@ -162,7 +163,7 @@ describe("ProgressionUtils.finishSession", () => {
             wallet: { coins: 4, points: 6 }
         };
         const result = ProgressionUtils.finishSession(profile, now, untimed);
-        expect(result.offer).toEqual({ kind: "safety-net", difficulty: "easy" });
+        expect(result.offer).toEqual({ kind: "safety-net", operation: "addition", difficulty: "easy" });
         expect(result.profile.tracks["addition:medium"].answersSinceSafetyNet).toBe(0);
         expect(ProgressionUtils.getSafetyNetDifficulty(result.profile, "addition")).toBeNull();
 
@@ -174,13 +175,13 @@ describe("ProgressionUtils.finishSession", () => {
     });
 
     it("offers nothing in multiplication", () => {
-        expect(ProgressionUtils.finishSession(createTestProfile({ operation: "multiplication" }), now, untimed).offer).toBeNull();
+        expect(ProgressionUtils.finishSession(createTestProfile({ practice: "multiplication" }), now, untimed).offer).toBeNull();
     });
 });
 
 describe("ProgressionUtils.finishSession with the clock", () => {
     function timedProfile(changes: Partial<Profile> = {}): Profile {
-        const base: Profile = createTestProfile({ operation: "multiplication" });
+        const base: Profile = createTestProfile({ practice: "multiplication" });
         const clock = { isEnabled: true, direction: "down" as const, reference: "record" as const };
         return { ...base, ...changes, settings: { ...base.settings, multiplication: { ...base.settings.multiplication, clock } } };
     }
@@ -209,5 +210,47 @@ describe("ProgressionUtils.finishSession with the clock", () => {
 
     it("reports nothing when the clock is off", () => {
         expect(ProgressionUtils.finishSession(createTestProfile(), now, untimed).clock).toBeNull();
+    });
+});
+
+describe("ProgressionUtils with multiplication and division difficulties and mixes", () => {
+    function tablesProfile(recentAnswers: RecentAnswer[]): Profile {
+        const base: Profile = createTestProfile({ practice: "multiplication" });
+        return { ...base, tracks: { "multiplication:easy": { level: 1, points: 0, recentAnswers, answersSinceSafetyNet: 0 } } };
+    }
+
+    it("unlocks Médio from the times tables with the same answer rule", () => {
+        const result = ProgressionUtils.finishSession(tablesProfile(answers(20, 16)), now, untimed);
+        expect(result.offer).toEqual({ kind: "unlock", operation: "multiplication", difficulty: "medium" });
+        expect(result.profile.unlockedDifficulties.multiplication).toBe("medium");
+        expect(result.profile.unlockedDifficulties.addition).toBe("easy");
+    });
+
+    it("trains skill boxes, not facts, with bigger numbers", () => {
+        const question: Question = QuestionsUtils.buildForSkill({
+            operation: "multiplication",
+            difficulty: "medium",
+            skill: "carry",
+            left: 27,
+            right: 3,
+            layout: "result",
+            isAlwaysTyped: false,
+            skillBoxes: {}
+        });
+        const result = ProgressionUtils.applyRecord(createTestProfile(), record(question));
+        expect(result.profile.skillBoxes["multiplication:medium:carry"]).toBe(2);
+        expect(result.profile.boxes).toEqual({});
+        expect(result.profile.tracks["multiplication:medium"].points).toBe(question.format === "choice" ? 1 : 2);
+    });
+
+    it("finds an unlock in any operation of a mix and plays it on its own when accepted", () => {
+        const base: Profile = createTestProfile({ practice: "mix" });
+        const profile: Profile = { ...base, tracks: { "division:easy": { level: 1, points: 0, recentAnswers: answers(20, 18), answersSinceSafetyNet: 0 } } };
+        const result = ProgressionUtils.finishSession(profile, now, untimed);
+        expect(result.offer).toEqual({ kind: "unlock", operation: "division", difficulty: "medium" });
+
+        const accepted: Profile = ProgressionUtils.acceptOffer(result.profile, result.offer!);
+        expect(accepted.settings.practice).toBe("division");
+        expect(accepted.settings.division.difficulty).toBe("medium");
     });
 });

@@ -5,14 +5,15 @@ import { Celebration } from "./Celebration.tsx";
 import { CoinIcon, StarIcon } from "./Icons.tsx";
 import { Mascot } from "./Mascot.tsx";
 
-interface FeedbackSheetProps {
+interface FeedbackPanelProps {
     feedback: Feedback;
     isCorrect: boolean;
     milestones: Milestone[];
     onContinue: () => void;
 }
 
-export function FeedbackSheet({ feedback, isCorrect, milestones, onContinue }: FeedbackSheetProps) {
+// Right under the question, above the keypad or the options, so the result is always in view.
+export function FeedbackPanel({ feedback, isCorrect, milestones, onContinue }: FeedbackPanelProps) {
     const messageId: string = useId();
     const continueButtonRef = useRef<HTMLButtonElement>(null);
 
