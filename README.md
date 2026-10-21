@@ -37,7 +37,7 @@ O `npm run build` gera um site estático em `dist/` com caminhos relativos, por 
 
 ## Como está organizado
 
-```
+```text
 src/
   utils/        motor e lógica, sem React (cada pasta tem utils.ts + utils.test.ts)
     facts/        os 78 factos únicos (a × b com a ≤ b)

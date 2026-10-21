@@ -181,7 +181,7 @@ Começar pelo motor de perguntas e testes, depois a UI da sessão, depois o mapa
 
 ### Estrutura
 
-```
+```text
 src/
   utils/                    lógica pura, sem React; cada pasta tem utils.ts + utils.test.ts
     random/                 RandomUtils: shuffle, moeda ao ar, sorteio ponderado sem reposição
