@@ -24,7 +24,7 @@ npm run lint       # oxlint
 npm run build      # verifica os tipos (tsc) e gera docs/
 ```
 
-Os testes cobrem o motor (`src/utils/`): geradores por operação, competências, perguntas, distratores, sessão, níveis, moedas, desbloqueio, rede de segurança, ajudas, conta na vertical, perfis, armazenamento e a migração da v1.
+Os testes cobrem o motor (`src/utils/`): geradores por operação, competências, perguntas, distratores, sessão, níveis, moedas, desbloqueio, rede de segurança, ajudas, conta na vertical, relógio, recordes, perfis, armazenamento e as migrações de dados.
 
 ## Deploy
 
@@ -53,5 +53,5 @@ Depois da primeira visita a app abre sem rede. Quando há uma versão nova, apar
 ## Dados
 
 - Guardados no `localStorage` do browser, na chave `faisca:data`, por perfil. Sem contas, sem servidor e sem exportação.
-- Os dados da v1 são migrados automaticamente na primeira abertura da v2, sem perder progresso.
+- Os dados de versões anteriores (v1, v2) são migrados automaticamente na primeira abertura, sem perder progresso.
 - Se o browser não deixar guardar (por exemplo, com os dados de sites bloqueados), a app funciona na mesma e avisa no ecrã inicial que o progresso não fica guardado.
