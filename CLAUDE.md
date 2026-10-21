@@ -12,19 +12,21 @@ A v1 (só multiplicação) está na `main`. A v2 está na branch `v2`, ainda por
 - Soma e subtração por dificuldade (Fácil até 20, Médio até 100, Difícil até 1000), com tipos de competência (transporte e empréstimo), em resposta directa ou na vertical.
 - Conta na vertical com cursor da direita para a esquerda e feedback por coluna; o «e vai 1» e o empréstimo só aparecem por cima da conta quando a ajuda os mostra.
 - Segunda tentativa antes de mostrar a resposta; níveis que abrem competências mais difíceis; desbloqueio por convite; rede de segurança; mealheiro com moedas e ajudas graduadas.
-- Dados na versão 5, com migração testada de todas as anteriores (v1 → v2 → v3 → v4 → v5: caixas, tabuadas, níveis, moedas, recordes e estatísticas mantêm-se). Dados de uma versão mais nova nunca são reescritos. Aviso no ecrã inicial quando o browser não guarda.
+- Dados na versão 6, com migração testada de todas as anteriores (v1 → v2 → v3 → v4 → v5 → v6: caixas, tabuadas, níveis, moedas, recordes e estatísticas mantêm-se). Dados de uma versão mais nova nunca são reescritos. Aviso no ecrã inicial quando o browser não guarda.
 - PWA instalável (manifest, ícones, service worker) a funcionar sem rede; build em `docs/` para o GitHub Pages.
 - Publicada em <https://joaommmelo.github.io/faisca-project/> (repositório público; GitHub Pages a servir a pasta `/docs` da branch `v2`). Instala-se no ecrã principal: no iPhone e no iPad, Safari → Partilhar → «Adicionar ao ecrã principal»; no Android, Chrome → menu → «Instalar aplicação».
 - Pedidos de 21 de Outubro, depois da v2: ecrã inicial com as operações logo no topo e a Multiplicação por defeito; moedas no canto (abrem o mealheiro); «Quem vai jogar?» no fundo; ajuda em todos os formatos (na escolha múltipla tira 2 das 4 opções); «Escrever sempre a resposta» na multiplicação e na divisão; relógio por operação, para a frente ou para trás, contra 3 minutos ou contra o recorde; recordes por categoria nas sessões perfeitas; a moeda ganha voa para o saldo. Dados na versão 3, com migração da v2 e da v1.
 - Pedidos seguintes do mesmo dia (ver «Pedidos seguintes»): números maiores na multiplicação e na divisão; «Misturado» com 2, 3 ou 4 operações; início só com a escolha e um ecrã de preparação com «Mais opções»; resultado logo por baixo da conta e tudo a avançar sozinho; saída com «Sim, sair do jogo» / «Não, continuar a jogar»; relógio ligado por defeito (para a frente, meta de 3 minutos); caixas de escrever a azul; ajuda desactivada sem moedas; «Início» sempre à vista no resumo; sem as caixas do «e vai 1» na vertical. Dados na versão 4, com migração de todas as anteriores.
 - Escolha múltipla nas competências (soma, subtração e × ÷ com números maiores) enquanto a criança não acerta 8 das últimas 10 respostas dessa competência, e de volta quando começa a falhar. Antes seguia a caixa da competência, que enchia num jogo e tirava a escolha múltipla para sempre.
-- 231 testes unitários (Vitest) a passar; `tsc` e `oxlint` limpos.
-- Testado num Chrome headless a 360, 390 e 820 px, sem erros na consola nem scroll horizontal: todas as operações, a vertical com ajuda e empréstimo através do zero, os marcos, o convite de desbloqueio, a rede de segurança, a migração da v1 e o arranque sem rede.
+- **Desafio sem fim**, para adultos (ver «Desafio sem fim (para adultos)»): liga-se por perfil em «Avançado», no fundo do ecrã inicial. Perguntas seguidas, sempre escritas, cada uma com o seu tempo; a cada 5 certas sobe-se de nível, entram as outras operações, os números crescem até 7 algarismos e o tempo encurta; do nível 12 em diante fica tudo no máximo. Um erro ou o tempo a acabar terminam o desafio, e fica o recorde de certas. Não mexe no progresso da criança. Dados na versão 6.
+- 271 testes unitários (Vitest) a passar; `tsc` e `oxlint` limpos.
+- Testado num Chrome headless a 360, 390 e 820 px, sem erros na consola nem scroll horizontal: todas as operações, a vertical com ajuda e empréstimo através do zero, os marcos, o convite de desbloqueio, a rede de segurança, a migração da v1 e o arranque sem rede. No desafio: até ao nível 7, a subida de nível, o tempo parado com «Sair», o fim por erro e por tempo e o recorde; a conta mais larga (7 + 7 algarismos) cabe também a 320 px.
 
 **À espera de decisão do dono do projecto:**
 
 - Juntar a `v2` à `main`. Depois disso, mudar a fonte do GitHub Pages para a `main` (*Settings → Pages*, pasta `/docs`).
 - Ortografia: os modos dizem «Só directas» e «Directas + inversas», como no briefing. A escola segue o Acordo Ortográfico («diretas»). Mudar é só em `Messages.getModeLabel` (`src/utils/messages.ts`).
+- Desafio sem fim: os valores (5 certas por nível, 2 s + 3 s por algarismo, metade do tempo no nível 12) são um ponto de partida, para afinar a jogar. Estão todos em `ChallengeUtils` (`src/utils/challenge/utils.ts`).
 - Mascote: é um cão castanho genérico. Se chegar uma fotografia do cão real, ajustar `src/components/Mascot.tsx`, `public/favicon.svg` e os ícones em `public/icons/` às características dele.
 - Autoria dos 8 primeiros commits: estão com o email da conta de trabalho (`jmelo-catappult`). Passá-los para a conta pessoal implica reescrever o histórico já publicado (force push). Só com autorização explícita.
 
@@ -233,6 +235,12 @@ O pedido original da v2 está resumido aqui; as respostas do dono do projecto (2
 - **Caixas de escrever sem vermelho:** a cor da soma (laranja) fazia as caixas parecerem um erro antes de responder; tudo o que a criança preenche fica azul.
 - **Sem caixas do «e vai 1»:** a linha de caixas para a criança marcar o transporte e o empréstimo era confusa e não servia; saiu. A vertical começa logo nos números, e o 1 que vem de trás ou o empréstimo só aparecem por cima da conta, sem caixa, quando a ajuda os mostra.
 
+### Desafio sem fim (para adultos, 21 de Outubro de 2026)
+
+- **Pedido:** uma dificuldade «infinita», como o Balatro: cada vez mais difícil e com menos tempo para responder, até chegar a uma altura em que fica igual até o jogador falhar. É para adultos.
+- **Decisões do dono do projecto:** é uma opção avançada, ligada num interruptor; as operações misturam-se mais à medida que se sobe de nível; os números vão até 7 algarismos.
+- **Excepção ao briefing, só aqui:** o briefing evita relógios obrigatórios e mecânicas que penalizem, e a v2 é «usada só pela criança». O desafio tem as duas coisas porque é para adultos; por isso fica desligado em todos os perfis e só aparece no início de quem o liga.
+
 ---
 
 ## Como está implementado
@@ -259,11 +267,13 @@ src/
     helps/                  HelpsUtils: quando há ajuda, opções a tirar, pista em dois passos, passos na vertical, facto vizinho
     vertical/               VerticalUtils: colunas da conta e o que a criança já escreveu
     stats/                  StatsUtils: jogos, dias de prática, dias seguidos (moment)
+    challenge/              ChallengeUtils: desafio sem fim (níveis, operações, algarismos, tempo por pergunta, contas, relógio com pausa, recorde)
+    numbers/                NumbersUtils: números com espaço nos milhares a partir de 5 algarismos (pt-PT)
     progress/               ProgressUtils: domínio 0–5 de factos e competências, contas dominadas
     profiles/               ProfilesUtils: AppData, perfis, definições por operação, validação do nome
     storage/                StorageUtils: load/save no localStorage, disponibilidade, persistência
-    migrations/             MigrationsUtils: formas antigas congeladas e migrações v1 → v2 → v3 → v4 → v5
-    keypad/                 KeypadUtils: regras do valor escrito no teclado
+    migrations/             MigrationsUtils: formas antigas congeladas e migrações v1 → v2 → v3 → v4 → v5 → v6
+    keypad/                 KeypadUtils: regras do valor escrito no teclado (até 4 algarismos; 7 no desafio)
     time/                   TimeUtils: formatar o tempo do cronómetro (moment)
     install/                InstallUtils: como este dispositivo põe a app no ecrã principal
     messages.ts             Messages: as frases do Faísca que reagem à criança
@@ -272,7 +282,8 @@ src/
                             CoinStatus, SessionClock, Equation, ChoiceOptions, NumericKeypad, KeypadAnswer,
                             VerticalAnswer, VerticalProblem, HelpButton, HintBubble, TryAgainNote,
                             FeedbackPanel, ProfileForm, ProgressMap, InstallCard, sparkPath.ts
-  screens/                  WelcomeScreen, HomeScreen, SetupScreen, SessionScreen, SummaryScreen, ProgressScreen
+  screens/                  WelcomeScreen, HomeScreen, SetupScreen, SessionScreen, SummaryScreen, ProgressScreen,
+                            ChallengeScreen (regras e resultado do desafio), ChallengeSessionScreen
   hooks/useFocusOnMount.ts  foco no título ao abrir um ecrã (leitores de ecrã)
   hooks/useInstallPrompt.ts guarda o convite de instalação do browser e diz como instalar neste dispositivo
   test/                     random.ts (PRNG com semente, mulberry32) e profiles.ts (perfil de teste)
@@ -283,7 +294,7 @@ public/                     favicon, manifest.webmanifest, icons/ (any, maskable
 docs/                       o build, publicado pelo GitHub Pages (não editar à mão)
 ```
 
-`App.tsx` guarda o `AppData` e grava-o no `localStorage` sempre que muda, se o armazenamento estiver disponível e os dados não forem de uma versão mais nova. A navegação é um `useState<View>` (`home`, `setup`, `session`, `summary`, `progress`), sem router, por isso o build funciona em qualquer subcaminho (`base: "./"` no Vite). Sem perfis aparece o `WelcomeScreen`.
+`App.tsx` guarda o `AppData` e grava-o no `localStorage` sempre que muda, se o armazenamento estiver disponível e os dados não forem de uma versão mais nova. A navegação é um `useState<View>` (`home`, `setup`, `session`, `summary`, `progress`, `challenge`, `challenge-session`), sem router, por isso o build funciona em qualquer subcaminho (`base: "./"` no Vite). Sem perfis aparece o `WelcomeScreen`.
 
 Cada pergunta tem a forma `left (operador) right = result`, com `kind` a dizer qual dos termos se pede, `boxType` e `boxKey` (o facto das tabuadas, `"7x8"`, ou a competência, `"multiplication:medium:carry"`, que treina) e `trackId` (onde contam os níveis: `"addition:easy"`, `"multiplication:easy"`). O que se joga é `settings.practice`: uma operação ou `"mix"`.
 
@@ -334,6 +345,20 @@ Cada pergunta tem a forma `left (operador) right = result`, com `kind` a dizer q
 
 O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 a 12, por isso só 1 e 10 têm peso reduzido.
 
+**Desafio sem fim** (tudo em `ChallengeUtils`, salvo onde se diz):
+
+| Regra | Valor | Onde |
+| --- | --- | --- |
+| Níveis | sobe-se a cada 5 certas | `getAnswersPerLevel()` |
+| Operações | soma no nível 1; subtração no 3, multiplicação no 5, divisão no 7; cada pergunta sorteia uma das abertas | `getOperationEntryGap()`, `getOperations` |
+| Algarismos | cada operação entra com 2 (o maior número da conta: soma, número de partida, produto, dividendo) e ganha 1 por nível, até 7 | `getMinDigits()`, `getMaxDigits()`, `getDigits` |
+| Contas | + e −: o outro número tem pelo menos 2 algarismos e no máximo menos 1 (37 + 45, 1 234 567 + 345 678); subtração sempre positiva; × e ÷ por um algarismo de 2 a 9, divisão exacta; nunca a mesma pergunta seguida | `generate`, `createQuestion` |
+| Tempo por pergunta | (2 s + 3 s por algarismo) × um factor que desce por igual de 1 no nível 1 até 0,5 no nível 12 | `getTimeLimitMilliseconds`, `getSpeedFactor` |
+| Topo | nível 12: as quatro operações com 7 algarismos e metade do tempo; daí em diante nada muda até se falhar | `getTopLevel()` |
+| Fim | uma resposta errada (uma só tentativa) ou o tempo a acabar; «Sair» pára o tempo e pergunta, e terminar conta como fim | `ChallengeSessionScreen.tsx` |
+| Recorde | o maior número de certas numa corrida (pelo menos 1) | `isNewRecord`, `finishRun` |
+| Ritmo | certo: 0,5 s até à pergunta seguinte, 1,5 s numa subida de nível (com o que mudou); o tempo da pergunta não corre entretanto | `ChallengeSessionScreen.tsx` |
+
 ### Decisões tomadas onde o briefing e o pedido não diziam nada
 
 - Nas tabuadas, a caixa 3 (duas certas seguidas) é o limiar para a resposta escrita. Nas competências não serve: uma competência junta muitas perguntas, enche a caixa numa sessão e a escolha múltipla desaparecia depois do primeiro jogo. Por isso o formato de uma competência segue as últimas 10 respostas dela (8 certas → teclado). Pedido do dono do projecto, a 21 de Outubro de 2026, «para ver no que dá».
@@ -352,6 +377,10 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 - Sair a meio pede confirmação («O que já fizeste fica guardado.»).
 - Apagar um perfil, com confirmação, no fundo do ecrã inicial.
 - Nomes de perfil: até 20 caracteres, sem repetidos (ignora maiúsculas).
+- O desafio sem fim só muda o recorde: não conta como jogo nem como dia de prática, não dá moedas nem níveis e não tem ajudas.
+- No desafio, o interruptor fica num cartão «Avançado» no fundo do ecrã inicial, por perfil, desligado por defeito. Ligado, aparece um cartão «Desafio sem fim» por baixo do Misturado, com o recorde.
+- No desafio responde-se sempre no teclado: na escolha múltipla acertava-se 1 em 4 à sorte, e na vertical escreve-se devagar demais com o tempo a contar.
+- Números com 5 ou mais algarismos aparecem com espaço nos milhares (12 345, 1 234 567), como se escreve em pt-PT; até 4 algarismos ficam como estavam (1000). Nessas contas o resultado fica numa linha só dele, desde o início, para não saltar de linha enquanto se escreve.
 - O Faísca é tratado no masculino («Eu sou o Faísca»): é um cão. Correcção do dono do projecto, a 21 de Outubro de 2026.
 - O tempo fixo do relógio é de 3 minutos (`ClockUtils.getDefaultMinutes()`), igual em todas as operações.
 - A ajuda depois de uma primeira falha na escolha múltipla deixa também só 2 opções à vista (a certa e uma não tentada); a opção já tentada continua riscada.
@@ -364,7 +393,8 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 - **Níveis de domínio** (`--level-0` a `--level-5`), no mapa e nas competências: cinzento → pêssego → amarelo → amarelo-esverdeado → verde-claro → verde. Legendas: Por praticar, A começar, A aprender, A melhorar, Quase lá, Dominado.
 - **Tipografia:** Nunito (variável), alojada no próprio site através de `@fontsource-variable/nunito`, sem pedidos à Google (privacidade das crianças).
 - **Mascote** (`Mascot.tsx`): cão castanho de orelhas caídas escuras, mancha creme na testa e no focinho, coleira azul com uma chapa em forma de faísca. Expressões: `happy` (início), `cheer` (certo, convite de desbloqueio), `encourage` (tenta outra vez, errado, rede de segurança, sair), `proud` (resumo e progresso). É sempre decorativa (`aria-hidden`); a mensagem está no balão.
-- **Ecrã inicial** (só escolhe o que praticar): em cima, o logótipo e as moedas (botão que abre o mealheiro); o Faísca; cinco cartões grandes: as quatro operações (2 × 2, com «Fácil · nível 2») e o Misturado a toda a largura; Ver progresso; «Quem vai jogar?» no fundo.
+- **Ecrã inicial** (só escolhe o que praticar): em cima, o logótipo e as moedas (botão que abre o mealheiro); o Faísca; cinco cartões grandes: as quatro operações (2 × 2, com «Fácil · nível 2») e o Misturado a toda a largura; Ver progresso; «Quem vai jogar?» no fundo; por baixo, «Avançado», com o interruptor do desafio sem fim.
+- **Desafio sem fim:** cor própria, um ardósia sóbrio (`--op-challenge`), e o símbolo ∞. Antes de jogar, as regras e o recorde. Na sessão: «✕ Sair», «Nível n» e as certas numa pastilha verde; uma barra com o tempo que falta e os segundos, que fica em tom quente (nunca vermelho) no último quarto; a conta; a mensagem da subida de nível; o teclado. No fim: como acabou, a última conta com a resposta certa a verde (e o que se escreveu, se foi um erro), as certas, o nível e o recorde.
 - **Ecrã de preparação** (`SetupScreen`): «‹ Início» e as moedas; o nome da operação com a sua cor; a dificuldade com cadeados (no × e ÷ com o exemplo: «tabuadas», «como 23 × 4»); as tabuadas no Fácil do × e ÷, ou o formato no + e −; no Misturado, as quatro operações para ligar e desligar, cada uma com a sua dificuldade. «Mais opções» fechado: modo das tabuadas, «Escrever sempre a resposta», relógio. O Jogar fica fixo em baixo e diz porque está desligado.
 - **Sessão:** no topo, «✕ Sair», «Pergunta n de 10» e as moedas com cinco pontos até à próxima (meio ponto na escolha múltipla). Com o relógio ligado, uma pastilha com o tempo e a referência («de 3:00», «recorde 1:32»); no tempo extra fica em tom quente suave, sem alarme.
 - **Certo e errado não dependem só da cor:** certo tem visto, salto do Faísca e destaque verde; a opção escolhida errada fica riscada e tracejada; a vertical realça as colunas erradas.
@@ -379,14 +409,15 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 
 ### Dados guardados
 
-- Chave do `localStorage`: `faisca:data`. Forma (versão 5): `{ version: 5, profiles: Profile[], activeProfileId }`, com `Profile = { id, name, settings, boxes, skillBoxes, recentSkillAnswers, tracks, unlockedDifficulties, wallet, records, stats }`:
-  - `settings = { practice, addition: { difficulty, layout, clock }, subtraction: { difficulty, layout, clock }, multiplication: { difficulty, tables, mode, isAlwaysTyped, clock }, division: { difficulty, tables, isAlwaysTyped, clock }, mix: { operations, clock } }`, com `practice` uma operação ou `"mix"` e `clock = { isEnabled, direction, reference }`;
+- Chave do `localStorage`: `faisca:data`. Forma (versão 6): `{ version: 6, profiles: Profile[], activeProfileId }`, com `Profile = { id, name, settings, boxes, skillBoxes, recentSkillAnswers, tracks, unlockedDifficulties, wallet, records, stats, challengeRecord }`:
+  - `settings = { practice, addition: { difficulty, layout, clock }, subtraction: { difficulty, layout, clock }, multiplication: { difficulty, tables, mode, isAlwaysTyped, clock }, division: { difficulty, tables, isAlwaysTyped, clock }, mix: { operations, clock }, isChallengeEnabled }`, com `practice` uma operação ou `"mix"` e `clock = { isEnabled, direction, reference }`;
   - `records = { "<categoria>": { category, milliseconds } }`, com `category` de uma operação (`kind: "operation"`) ou de uma mistura (`kind: "mix"`, `parts`);
   - `boxes = { "3x7": 1..5 }` (tabuadas, no Fácil da multiplicação e da divisão), `skillBoxes = { "addition:easy:carry": 1..5, "division:hard:remainder": 1..5 }`;
   - `recentSkillAnswers = { "addition:easy:carry": [true, false, …] }`: a primeira tentativa das últimas 10 respostas que contaram em cada competência, da mais antiga para a mais recente (decide escolha múltipla ou teclado);
   - `tracks = { "addition:easy": …, "multiplication:medium": { level, points, recentAnswers (últimas 40), answersSinceSafetyNet } }`;
-  - `unlockedDifficulties = { addition, subtraction, multiplication, division }` (a mais alta aberta), `wallet = { coins, points }`, `stats` como na v1.
-- **Migração:** `MigrationsUtils` guarda as formas antigas congeladas e migra passo a passo: v1 → v2 (caixas, tabuadas, modo, cronómetro e estatísticas mantêm-se; a operação fica Multiplicação; começa com 3 moedas) → v3 (cada operação herda o cronómetro antigo como relógio para a frente; «escrever sempre» desligado; recordes vazios) → v4 (as tabuadas passam a Fácil da multiplicação e da divisão, com o nível em `"multiplication:easy"`/`"division:easy"` e os recordes com dificuldade; desbloqueios para as quatro operações; `operation` passa a `practice`; Misturado com as quatro; relógio ligado onde estava como vinha de origem) → v5 (as últimas respostas de cada competência reconstroem-se a partir das respostas recentes de cada pista, cujo id diz que conta era; as tabuadas não têm competências). Antes de mudar outra vez a forma dos dados é preciso subir `ProfilesUtils.getDataVersion()` **e** acrescentar um passo em `MigrationsUtils`, senão as crianças perdem o progresso.
+  - `unlockedDifficulties = { addition, subtraction, multiplication, division }` (a mais alta aberta), `wallet = { coins, points }`, `stats` como na v1;
+  - `challengeRecord`: o maior número de certas numa corrida do desafio sem fim, ou `null`.
+- **Migração:** `MigrationsUtils` guarda as formas antigas congeladas e migra passo a passo: v1 → v2 (caixas, tabuadas, modo, cronómetro e estatísticas mantêm-se; a operação fica Multiplicação; começa com 3 moedas) → v3 (cada operação herda o cronómetro antigo como relógio para a frente; «escrever sempre» desligado; recordes vazios) → v4 (as tabuadas passam a Fácil da multiplicação e da divisão, com o nível em `"multiplication:easy"`/`"division:easy"` e os recordes com dificuldade; desbloqueios para as quatro operações; `operation` passa a `practice`; Misturado com as quatro; relógio ligado onde estava como vinha de origem) → v5 (as últimas respostas de cada competência reconstroem-se a partir das respostas recentes de cada pista, cujo id diz que conta era; as tabuadas não têm competências) → v6 (desafio sem fim desligado e sem recorde). Antes de mudar outra vez a forma dos dados é preciso subir `ProfilesUtils.getDataVersion()` **e** acrescentar um passo em `MigrationsUtils`, senão as crianças perdem o progresso.
 - Dados ilegíveis recomeçam do zero. Dados de uma versão **mais nova** não são lidos nem reescritos: a app corre em memória e avisa no ecrã inicial (protege o progresso de uma versão antiga em cache).
 - Se o browser bloquear o armazenamento, a app funciona só em memória e avisa no ecrã inicial.
 
