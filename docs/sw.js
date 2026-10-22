@@ -1,9 +1,9 @@
 // Template for sw.js. The build replaces the two placeholders with a version and the exact list of built files.
-const CACHE_NAME = "faisca-3337ddb0256a";
+const CACHE_NAME = "faisca-083c5a55f76c";
 const PRECACHE_URLS = [
     "./",
-    "./assets/index-CsLJPxu-.css",
-    "./assets/index-boJR_vvE.js",
+    "./assets/index-BW1DJq6I.js",
+    "./assets/index-CMpkWaHc.css",
     "./assets/nunito-cyrillic-ext-wght-normal-D4X5GqEv.woff2",
     "./assets/nunito-cyrillic-wght-normal-CY6AOgYE.woff2",
     "./assets/nunito-latin-ext-wght-normal-CXYtwYOx.woff2",
