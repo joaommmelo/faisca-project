@@ -4,7 +4,7 @@ Este ficheiro é a fonte de verdade para quem trabalha neste repositório: o bri
 
 ## Estado actual (v2, 22 de Outubro de 2026)
 
-A v2 foi juntada à `main` a 22 de Outubro de 2026; a branch `v2` ficou igual à `main`.
+A v2 foi juntada à `main` a 22 de Outubro de 2026, e o GitHub Pages passou a publicar a pasta `/docs` da `main`. A branch `v2` ficou igual à `main`.
 
 **Feito e verificado na v2:**
 
@@ -14,7 +14,7 @@ A v2 foi juntada à `main` a 22 de Outubro de 2026; a branch `v2` ficou igual à
 - Segunda tentativa antes de mostrar a resposta; níveis que abrem competências mais difíceis; desbloqueio por convite; rede de segurança; mealheiro com moedas e ajudas graduadas.
 - Dados na versão 8, com migração testada de todas as anteriores (v1 → v2 → v3 → v4 → v5 → v6 → v7 → v8: caixas, tabuadas, níveis, moedas, recordes e estatísticas mantêm-se). Dados de uma versão mais nova nunca são reescritos. Aviso no ecrã inicial quando o browser não guarda.
 - PWA instalável (manifest, ícones, service worker) a funcionar sem rede; build em `docs/` para o GitHub Pages.
-- Publicada em <https://joaommmelo.github.io/faisca-project/> (repositório público; GitHub Pages a servir a pasta `/docs` da branch `v2`). Instala-se no ecrã principal: no iPhone e no iPad, Safari → Partilhar → «Adicionar ao ecrã principal»; no Android, Chrome → menu → «Instalar aplicação».
+- Publicada em <https://joaommmelo.github.io/faisca-project/> (repositório público; GitHub Pages a servir a pasta `/docs` da branch `main`). Instala-se no ecrã principal: no iPhone e no iPad, Safari → Partilhar → «Adicionar ao ecrã principal»; no Android, Chrome → menu → «Instalar aplicação».
 - Pedidos de 21 de Outubro, depois da v2: ecrã inicial com as operações logo no topo e a Multiplicação por defeito; moedas no canto (abrem o mealheiro); «Quem vai jogar?» no fundo; ajuda em todos os formatos (na escolha múltipla tira 2 das 4 opções); «Escrever sempre a resposta» na multiplicação e na divisão; relógio por operação, para a frente ou para trás, contra 3 minutos ou contra o recorde; recordes por categoria nas sessões perfeitas; a moeda ganha voa para o saldo. Dados na versão 3, com migração da v2 e da v1.
 - Pedidos seguintes do mesmo dia (ver «Pedidos seguintes»): números maiores na multiplicação e na divisão; «Misturado» com 2, 3 ou 4 operações; início só com a escolha e um ecrã de preparação com «Mais opções»; resultado logo por baixo da conta e tudo a avançar sozinho; saída com «Sim, sair do jogo» / «Não, continuar a jogar»; relógio ligado por defeito (para a frente, meta de 3 minutos); caixas de escrever a azul; ajuda desactivada sem moedas; «Início» sempre à vista no resumo; sem as caixas do «e vai 1» na vertical. Dados na versão 4, com migração de todas as anteriores.
 - Escolha múltipla nas competências (soma, subtração e × ÷ com números maiores) enquanto a criança não acerta 8 das últimas 10 respostas dessa competência, e de volta quando começa a falhar. Antes seguia a caixa da competência, que enchia num jogo e tirava a escolha múltipla para sempre.
@@ -35,7 +35,6 @@ A v2 foi juntada à `main` a 22 de Outubro de 2026; a branch `v2` ficou igual à
 - Línguas: o pedido foi «por geoip». Ficou pelo fuso horário do dispositivo (Europe/Lisbon → português), que dá o país sem mandar o IP da criança a um serviço externo e funciona sem rede. Se o dono preferir mesmo um serviço de geoip, é trocar `LocalesUtils.detect`.
 - Público a partir dos 4 anos: rever o resto da app para quem ainda não lê. Há escolhas do dono: uma voz a ler as perguntas e as mensagens (o briefing exclui sons); ícones nas opções que hoje são só texto («Só o resultado», «Na vertical», os modos das tabuadas); o que acontece ao tocar num cartão bloqueado (hoje nada).
 
-- Mudar a fonte do GitHub Pages para a `main` (*Settings → Pages*, pasta `/docs`). Até lá o site publica a `v2`, por isso o que entra na `main` tem de chegar também à `v2`.
 - Ortografia: os modos dizem «Só directas» e «Directas + inversas», como no briefing. A escola segue o Acordo Ortográfico («diretas»). Mudar é só em `Messages.getModeLabel` (`src/utils/messages.ts`).
 - Desafio sem fim: os valores (5 certas por nível, 2 s + 3 s por algarismo, metade do tempo no nível 12) são um ponto de partida, para afinar a jogar. Estão todos em `ChallengeUtils` (`src/utils/challenge/utils.ts`).
 - Descobre a conta: o «progresso» pedido ficou assim, a confirmar a jogar. O nível é do próprio jogo, e não o da Multiplicação, para as respostas daqui não abrirem o Médio da Multiplicação (o desbloqueio continua a vir da prática). A conta encontrada à primeira sobe a caixa desse facto; uma falha manda para a caixa 1 o facto mostrado, como numa falha da prática. A ajuda dá o maior dos dois números da resposta.
