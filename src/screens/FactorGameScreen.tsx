@@ -97,7 +97,7 @@ function FactorGameRules({ profile, onSettingsChange, onPlay }: FactorGameRulesP
             </MascotMessage>
             <section className="card stack card--multiplication">
                 <div className="factor-example">
-                    <FactorEquation target={EXAMPLE_TARGET} factors={EXAMPLE_FACTORS} isAnswered />
+                    <FactorEquation target={EXAMPLE_TARGET} factors={EXAMPLE_FACTORS} isAnswered isMissed={false} hintedFactor={null} />
                 </div>
                 <p>{Messages.getFactorGameAnyAnswer()}</p>
             </section>
@@ -131,6 +131,7 @@ function FactorGameRules({ profile, onSettingsChange, onPlay }: FactorGameRulesP
                     {canPlay ? "" : Messages.getFactorGameNeedsTable()}
                 </p>
                 <button type="button" className="button button--play" disabled={!canPlay} onClick={onPlay}>
+                    <PlayIcon />
                     {labels.play}
                 </button>
             </div>

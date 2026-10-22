@@ -904,6 +904,23 @@ fieldset {
     box-shadow: 0 4px 0 var(--color-primary-pressed);
 }
 
+/* The pair just missed, crossed out like a wrong option, until the next tap. */
+.equation__slot--missed {
+    border-color: var(--color-warm);
+    background: var(--color-warm-soft);
+    color: var(--color-warm);
+    text-decoration: line-through;
+    text-decoration-thickness: 0.08em;
+}
+
+/* The factor the help gave, in the colours of the help's bubble. */
+.equation__slot--hinted {
+    border-style: solid;
+    border-color: var(--color-accent-pressed);
+    background: var(--color-accent-soft);
+    color: var(--color-text);
+}
+
 .choices {
     display: grid;
     grid-template-columns: 1fr 1fr;

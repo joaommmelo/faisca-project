@@ -1,7 +1,7 @@
 import { useId, useState } from "react";
 import { ClockField } from "../components/ClockField.tsx";
 import { CoinButton } from "../components/CoinButton.tsx";
-import { BackIcon } from "../components/Icons.tsx";
+import { BackIcon, PlayIcon } from "../components/Icons.tsx";
 import { SegmentedField } from "../components/SegmentedField.tsx";
 import { SwitchField } from "../components/SwitchField.tsx";
 import { TablesPicker } from "../components/TablesPicker.tsx";
@@ -92,6 +92,7 @@ export function SetupScreen({ profile, onSettingsChange, onPlay, onBack }: Setup
                     {playProblem === null ? "" : Messages.getPlayProblem(playProblem)}
                 </p>
                 <button type="button" className="button button--play" disabled={playProblem !== null} onClick={onPlay}>
+                    <PlayIcon />
                     {labels.play}
                 </button>
             </div>

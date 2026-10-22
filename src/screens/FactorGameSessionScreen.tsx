@@ -54,6 +54,8 @@ export function FactorGameSessionScreen({ profile, onProfileChange, onFinish, on
         RecordsUtils.getBest(profile.records, RecordsUtils.getFactorGameCategory(profile.settings.multiplication.tables))
     );
     const [firstFactor, setFirstFactor] = useState<number | null>(null);
+    // The pair just missed stays in the slots, crossed out, until the next tap.
+    const [isMissShown, setIsMissShown] = useState<boolean>(false);
     const [answerMilestones, setAnswerMilestones] = useState<Milestone[]>([]);
     const [gameMilestones, setGameMilestones] = useState<Milestone[]>([]);
     const [coinFlightKey, setCoinFlightKey] = useState<number | null>(null);
@@ -65,10 +67,15 @@ export function FactorGameSessionScreen({ profile, onProfileChange, onFinish, on
     const result: FactorRoundResult | null = FactorGameUtils.getCurrentResult(game);
     // With the help, the first slot always starts from its factor, also after a miss.
     const startingFactor: number | null = game.isCurrentHelped ? FactorGameUtils.getHintFactor(round) : null;
+    const missedPair: FactorPair | null = game.missedPairs.length === 0 ? null : game.missedPairs[game.missedPairs.length - 1];
+    const isMissedPairShown: boolean = result === null && isMissShown && firstFactor === null && missedPair !== null;
     const shownFactors: number[] = (() => {
         if (result !== null) {
             const shownPair: FactorPair = FactorGameUtils.getShownPair(result);
             return [shownPair.first, shownPair.second];
+        }
+        if (isMissedPairShown && missedPair !== null) {
+            return [missedPair.first, missedPair.second];
         }
         return firstFactor === null ? [] : [firstFactor];
     })();
@@ -95,6 +102,7 @@ export function FactorGameSessionScreen({ profile, onProfileChange, onFinish, on
     };
 
     const pickFactor = (factor: number): void => {
+        setIsMissShown(false);
         if (firstFactor === null) {
             setFirstFactor(factor);
             return;
@@ -104,6 +112,7 @@ export function FactorGameSessionScreen({ profile, onProfileChange, onFinish, on
         setGame(attempt.game);
         if (attempt.result === null) {
             setFirstFactor(startingFactor);
+            setIsMissShown(true);
             setTryAgainText(Messages.getFactorGameTryAgain(pair));
             setTryAgainCount(tryAgainCount + 1);
             return;
@@ -119,6 +128,7 @@ export function FactorGameSessionScreen({ profile, onProfileChange, onFinish, on
         }
         setGame(FactorGameUtils.registerHelp(game));
         setFirstFactor(FactorGameUtils.getHintFactor(round));
+        setIsMissShown(false);
     };
 
     const goToNextRound = (): void => {
@@ -133,6 +143,7 @@ export function FactorGameSessionScreen({ profile, onProfileChange, onFinish, on
         }
         setAnswerMilestones([]);
         setTryAgainText(null);
+        setIsMissShown(false);
         setGame(nextGame);
     };
 
@@ -206,7 +217,13 @@ export function FactorGameSessionScreen({ profile, onProfileChange, onFinish, on
                 <h1 className="visually-hidden" tabIndex={-1} ref={questionHeadingRef}>
                     {Messages.getFactorGameQuestion(round.target)}
                 </h1>
-                <FactorEquation target={round.target} factors={shownFactors} isAnswered={result !== null} />
+                <FactorEquation
+                    target={round.target}
+                    factors={shownFactors}
+                    isAnswered={result !== null}
+                    isMissed={isMissedPairShown}
+                    hintedFactor={game.isCurrentHelped ? FactorGameUtils.getHintFactor(round) : null}
+                />
                 {tryAgainText !== null && <TryAgainNote key={tryAgainCount} text={tryAgainText} />}
                 {help}
                 <FactorPad
