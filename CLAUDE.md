@@ -4,7 +4,7 @@ Este ficheiro é a fonte de verdade para quem trabalha neste repositório: o bri
 
 ## Estado actual (v2, 22 de Outubro de 2026)
 
-A v1 (só multiplicação) está na `main`. A v2 está na branch `v2`, ainda por juntar à `main`.
+A v2 foi juntada à `main` a 22 de Outubro de 2026; a branch `v2` ficou igual à `main`.
 
 **Feito e verificado na v2:**
 
@@ -35,7 +35,7 @@ A v1 (só multiplicação) está na `main`. A v2 está na branch `v2`, ainda por
 - Línguas: o pedido foi «por geoip». Ficou pelo fuso horário do dispositivo (Europe/Lisbon → português), que dá o país sem mandar o IP da criança a um serviço externo e funciona sem rede. Se o dono preferir mesmo um serviço de geoip, é trocar `LocalesUtils.detect`.
 - Público a partir dos 4 anos: rever o resto da app para quem ainda não lê. Há escolhas do dono: uma voz a ler as perguntas e as mensagens (o briefing exclui sons); ícones nas opções que hoje são só texto («Só o resultado», «Na vertical», os modos das tabuadas); o que acontece ao tocar num cartão bloqueado (hoje nada).
 
-- Juntar a `v2` à `main`. Depois disso, mudar a fonte do GitHub Pages para a `main` (*Settings → Pages*, pasta `/docs`).
+- Mudar a fonte do GitHub Pages para a `main` (*Settings → Pages*, pasta `/docs`). Até lá o site publica a `v2`, por isso o que entra na `main` tem de chegar também à `v2`.
 - Ortografia: os modos dizem «Só directas» e «Directas + inversas», como no briefing. A escola segue o Acordo Ortográfico («diretas»). Mudar é só em `Messages.getModeLabel` (`src/utils/messages.ts`).
 - Desafio sem fim: os valores (5 certas por nível, 2 s + 3 s por algarismo, metade do tempo no nível 12) são um ponto de partida, para afinar a jogar. Estão todos em `ChallengeUtils` (`src/utils/challenge/utils.ts`).
 - Descobre a conta: o «progresso» pedido ficou assim, a confirmar a jogar. O nível é do próprio jogo, e não o da Multiplicação, para as respostas daqui não abrirem o Médio da Multiplicação (o desbloqueio continua a vir da prática). A conta encontrada à primeira sobe a caixa desse facto; uma falha manda para a caixa 1 o facto mostrado, como numa falha da prática. A ajuda dá o maior dos dois números da resposta.
