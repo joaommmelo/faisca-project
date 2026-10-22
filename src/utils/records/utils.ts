@@ -22,7 +22,13 @@ export interface MixCategory {
     parts: OperationCategory[];
 }
 
-export type RecordCategory = OperationCategory | MixCategory;
+// Descobre a conta compares with games of the same tables.
+export interface FactorGameCategory {
+    kind: "factor-game";
+    tables: number[];
+}
+
+export type RecordCategory = OperationCategory | MixCategory | FactorGameCategory;
 
 export interface BestTime {
     category: RecordCategory;
@@ -60,9 +66,16 @@ export class RecordsUtils {
         return { kind: "operation", operation, difficulty, layout: null, tables: sortedTables, mode, isAlwaysTyped };
     }
 
+    public static getFactorGameCategory(tables: number[]): FactorGameCategory {
+        return { kind: "factor-game", tables: [...tables].sort((first, second) => first - second) };
+    }
+
     public static getCategoryId(category: RecordCategory): string {
         if (category.kind === "mix") {
             return ["mix", ...category.parts.map((part) => this.getCategoryId(part))].join("|");
+        }
+        if (category.kind === "factor-game") {
+            return ["factor-game", category.tables.join("-")].join(":");
         }
         return [
             category.operation,
@@ -80,7 +93,7 @@ export class RecordsUtils {
     }
 
     // Only a perfect session counts: every question right at the first try, with no help.
-    public static isPerfect(summary: SessionSummary): boolean {
+    public static isPerfect(summary: Pick<SessionSummary, "correctAtFirstTry" | "firstTryCount">): boolean {
         return summary.firstTryCount > 0 && summary.correctAtFirstTry === summary.firstTryCount;
     }
 

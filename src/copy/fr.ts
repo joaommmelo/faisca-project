@@ -176,12 +176,12 @@ export const fr: Copy = {
     challengeLevelReached: (level) => `Tu as atteint le niveau ${level}.`,
 
     factorGameName: "Trouve la multiplication",
-    factorGameAbout: "Quelle multiplication donne ce nombre ?",
     factorGameGreeting: "Je montre un nombre. Trouve une multiplication qui donne ce nombre !",
     factorGameAnyAnswer: "Touche deux nombres pour faire la multiplication. Beaucoup de nombres en ont plusieurs, et n’importe laquelle compte !",
     factorGameNeedsTable: (fromTable, toTable) => `Choisis au moins une table de ${fromTable} à ${toTable}.`,
     factorGameQuestion: (target) => `Quelle multiplication donne ${target} ?`,
     factorGameTryAgain: (first, second, product) => `Presque ! ${first} × ${second} font ${product}. Essaie encore.`,
+    factorGameHint: (factor) => `Commence par ${factor}. Quel est l’autre nombre ?`,
     factorGameAlso: (multiplications) => `Ça marche aussi avec ${multiplications}.`,
     factorGameAnswers: (multiplications) => `Ça pouvait être ${multiplications}.`,
 

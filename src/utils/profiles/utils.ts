@@ -40,6 +40,11 @@ export interface MixSettings {
     clock: ClockSettings;
 }
 
+// Descobre a conta takes its numbers from the multiplication's tables; only its clock is its own.
+export interface FactorGameSettings {
+    clock: ClockSettings;
+}
+
 export interface ProfileSettings {
     practice: Practice;
     addition: AdditiveSettings;
@@ -47,6 +52,7 @@ export interface ProfileSettings {
     multiplication: MultiplicationSettings;
     division: MultiplicativeSettings;
     mix: MixSettings;
+    factorGame: FactorGameSettings;
     // The endless challenge for adults shows on the home screen only when switched on.
     isChallengeEnabled: boolean;
 }
@@ -87,7 +93,7 @@ export type ProfileNameProblem = "empty" | "too-long" | "taken";
 
 export class ProfilesUtils {
     public static getDataVersion(): number {
-        return 7;
+        return 8;
     }
 
     // A mix of a single operation would just be that operation.
@@ -126,6 +132,7 @@ export class ProfilesUtils {
             multiplication: { ...multiplicative, mode: QuestionsUtils.getDefaultMode() },
             division: multiplicative,
             mix: { operations: OperationsUtils.getValidOperations(), clock: ClockUtils.createDefault() },
+            factorGame: { clock: ClockUtils.createDefault() },
             isChallengeEnabled: false
         };
     }

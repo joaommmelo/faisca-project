@@ -143,12 +143,13 @@ export interface Copy {
     // "Descobre a conta": a number, and a multiplication that makes it. Lists of multiplications ("2 × 12, 3 × 8 e
     // 4 × 6") arrive joined in the language's own way, with "or".
     factorGameName: string;
-    factorGameAbout: string;
     factorGameGreeting: string;
     factorGameAnyAnswer: string;
     factorGameNeedsTable: (fromTable: number, toTable: number) => string;
     factorGameQuestion: (target: number) => string;
     factorGameTryAgain: (first: number, second: number, product: number) => string;
+    // The help: one factor of the answer, already in the first slot.
+    factorGameHint: (factor: number) => string;
     factorGameAlso: (multiplications: string) => string;
     factorGameAnswers: (multiplications: string) => string;
 

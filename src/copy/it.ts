@@ -189,12 +189,12 @@ export const it: Copy = {
     challengeLevelReached: (level) => `Hai raggiunto il livello ${level}.`,
 
     factorGameName: "Trova la moltiplicazione",
-    factorGameAbout: "Quale moltiplicazione fa questo numero?",
     factorGameGreeting: "Ti mostro un numero. Trova una moltiplicazione che faccia quel numero!",
     factorGameAnyAnswer: "Tocca due numeri per fare la moltiplicazione. Molti numeri ne hanno più di una, e va bene qualsiasi!",
     factorGameNeedsTable: (fromTable, toTable) => `Scegli almeno una tabellina dal ${fromTable} al ${toTable}.`,
     factorGameQuestion: (target) => `Quale moltiplicazione fa ${target}?`,
     factorGameTryAgain: (first, second, product) => `Quasi! ${first} × ${second} fa ${product}. Riprova.`,
+    factorGameHint: (factor) => `Parti dal numero ${factor}. Qual è l’altro?`,
     factorGameAlso: (multiplications) => `Va bene anche ${multiplications}.`,
     factorGameAnswers: (multiplications) => `Poteva essere ${multiplications}.`,
 

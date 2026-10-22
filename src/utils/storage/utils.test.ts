@@ -227,7 +227,7 @@ describe("StorageUtils.load", () => {
 
     it("migrates v5 progress: the challenge starts switched off and without a record, and nothing else changes", () => {
         const { challengeRecord: _, settings, ...current } = ProfilesUtils.createProfile("Rui");
-        const { isChallengeEnabled: __, ...versionFiveSettings } = settings;
+        const { isChallengeEnabled: __, factorGame, ...versionFiveSettings } = settings;
         const versionFiveProfile = {
             ...current,
             settings: { ...versionFiveSettings, practice: "mix" },
@@ -242,17 +242,43 @@ describe("StorageUtils.load", () => {
         expect(data.activeProfileId).toBe(current.id);
         expect(data.profiles[0]).toEqual({
             ...versionFiveProfile,
-            settings: { ...versionFiveProfile.settings, isChallengeEnabled: false },
+            settings: { ...versionFiveProfile.settings, isChallengeEnabled: false, factorGame },
             challengeRecord: null
         });
     });
 
     it("migrates v6 progress: the language waits to be detected, and nothing else changes", () => {
         const profile: Profile = ProfilesUtils.createProfile("Rui");
-        stubStorage({ [StorageUtils.getStorageKey()]: JSON.stringify({ version: 6, activeProfileId: profile.id, profiles: [profile] }) });
+        const { factorGame: _, ...versionSixSettings } = profile.settings;
+        const versionSixProfile = { ...profile, settings: versionSixSettings };
+        stubStorage({ [StorageUtils.getStorageKey()]: JSON.stringify({ version: 6, activeProfileId: profile.id, profiles: [versionSixProfile] }) });
 
         expect(StorageUtils.load()).toEqual({
             data: { version: ProfilesUtils.getDataVersion(), activeProfileId: profile.id, profiles: [profile], locale: null },
+            status: "saved"
+        });
+    });
+
+    it("migrates v7 progress: Descobre a conta gets its own clock, on like every clock starts, and nothing else changes", () => {
+        const profile: Profile = ProfilesUtils.createProfile("Rui");
+        const { factorGame, ...versionSevenSettings } = profile.settings;
+        const versionSevenProfile = {
+            ...profile,
+            settings: { ...versionSevenSettings, multiplication: { ...versionSevenSettings.multiplication, tables: [3, 7] } },
+            wallet: { coins: 4, points: 6 }
+        };
+        stubStorage({
+            [StorageUtils.getStorageKey()]: JSON.stringify({ version: 7, activeProfileId: profile.id, profiles: [versionSevenProfile], locale: "fr" })
+        });
+
+        expect(factorGame).toEqual({ clock: { isEnabled: true, direction: "up", reference: "default" } });
+        expect(StorageUtils.load()).toEqual({
+            data: {
+                version: ProfilesUtils.getDataVersion(),
+                activeProfileId: profile.id,
+                profiles: [{ ...versionSevenProfile, settings: { ...versionSevenProfile.settings, factorGame } }],
+                locale: "fr"
+            },
             status: "saved"
         });
     });

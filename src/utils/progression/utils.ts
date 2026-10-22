@@ -48,7 +48,7 @@ interface OfferTarget {
     difficulty: Difficulty;
 }
 
-interface TimedProfile {
+export interface TimedProfile {
     profile: Profile;
     clock: ClockOutcome | null;
 }
@@ -140,7 +140,13 @@ export class ProgressionUtils {
     // away; accepting the offer only decides whether to play the new difficulty now. A safety-net offer is not
     // repeated until another full window of answers.
     public static finishSession(profile: Profile, now: moment.Moment, finished: FinishedSession): FinishSessionResult {
-        const timed: TimedProfile = this.registerClock(profile, finished);
+        const timed: TimedProfile = this.registerTime(
+            profile,
+            ProfilesUtils.getClock(profile.settings),
+            RecordsUtils.getCategory(profile.settings),
+            finished.elapsedMilliseconds,
+            RecordsUtils.isPerfect(finished.summary)
+        );
         const counted: Profile = { ...timed.profile, stats: StatsUtils.registerSession(profile.stats, now) };
         // A mix checks each of its operations; the first unlock wins over any safety net.
         const operations: Operation[] = ProfilesUtils.getPracticeOperations(counted.settings);
@@ -177,29 +183,32 @@ export class ProgressionUtils {
         return null;
     }
 
-    // The reference is read before this session's time is registered, so it matches what the clock showed.
-    // Only a perfect session with the clock on can set a record.
-    private static registerClock(profile: Profile, finished: FinishedSession): TimedProfile {
-        const clockSettings: ClockSettings = ProfilesUtils.getClock(profile.settings);
-        if (!clockSettings.isEnabled || finished.elapsedMilliseconds === null) {
+    // The reference is read before this game's time is registered, so it matches what the clock showed.
+    // Only a perfect game with the clock on can set a record.
+    public static registerTime(
+        profile: Profile,
+        clockSettings: ClockSettings,
+        category: RecordCategory,
+        elapsedMilliseconds: number | null,
+        isPerfect: boolean
+    ): TimedProfile {
+        if (!clockSettings.isEnabled || elapsedMilliseconds === null) {
             return { profile, clock: null };
         }
 
-        const category: RecordCategory = RecordsUtils.getCategory(profile.settings);
         const previousRecordMilliseconds: number | null = RecordsUtils.getBest(profile.records, category);
         const referenceMilliseconds: number = ClockUtils.getReferenceMilliseconds(clockSettings, previousRecordMilliseconds);
-        const isPerfect: boolean = RecordsUtils.isPerfect(finished.summary);
         const registered: RegisterTimeResult = isPerfect
-            ? RecordsUtils.registerTime(profile.records, category, finished.elapsedMilliseconds)
+            ? RecordsUtils.registerTime(profile.records, category, elapsedMilliseconds)
             : { records: profile.records, isNewRecord: false, previousMilliseconds: previousRecordMilliseconds };
 
         return {
             profile: { ...profile, records: registered.records },
             clock: {
-                elapsedMilliseconds: finished.elapsedMilliseconds,
+                elapsedMilliseconds,
                 referenceMilliseconds,
                 isAgainstRecord: clockSettings.reference === "record" && previousRecordMilliseconds !== null,
-                isWithinReference: finished.elapsedMilliseconds <= referenceMilliseconds,
+                isWithinReference: elapsedMilliseconds <= referenceMilliseconds,
                 isPerfect,
                 isNewRecord: registered.isNewRecord,
                 previousRecordMilliseconds

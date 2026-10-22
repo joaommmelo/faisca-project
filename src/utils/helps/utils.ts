@@ -34,6 +34,9 @@ export type ArithmeticHint =
 // Why the help button is off: the piggy bank is empty, or this session's helps are used up.
 export type HelpUnavailableReason = "no-coins" | "limit";
 
+// What decides the help button, in a session or a game of Descobre a conta.
+export type HelpsState = Pick<Session, "isCurrentHelped" | "helpsUsed">;
+
 export class HelpsUtils {
     public static getMaxHelpsPerSession(): number {
         return 3;
@@ -45,14 +48,14 @@ export class HelpsUtils {
     }
 
     // Every question has a help: fewer options, a first step, a neighbouring fact, or the column steps.
-    public static canUse(session: Session, wallet: Wallet): boolean {
+    public static canUse(session: HelpsState, wallet: Wallet): boolean {
         if (session.isCurrentHelped) {
             return true;
         }
         return session.helpsUsed < this.getMaxHelpsPerSession() && WalletUtils.canSpend(wallet);
     }
 
-    public static getUnavailableReason(session: Session, wallet: Wallet): HelpUnavailableReason | null {
+    public static getUnavailableReason(session: HelpsState, wallet: Wallet): HelpUnavailableReason | null {
         if (session.isCurrentHelped) {
             return null;
         }

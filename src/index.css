@@ -664,15 +664,6 @@ fieldset {
     font-weight: 800;
 }
 
-/* Nothing on the right (no coins in the mini-game): the label stays in the middle of the screen. */
-.session-header--centered {
-    grid-template-columns: 1fr auto 1fr;
-}
-
-.session-header--centered .exit-button {
-    justify-self: start;
-}
-
 .exit-button {
     display: inline-flex;
     align-items: center;

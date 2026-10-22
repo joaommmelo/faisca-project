@@ -6,6 +6,7 @@ import { PracticeTiles } from "../components/PracticeTiles.tsx";
 import type { Labels } from "../copy/copy.ts";
 import { useInstallPrompt, type InstallPrompt } from "../hooks/useInstallPrompt.ts";
 import type { Difficulty } from "../utils/difficulties/utils.ts";
+import { FactorGameUtils } from "../utils/factorGame/utils.ts";
 import { LevelsUtils } from "../utils/levels/utils.ts";
 import { Messages } from "../utils/messages.ts";
 import { OperationsUtils, type Operation } from "../utils/operations/utils.ts";
@@ -45,6 +46,8 @@ export function HomeScreen({ profile, storageStatus, onChoosePractice, onShowPro
         };
     })();
 
+    const factorGameLevel: number = LevelsUtils.getTrack(profile.tracks, FactorGameUtils.getTrackId()).level;
+
     return (
         <main className="screen screen--home">
             <header className="home-header">
@@ -76,7 +79,7 @@ export function HomeScreen({ profile, storageStatus, onChoosePractice, onShowPro
                 </span>
                 <span className="practice__text">
                     <span className="practice__name">{Messages.getFactorGameName()}</span>
-                    <span className="practice__summary">{Messages.getFactorGameAbout()}</span>
+                    <span className="practice__summary">{Messages.getLevelName(factorGameLevel)}</span>
                 </span>
             </button>
 

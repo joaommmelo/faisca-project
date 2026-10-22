@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { LocalesUtils } from "./locales/utils.ts";
 import type { FactorRound } from "./factorGame/utils.ts";
 import { Messages } from "./messages.ts";
+import { RecordsUtils } from "./records/utils.ts";
 import type { Question } from "./questions/utils.ts";
 
 const question: Question = {
@@ -164,7 +165,7 @@ describe("Messages for Descobre a conta", () => {
     });
 
     it("shows the other multiplications of the number after a right answer", () => {
-        const feedback = Messages.getFactorGameFeedback({ round: round24, givenPairs: [{ first: 6, second: 4 }], isCorrect: true }, 0);
+        const feedback = Messages.getFactorGameFeedback({ round: round24, givenPairs: [{ first: 6, second: 4 }], isCorrect: true, isHelped: false }, 0);
         expect(feedback.lines).toEqual(["Também podia ser 2 × 12 ou 3 × 8."]);
     });
 
@@ -174,7 +175,8 @@ describe("Messages for Descobre a conta", () => {
                 { first: 4, second: 7 },
                 { first: 5, second: 5 }
             ],
-            isCorrect: false
+            isCorrect: false,
+            isHelped: false
         };
         expect(Messages.getFactorGameFeedback({ ...missed, round: round24 }, 0)).toEqual({ title: "Quase!", lines: ["Podia ser 2 × 12, 3 × 8 ou 4 × 6."] });
         const round144: FactorRound = { target: 144, pairs: [{ first: 12, second: 12 }], answer: { first: 12, second: 12 } };
@@ -183,6 +185,15 @@ describe("Messages for Descobre a conta", () => {
 
     it("writes every multiplication of a number in one line", () => {
         expect(Messages.getFactorRoundText(round24)).toBe("24 = 2 × 12 = 3 × 8 = 4 × 6");
+    });
+
+    it("gives the bigger factor of the answer as the help", () => {
+        expect(Messages.getFactorGameHint(round24)).toBe("Começa pelo 6. Qual é o outro número?");
+    });
+
+    it("names a record by its tables", () => {
+        expect(Messages.getRecordCategoryName(RecordsUtils.getFactorGameCategory([5, 2]))).toBe("Descobre a conta · tabuadas 2, 5");
+        expect(Messages.getRecordCategoryName(RecordsUtils.getFactorGameCategory([7]))).toBe("Descobre a conta · tabuada do 7");
     });
 });
 
@@ -209,8 +220,10 @@ describe("Messages in every language", () => {
         Messages.getFactorGameNeedsTable(),
         Messages.getFactorGameQuestion(24),
         Messages.getFactorGameTryAgain({ first: 4, second: 7 }),
-        ...Messages.getFactorGameFeedback({ round: round24, givenPairs: [{ first: 4, second: 6 }], isCorrect: true }, 0).lines,
-        ...Messages.getFactorGameFeedback({ round: round24, givenPairs: [], isCorrect: false }, 0).lines
+        Messages.getFactorGameHint(round24),
+        Messages.getRecordCategoryName(RecordsUtils.getFactorGameCategory([2, 5])),
+        ...Messages.getFactorGameFeedback({ round: round24, givenPairs: [{ first: 4, second: 6 }], isCorrect: true, isHelped: false }, 0).lines,
+        ...Messages.getFactorGameFeedback({ round: round24, givenPairs: [], isCorrect: false, isHelped: false }, 0).lines
     ];
 
     it("words every message, with nothing missing", () => {

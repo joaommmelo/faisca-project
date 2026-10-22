@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Celebration } from "../components/Celebration.tsx";
-import { ClockIcon, CoinIcon, HomeIcon, PlayIcon, StarIcon } from "../components/Icons.tsx";
+import { ClockResultCard } from "../components/ClockResultCard.tsx";
+import { HomeIcon, PlayIcon } from "../components/Icons.tsx";
 import { Mascot, MascotMessage } from "../components/Mascot.tsx";
+import { RewardsCard } from "../components/RewardsCard.tsx";
 import type { Labels } from "../copy/copy.ts";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
 import { Messages, type OfferText } from "../utils/messages.ts";
-import type { Milestone, SessionOffer } from "../utils/progression/utils.ts";
+import type { SessionOffer } from "../utils/progression/utils.ts";
 import type { SessionOutcome } from "../utils/session/utils.ts";
-import { TimeUtils } from "../utils/time/utils.ts";
 
 interface SummaryScreenProps {
     outcome: SessionOutcome;
@@ -22,9 +23,6 @@ export function SummaryScreen({ outcome, onAcceptOffer, onPlayAgain, onShowProgr
     const labels: Labels = Messages.getLabels();
     const [isOfferOpen, setIsOfferOpen] = useState<boolean>(outcome.offer !== null);
     const { summary, offer } = outcome;
-    const coinsEarned: number = outcome.milestones.filter((milestone) => milestone.kind === "coin").length;
-    const levelUps: Milestone[] = outcome.milestones.filter((milestone) => milestone.kind === "level-up");
-    const isNewRecord: boolean = outcome.clock !== null && outcome.clock.isNewRecord;
 
     return (
         <main className="screen screen--summary">
@@ -47,44 +45,9 @@ export function SummaryScreen({ outcome, onAcceptOffer, onPlayAgain, onShowProgr
                 {summary.helpedCount > 0 && <p className="score__time">{Messages.getHelpedCount(summary.helpedCount)}</p>}
             </section>
 
-            {outcome.clock !== null && (
-                <section className={isNewRecord ? "card clock-result clock-result--record" : "card clock-result"} aria-label={labels.time}>
-                    <p className="clock-result__time">
-                        <ClockIcon />
-                        {TimeUtils.formatElapsed(outcome.clock.elapsedMilliseconds)}
-                    </p>
-                    {Messages.getClockOutcomeLines(outcome.clock).map((line) => (
-                        <p key={line} className="clock-result__line">
-                            {line}
-                        </p>
-                    ))}
-                </section>
-            )}
+            {outcome.clock !== null && <ClockResultCard clock={outcome.clock} />}
 
-            {(coinsEarned > 0 || levelUps.length > 0 || isNewRecord) && (
-                <section className="card rewards" aria-label={labels.achievements}>
-                    <ul className="milestones milestones--summary">
-                        {coinsEarned > 0 && (
-                            <li className="milestone milestone--coin">
-                                <CoinIcon />
-                                {labels.coinsEarned(coinsEarned)}
-                            </li>
-                        )}
-                        {isNewRecord && (
-                            <li className="milestone milestone--record">
-                                <StarIcon />
-                                {labels.newRecord}
-                            </li>
-                        )}
-                        {levelUps.map((milestone, index) => (
-                            <li key={index} className="milestone milestone--level-up">
-                                <StarIcon />
-                                {Messages.getMilestone(milestone)}
-                            </li>
-                        ))}
-                    </ul>
-                </section>
-            )}
+            <RewardsCard milestones={outcome.milestones} isNewRecord={outcome.clock !== null && outcome.clock.isNewRecord} />
 
             <section className="card">
                 <h2 className="section-title">{labels.toPractiseMore}</h2>

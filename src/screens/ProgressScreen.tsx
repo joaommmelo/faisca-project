@@ -7,6 +7,7 @@ import type { Labels } from "../copy/copy.ts";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
 import { ArithmeticUtils } from "../utils/arithmetic/utils.ts";
 import { DifficultiesUtils } from "../utils/difficulties/utils.ts";
+import { FactorGameUtils } from "../utils/factorGame/utils.ts";
 import { LevelsUtils } from "../utils/levels/utils.ts";
 import { Messages } from "../utils/messages.ts";
 import { OperationsUtils, type Operation } from "../utils/operations/utils.ts";
@@ -70,6 +71,12 @@ export function ProgressScreen({ profile, onBack }: ProgressScreenProps) {
             {OperationsUtils.getValidOperations().map((operation) => (
                 <OperationProgress key={operation} profile={profile} operation={operation} />
             ))}
+
+            {/* Its answers also light up the times-table map, with the multiplication. */}
+            <section className="card card--multiplication">
+                <h2 className="section-title">{Messages.getFactorGameName()}</h2>
+                <LevelMeter track={LevelsUtils.getTrack(profile.tracks, FactorGameUtils.getTrackId())} />
+            </section>
         </main>
     );
 }

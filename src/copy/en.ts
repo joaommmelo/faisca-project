@@ -161,12 +161,12 @@ export const en: Copy = {
     challengeLevelReached: (level) => `You reached level ${level}.`,
 
     factorGameName: "What times what?",
-    factorGameAbout: "Which multiplication makes this number?",
     factorGameGreeting: "I show a number. Find a multiplication that makes it!",
     factorGameAnyAnswer: "Tap two numbers to make the multiplication. Lots of numbers have more than one, and any of them counts!",
     factorGameNeedsTable: (fromTable, toTable) => `Choose at least one times table from ${fromTable} to ${toTable}.`,
     factorGameQuestion: (target) => `What times what makes ${target}?`,
     factorGameTryAgain: (first, second, product) => `Almost! ${first} × ${second} makes ${product}. Try again.`,
+    factorGameHint: (factor) => `Start with ${factor}. What's the other number?`,
     factorGameAlso: (multiplications) => `It could also be ${multiplications}.`,
     factorGameAnswers: (multiplications) => `It could be ${multiplications}.`,
 

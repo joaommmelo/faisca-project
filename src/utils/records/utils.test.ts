@@ -41,8 +41,8 @@ describe("RecordsUtils.registerTime", () => {
 
 describe("RecordsUtils.isPerfect", () => {
     it("needs every question right at the first try without help", () => {
-        expect(RecordsUtils.isPerfect({ correctAtFirstTry: 10, helpedCount: 0, firstTryCount: 10, questionsToReinforce: [] })).toBe(true);
-        expect(RecordsUtils.isPerfect({ correctAtFirstTry: 9, helpedCount: 1, firstTryCount: 10, questionsToReinforce: [] })).toBe(false);
+        expect(RecordsUtils.isPerfect({ correctAtFirstTry: 10, firstTryCount: 10 })).toBe(true);
+        expect(RecordsUtils.isPerfect({ correctAtFirstTry: 9, firstTryCount: 10 })).toBe(false);
     });
 });
 

@@ -171,12 +171,12 @@ export const de: Copy = {
     challengeLevelReached: (level) => `Du hast Level ${level} erreicht.`,
 
     factorGameName: "Finde die Malaufgabe",
-    factorGameAbout: "Welche Malaufgabe ergibt diese Zahl?",
     factorGameGreeting: "Ich zeige dir eine Zahl. Finde eine Malaufgabe, die diese Zahl ergibt!",
     factorGameAnyAnswer: "Tippe auf zwei Zahlen für die Malaufgabe. Viele Zahlen haben mehrere, und jede davon zählt!",
     factorGameNeedsTable: (fromTable, toTable) => `Wähle mindestens eine Reihe von ${fromTable} bis ${toTable}.`,
     factorGameQuestion: (target) => `Welche Malaufgabe ergibt ${target}?`,
     factorGameTryAgain: (first, second, product) => `Fast! ${first} × ${second} ergibt ${product}. Versuch es noch mal.`,
+    factorGameHint: (factor) => `Fang mit der ${factor} an. Welche Zahl fehlt?`,
     factorGameAlso: (multiplications) => `Es geht auch mit ${multiplications}.`,
     factorGameAnswers: (multiplications) => `Richtig wäre ${multiplications}.`,
 

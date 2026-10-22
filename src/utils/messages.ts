@@ -379,6 +379,10 @@ export class Messages {
 
     public static getRecordCategoryName(category: RecordCategory): string {
         const copy: Copy = this.getCopy();
+        if (category.kind === "factor-game") {
+            const tables: string = category.tables.length === 1 ? copy.recordTable(category.tables[0]) : copy.recordTables(category.tables.join(", "));
+            return `${this.getFactorGameName()} · ${tables}`;
+        }
         if (category.kind === "mix") {
             const operations: string = category.parts
                 .map((part) => `${this.getOperationName(part.operation)} ${this.getDifficultyName(part.difficulty)}`)
@@ -465,10 +469,6 @@ export class Messages {
         return this.getCopy().factorGameName;
     }
 
-    public static getFactorGameAbout(): string {
-        return this.getCopy().factorGameAbout;
-    }
-
     public static getFactorGameGreeting(): string {
         return this.getCopy().factorGameGreeting;
     }
@@ -489,6 +489,10 @@ export class Messages {
     // The first miss says what the child's multiplication makes, never the answer.
     public static getFactorGameTryAgain(pair: FactorPair): string {
         return this.getCopy().factorGameTryAgain(pair.first, pair.second, pair.first * pair.second);
+    }
+
+    public static getFactorGameHint(round: FactorRound): string {
+        return this.getCopy().factorGameHint(FactorGameUtils.getHintFactor(round));
     }
 
     // Once answered, the other multiplications that make the same number: when right, as a bonus; after two misses,

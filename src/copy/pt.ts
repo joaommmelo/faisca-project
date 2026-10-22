@@ -166,12 +166,12 @@ export const pt: Copy = {
     challengeLevelReached: (level) => `Chegaste ao nível ${level}.`,
 
     factorGameName: "Descobre a conta",
-    factorGameAbout: "Que conta dá este número?",
     factorGameGreeting: "Eu mostro um número. Descobre uma multiplicação que dê esse número!",
     factorGameAnyAnswer: "Toca em dois números para fazer a conta. Muitos números têm várias, e qualquer uma serve!",
     factorGameNeedsTable: (fromTable, toTable) => `Escolhe pelo menos uma tabuada do ${fromTable} ao ${toTable}.`,
     factorGameQuestion: (target) => `Que multiplicação dá ${target}?`,
     factorGameTryAgain: (first, second, product) => `Quase! ${first} × ${second} dá ${product}. Tenta outra vez.`,
+    factorGameHint: (factor) => `Começa pelo ${factor}. Qual é o outro número?`,
     factorGameAlso: (multiplications) => `Também podia ser ${multiplications}.`,
     factorGameAnswers: (multiplications) => `Podia ser ${multiplications}.`,
 

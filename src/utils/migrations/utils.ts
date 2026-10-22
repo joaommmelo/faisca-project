@@ -3,6 +3,7 @@ import { ClockUtils, type ClockDirection, type ClockReference, type ClockSetting
 import type { Difficulty } from "../difficulties/utils.ts";
 import type { LeitnerBoxes } from "../leitner/utils.ts";
 import type { Tracks } from "../levels/utils.ts";
+import type { Locale } from "../locales/utils.ts";
 import { OperationsUtils, type Operation } from "../operations/utils.ts";
 import type { AppData, Profile, ProfileSettings } from "../profiles/utils.ts";
 import { QuestionsUtils, type AnswerLayout, type PracticeMode, type RecentSkillAnswers } from "../questions/utils.ts";
@@ -93,8 +94,15 @@ interface VersionThreeData {
     activeProfileId: string | null;
 }
 
+// v7 and older had no Descobre a conta, nor its clock.
+type VersionSevenSettings = Omit<ProfileSettings, "factorGame">;
+
+interface VersionSevenProfile extends Omit<Profile, "settings"> {
+    settings: VersionSevenSettings;
+}
+
 // v5 and older had no challenge to switch on.
-type VersionFiveSettings = Omit<ProfileSettings, "isChallengeEnabled">;
+type VersionFiveSettings = Omit<VersionSevenSettings, "isChallengeEnabled">;
 
 // v4 decided multiple choice or keypad by the box alone, so it kept no answers per skill.
 interface VersionFourProfile {
@@ -130,8 +138,15 @@ interface VersionFiveData {
 // v6 kept no language: the app only spoke Portuguese.
 interface VersionSixData {
     version: 6;
-    profiles: Profile[];
+    profiles: VersionSevenProfile[];
     activeProfileId: string | null;
+}
+
+interface VersionSevenData {
+    version: 7;
+    profiles: VersionSevenProfile[];
+    activeProfileId: string | null;
+    locale: Locale | null;
 }
 
 export class MigrationsUtils {
@@ -165,8 +180,14 @@ export class MigrationsUtils {
             }
             return data.version === 5 ? (data as VersionFiveData) : null;
         })();
-        const versionSix: VersionSixData = versionFive === null ? (data as VersionSixData) : this.fromVersionFive(versionFive);
-        return this.fromVersionSix(versionSix);
+        const versionSix: VersionSixData | null = (() => {
+            if (versionFive !== null) {
+                return this.fromVersionFive(versionFive);
+            }
+            return data.version === 6 ? (data as VersionSixData) : null;
+        })();
+        const versionSeven: VersionSevenData = versionSix === null ? (data as VersionSevenData) : this.fromVersionSix(versionSix);
+        return this.fromVersionSeven(versionSeven);
     }
 
     // v1 only knew multiplication: its boxes, tables, mode, timer and stats carry over unchanged.
@@ -280,7 +301,7 @@ export class MigrationsUtils {
         return {
             version: 6,
             activeProfileId: data.activeProfileId,
-            profiles: data.profiles.map((profile): Profile => ({
+            profiles: data.profiles.map((profile): VersionSevenProfile => ({
                 ...profile,
                 settings: { ...profile.settings, isChallengeEnabled: false },
                 challengeRecord: null
@@ -289,8 +310,20 @@ export class MigrationsUtils {
     }
 
     // v7 keeps the device's language; null until the app detects it on the next start.
-    private static fromVersionSix(data: VersionSixData): AppData {
+    private static fromVersionSix(data: VersionSixData): VersionSevenData {
         return { ...data, version: 7, locale: null };
+    }
+
+    // v8 adds Descobre a conta's own clock, on like every other clock starts.
+    private static fromVersionSeven(data: VersionSevenData): AppData {
+        return {
+            ...data,
+            version: 8,
+            profiles: data.profiles.map((profile): Profile => ({
+                ...profile,
+                settings: { ...profile.settings, factorGame: { clock: ClockUtils.createDefault() } }
+            }))
+        };
     }
 
     // Each track ("addition:easy", "multiplication:medium") remembers its last answers, and their question ids
