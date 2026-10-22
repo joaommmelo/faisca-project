@@ -25,7 +25,7 @@ export function FeedbackPanel({ feedback, isCorrect, milestones, onContinue }: F
     }, []);
 
     return (
-        <section className={isCorrect ? "feedback feedback--correct" : "feedback feedback--wrong"} aria-label="Resultado">
+        <section className={isCorrect ? "feedback feedback--correct" : "feedback feedback--wrong"} aria-label={Messages.getLabels().result}>
             {milestones.length > 0 && <Celebration />}
             <div className="feedback__inner">
                 <div className="feedback__message">
@@ -56,7 +56,7 @@ export function FeedbackPanel({ feedback, isCorrect, milestones, onContinue }: F
                     aria-describedby={messageId}
                     onClick={onContinue}
                 >
-                    Seguinte
+                    {Messages.getLabels().next}
                     <NextIcon />
                 </button>
             </div>

@@ -4,6 +4,7 @@ import { DifficultiesUtils, type Difficulty } from "../difficulties/utils.ts";
 import { FactsUtils } from "../facts/utils.ts";
 import type { LeitnerBoxes } from "../leitner/utils.ts";
 import type { Tracks } from "../levels/utils.ts";
+import type { Locale } from "../locales/utils.ts";
 import { OperationsUtils, type Operation } from "../operations/utils.ts";
 import { QuestionsUtils, type AnswerLayout, type PracticeMode, type RecentSkillAnswers } from "../questions/utils.ts";
 import type { Records } from "../records/utils.ts";
@@ -77,13 +78,16 @@ export interface AppData {
     version: number;
     profiles: Profile[];
     activeProfileId: string | null;
+    // The device's language for the app: detected the first time, then kept (so it does not change on a trip) until
+    // someone picks another. Null only until that first detection.
+    locale: Locale | null;
 }
 
 export type ProfileNameProblem = "empty" | "too-long" | "taken";
 
 export class ProfilesUtils {
     public static getDataVersion(): number {
-        return 6;
+        return 7;
     }
 
     // A mix of a single operation would just be that operation.
@@ -96,7 +100,11 @@ export class ProfilesUtils {
     }
 
     public static createEmptyData(): AppData {
-        return { version: this.getDataVersion(), profiles: [], activeProfileId: null };
+        return { version: this.getDataVersion(), profiles: [], activeProfileId: null, locale: null };
+    }
+
+    public static setLocale(data: AppData, locale: Locale): AppData {
+        return { ...data, locale };
     }
 
     public static createDefaultSettings(): ProfileSettings {

@@ -98,7 +98,7 @@ export function VerticalAnswer({ question, record, tryAgainNote, help, isPaused,
             {!isAnswered && <HelpButton control={{ ...help, onUse: showNextHelpStep }} />}
             {hintText !== null && <HintBubble text={hintText} />}
             <NumericKeypad
-                announcement={entry.digits.every((digit) => digit === null) ? "Ainda sem resposta" : `A tua resposta: ${value}`}
+                announcement={entry.digits.every((digit) => digit === null) ? Messages.getLabels().noAnswerYet : Messages.getLabels().yourAnswer(String(value))}
                 canConfirm={VerticalUtils.canConfirm(entry)}
                 isDisabled={isAnswered || isPaused}
                 onDigit={(digit) => setEntry(VerticalUtils.typeDigit(entry, digit))}

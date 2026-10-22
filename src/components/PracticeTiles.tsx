@@ -10,7 +10,7 @@ interface PracticeTilesProps {
 // The main menu: one big tile per operation, plus the mix. Each opens its own screen before playing.
 export function PracticeTiles({ summaries, onChoose }: PracticeTilesProps) {
     return (
-        <nav aria-label="O que vamos praticar?">
+        <nav aria-label={Messages.getLabels().whatToPractise}>
             <ul className="practices">
                 {OperationsUtils.getValidOperations().map((operation) => (
                     <li key={operation}>

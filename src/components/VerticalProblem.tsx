@@ -87,7 +87,7 @@ export function VerticalProblem({ question, columns, entry, wrongColumns, highli
                         key={`result-${column}`}
                         type="button"
                         className={`${getColumnClassName(column)} vertical__result ${stateClassNames}`}
-                        aria-label={`Casa das ${Messages.getColumnName(column)}${digit === null ? ", vazia" : `: ${digit}`}`}
+                        aria-label={Messages.getCellLabel(column, digit)}
                         aria-current={!isAnswered && entry.cursor === column ? "true" : undefined}
                         disabled={isAnswered}
                         onClick={() => onSelectCell(column)}

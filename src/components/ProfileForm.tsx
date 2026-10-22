@@ -36,7 +36,7 @@ export function ProfileForm({ data, title, submitLabel, onSubmit, onCancel }: Pr
                 className="text-input"
                 type="text"
                 value={name}
-                placeholder="O teu nome"
+                placeholder={Messages.getLabels().namePlaceholder}
                 maxLength={ProfilesUtils.getMaxNameLength()}
                 autoComplete="off"
                 autoCapitalize="words"
@@ -56,7 +56,7 @@ export function ProfileForm({ data, title, submitLabel, onSubmit, onCancel }: Pr
             <div className="form-actions">
                 {onCancel !== undefined && (
                     <button type="button" className="button button--secondary" onClick={onCancel}>
-                        Cancelar
+                        {Messages.getLabels().cancel}
                     </button>
                 )}
                 <button type="submit" className="button button--primary">

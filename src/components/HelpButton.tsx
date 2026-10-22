@@ -1,4 +1,6 @@
 import { useId } from "react";
+import type { Labels } from "../copy/copy.ts";
+import { Messages } from "../utils/messages.ts";
 import { CoinIcon, HelpIcon } from "./Icons.tsx";
 
 // What a question needs to offer help: whether it can, whether it is already paid, and why not.
@@ -15,6 +17,7 @@ interface HelpButtonProps {
 
 export function HelpButton({ control }: HelpButtonProps) {
     const reasonId: string = useId();
+    const labels: Labels = Messages.getLabels();
 
     return (
         <div className="help">
@@ -26,11 +29,12 @@ export function HelpButton({ control }: HelpButtonProps) {
                 onClick={control.onUse}
             >
                 <HelpIcon />
-                {control.isPaid ? "Mais ajuda" : "Ajuda"}
+                {control.isPaid ? labels.moreHelp : labels.help}
                 {!control.isPaid && (
                     <span className="help__cost">
                         <CoinIcon />
-                        <span className="visually-hidden">custa </span>1<span className="visually-hidden"> moeda</span>
+                        <span aria-hidden="true">1</span>
+                        <span className="visually-hidden">{labels.helpCost}</span>
                     </span>
                 )}
             </button>

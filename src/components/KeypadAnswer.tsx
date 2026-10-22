@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { KeypadUtils } from "../utils/keypad/utils.ts";
+import { Messages } from "../utils/messages.ts";
 import type { Question } from "../utils/questions/utils.ts";
 import type { AnswerRecord, AttemptOutcome } from "../utils/session/utils.ts";
 import { Equation } from "./Equation.tsx";
@@ -32,7 +33,7 @@ export function KeypadAnswer({ question, record, tryAgainNote, help, isPaused, o
             {tryAgainNote}
             {help}
             <NumericKeypad
-                announcement={typedAnswer.length === 0 ? "Ainda sem resposta" : `A tua resposta: ${typedAnswer}`}
+                announcement={typedAnswer.length === 0 ? Messages.getLabels().noAnswerYet : Messages.getLabels().yourAnswer(typedAnswer)}
                 canConfirm={KeypadUtils.canConfirm(typedAnswer)}
                 isDisabled={record !== null || isPaused}
                 onDigit={(digit) => setTypedAnswer(KeypadUtils.appendDigit(typedAnswer, String(digit), KeypadUtils.getMaxDigits()))}

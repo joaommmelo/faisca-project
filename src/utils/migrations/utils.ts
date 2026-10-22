@@ -127,6 +127,13 @@ interface VersionFiveData {
     activeProfileId: string | null;
 }
 
+// v6 kept no language: the app only spoke Portuguese.
+interface VersionSixData {
+    version: 6;
+    profiles: Profile[];
+    activeProfileId: string | null;
+}
+
 export class MigrationsUtils {
     public static getOldestMigratableVersion(): number {
         return 1;
@@ -152,8 +159,14 @@ export class MigrationsUtils {
             }
             return data.version === 4 ? (data as VersionFourData) : null;
         })();
-        const versionFive: VersionFiveData = versionFour === null ? (data as VersionFiveData) : this.fromVersionFour(versionFour);
-        return this.fromVersionFive(versionFive);
+        const versionFive: VersionFiveData | null = (() => {
+            if (versionFour !== null) {
+                return this.fromVersionFour(versionFour);
+            }
+            return data.version === 5 ? (data as VersionFiveData) : null;
+        })();
+        const versionSix: VersionSixData = versionFive === null ? (data as VersionSixData) : this.fromVersionFive(versionFive);
+        return this.fromVersionSix(versionSix);
     }
 
     // v1 only knew multiplication: its boxes, tables, mode, timer and stats carry over unchanged.
@@ -263,7 +276,7 @@ export class MigrationsUtils {
     }
 
     // v6 adds the endless challenge for adults: switched off, and without a record.
-    private static fromVersionFive(data: VersionFiveData): AppData {
+    private static fromVersionFive(data: VersionFiveData): VersionSixData {
         return {
             version: 6,
             activeProfileId: data.activeProfileId,
@@ -273,6 +286,11 @@ export class MigrationsUtils {
                 challengeRecord: null
             }))
         };
+    }
+
+    // v7 keeps the device's language; null until the app detects it on the next start.
+    private static fromVersionSix(data: VersionSixData): AppData {
+        return { ...data, version: 7, locale: null };
     }
 
     // Each track ("addition:easy", "multiplication:medium") remembers its last answers, and their question ids

@@ -12,12 +12,12 @@ export function PiggyBank({ wallet }: PiggyBankProps) {
     const answers: number = WalletUtils.getAnswersTowardsNextCoin(wallet);
 
     return (
-        <section className="card piggy" aria-label="Mealheiro">
+        <section className="card piggy" aria-label={Messages.getLabels().piggyBank}>
             <PiggyDrawing />
             <div className="piggy__body">
                 <p className="piggy__coins">
                     {Messages.getCoinsCount(wallet.coins)}
-                    <span className="piggy__max"> de {WalletUtils.getMaxCoins()}</span>
+                    <span className="piggy__max"> {Messages.getLabels().outOf(WalletUtils.getMaxCoins())}</span>
                 </p>
                 <ol className="coin-slots" aria-hidden="true">
                     {Array.from({ length: WalletUtils.getMaxCoins() }, (_, slot) => (
@@ -26,7 +26,7 @@ export function PiggyBank({ wallet }: PiggyBankProps) {
                         </li>
                     ))}
                 </ol>
-                <p className="piggy__next">{isFull ? Messages.getPiggyBankFull() : `Próxima moeda: ${Messages.getCoinProgress(answers)}`}</p>
+                <p className="piggy__next">{isFull ? Messages.getPiggyBankFull() : Messages.getLabels().nextCoin(Messages.getCoinProgress(answers))}</p>
                 <div className="meter" aria-hidden="true">
                     <div className="meter__fill" style={{ transform: `scaleX(${answers / WalletUtils.getAnswersPerCoin()})` }} />
                 </div>

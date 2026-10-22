@@ -19,7 +19,7 @@ export function LevelMeter({ track }: LevelMeterProps) {
             <div
                 className="meter"
                 role="progressbar"
-                aria-label={`Progresso no ${Messages.getLevelName(track.level).toLocaleLowerCase("pt-PT")}`}
+                aria-label={Messages.getLabels().levelProgress(track.level)}
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={Math.round(progress * 100)}

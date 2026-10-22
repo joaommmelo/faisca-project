@@ -2,6 +2,7 @@ import { Celebration } from "../components/Celebration.tsx";
 import { Equation } from "../components/Equation.tsx";
 import { BackIcon, HomeIcon, PlayIcon, StarIcon } from "../components/Icons.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
+import type { Labels } from "../copy/copy.ts";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
 import { ChallengeUtils, type ChallengeRun } from "../utils/challenge/utils.ts";
 import { Messages, type Feedback } from "../utils/messages.ts";
@@ -18,13 +19,14 @@ interface ChallengeScreenProps {
 // Before a run: how it works and the record. After one: how it ended, how far it went and whether it is a new record.
 export function ChallengeScreen({ profile, run, onPlay, onHome }: ChallengeScreenProps) {
     const headingRef = useFocusOnMount<HTMLHeadingElement>();
+    const labels: Labels = Messages.getLabels();
 
     return (
         <main className="screen screen--challenge">
             <header className="setup-header">
                 <button type="button" className="button button--ghost" onClick={onHome}>
                     <BackIcon />
-                    Início
+                    {labels.home}
                 </button>
             </header>
 
@@ -40,11 +42,11 @@ export function ChallengeScreen({ profile, run, onPlay, onHome }: ChallengeScree
             <div className="summary-actions">
                 <button type="button" className="button button--secondary" onClick={onHome}>
                     <HomeIcon />
-                    Início
+                    {labels.home}
                 </button>
                 <button type="button" className="button button--play" onClick={onPlay}>
                     <PlayIcon />
-                    {run === null ? "Jogar" : "Jogar outra vez"}
+                    {run === null ? labels.play : labels.playAgain}
                 </button>
             </div>
         </main>
@@ -81,7 +83,7 @@ function ChallengeResult({ run }: { run: ChallengeRun }) {
             </MascotMessage>
 
             {run.ending !== "stop" && (
-                <section className="card challenge-last" aria-label={`A última conta: ${Messages.getEquationText(run.lastQuestion)}`}>
+                <section className="card challenge-last" aria-label={Messages.getLabels().lastQuestion(Messages.getEquationText(run.lastQuestion))}>
                     <Equation question={run.lastQuestion} typedAnswer="" isAnswered />
                     {ending.lines.map((line) => (
                         <p key={line} className="hint">
@@ -93,12 +95,12 @@ function ChallengeResult({ run }: { run: ChallengeRun }) {
 
             <section className="card score">
                 <p className="score__value">{run.correctCount}</p>
-                <p className="score__label">{run.correctCount === 1 ? "certa" : "certas"}</p>
+                <p className="score__label">{Messages.getLabels().correctAnswers(run.correctCount)}</p>
                 <p className="score__time">{Messages.getChallengeLevelReached(run.correctCount)}</p>
                 {isNewRecord ? (
                     <p className="milestone milestone--record">
                         <StarIcon />
-                        Novo recorde!
+                        {Messages.getLabels().newRecord}
                     </p>
                 ) : (
                     <p className="challenge-record">{Messages.getChallengeRecord(run.previousRecord)}</p>

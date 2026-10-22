@@ -3,6 +3,7 @@ import { BackIcon, LockIcon } from "../components/Icons.tsx";
 import { LevelMeter } from "../components/LevelMeter.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
 import { ProgressMap } from "../components/ProgressMap.tsx";
+import type { Labels } from "../copy/copy.ts";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
 import { ArithmeticUtils } from "../utils/arithmetic/utils.ts";
 import { DifficultiesUtils } from "../utils/difficulties/utils.ts";
@@ -22,6 +23,7 @@ interface ProgressScreenProps {
 
 export function ProgressScreen({ profile, onBack }: ProgressScreenProps) {
     const headingRef = useFocusOnMount<HTMLHeadingElement>();
+    const labels: Labels = Messages.getLabels();
     const masteredCount: number = ProgressUtils.countMastered(profile.boxes);
     const visibleStreak: number = StatsUtils.getVisibleStreak(profile.stats, moment());
 
@@ -30,35 +32,35 @@ export function ProgressScreen({ profile, onBack }: ProgressScreenProps) {
             <div className="screen-header">
                 <button type="button" className="button button--ghost" onClick={onBack}>
                     <BackIcon />
-                    Início
+                    {labels.home}
                 </button>
             </div>
 
             <h1 ref={headingRef} tabIndex={-1} className="page-title">
-                O teu progresso, {profile.name}
+                {labels.progressTitle(profile.name)}
             </h1>
 
             <MascotMessage mood="proud" size={96}>
                 {Messages.getProgressCheer(masteredCount)}
             </MascotMessage>
 
-            <ul className="stats" aria-label="Números do teu progresso">
+            <ul className="stats" aria-label={labels.progressNumbers}>
                 <li className="stat">
                     <span className="stat__value">{profile.stats.sessionsCompleted}</span>
-                    <span className="stat__label">jogos</span>
+                    <span className="stat__label">{labels.games(profile.stats.sessionsCompleted)}</span>
                 </li>
                 <li className="stat">
                     <span className="stat__value">{profile.stats.practiceDays}</span>
-                    <span className="stat__label">dias de prática</span>
+                    <span className="stat__label">{labels.practiceDays(profile.stats.practiceDays)}</span>
                 </li>
                 <li className="stat">
                     <span className="stat__value">{profile.wallet.coins}</span>
-                    <span className="stat__label">{profile.wallet.coins === 1 ? "moeda" : "moedas"}</span>
+                    <span className="stat__label">{labels.coins(profile.wallet.coins)}</span>
                 </li>
                 {visibleStreak > 0 && (
                     <li className="stat">
                         <span className="stat__value">{visibleStreak}</span>
-                        <span className="stat__label">{visibleStreak === 1 ? "dia seguido" : "dias seguidos"}</span>
+                        <span className="stat__label">{labels.daysInARow(visibleStreak)}</span>
                     </li>
                 )}
             </ul>
@@ -78,9 +80,9 @@ function RecordsCard({ profile }: { profile: Profile }) {
 
     return (
         <section className="card">
-            <h2 className="section-title">Recordes</h2>
+            <h2 className="section-title">{Messages.getLabels().records}</h2>
             {bestTimes.length === 0 ? (
-                <p className="hint hint--left">Liga o relógio e acerta todas à primeira para teres o teu primeiro recorde.</p>
+                <p className="hint hint--left">{Messages.getLabels().noRecords}</p>
             ) : (
                 <ul className="records">
                     {bestTimes.map((bestTime) => (
@@ -138,7 +140,7 @@ function OperationProgress({ profile, operation }: OperationProgressProps) {
                             ) : (
                                 <p className="locked">
                                     <LockIcon />
-                                    Por desbloquear
+                                    {Messages.getLabels().locked}
                                 </p>
                             )}
                         </li>
@@ -157,13 +159,11 @@ interface TablesProgressProps {
 // Division in Fácil trains the same facts as multiplication, so the map lives with multiplication only.
 function TablesProgress({ profile, operation }: TablesProgressProps) {
     if (operation === "division") {
-        return <p className="hint hint--left">As divisões treinam as mesmas contas do mapa da multiplicação.</p>;
+        return <p className="hint hint--left">{Messages.getLabels().divisionUsesMap}</p>;
     }
     return (
         <>
-            <p className="hint hint--left">
-                {ProgressUtils.countMastered(profile.boxes)} de {ProgressUtils.getTotalFacts()} contas de cor
-            </p>
+            <p className="hint hint--left">{Messages.getLabels().factsKnown(ProgressUtils.countMastered(profile.boxes), ProgressUtils.getTotalFacts())}</p>
             <ProgressMap boxes={profile.boxes} />
         </>
     );

@@ -1,4 +1,5 @@
 import { useId, type ReactNode } from "react";
+import { Messages } from "../utils/messages.ts";
 import { LockIcon } from "./Icons.tsx";
 
 export interface SegmentedOption<T extends string> {
@@ -34,11 +35,13 @@ export function SegmentedField<T extends string>({ legend, options, value, onCha
                             disabled={option.isLocked === true}
                             onChange={() => onChange(option.value)}
                         />
-                        <span className="segmented__label">
-                            {option.isLocked === true && <LockIcon />}
-                            {option.label}
-                        </span>
-                        <span className="segmented__detail">{option.isLocked === true ? "Por desbloquear" : option.detail}</span>
+                        {option.isLocked === true && (
+                            <span className="segmented__lock">
+                                <LockIcon />
+                            </span>
+                        )}
+                        <span>{option.label}</span>
+                        <span className="segmented__detail">{option.isLocked === true ? Messages.getLabels().locked : option.detail}</span>
                     </label>
                 ))}
             </div>

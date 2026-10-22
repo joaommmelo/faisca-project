@@ -13,7 +13,7 @@ export function ProgressMap({ boxes }: ProgressMapProps) {
     return (
         <>
             <table className="progress-map">
-                <caption className="visually-hidden">Mapa das tabuadas: cada quadrado mostra como vai cada conta.</caption>
+                <caption className="visually-hidden">{Messages.getLabels().mapCaption}</caption>
                 <thead>
                     <tr>
                         <th scope="col">
@@ -48,7 +48,7 @@ export function ProgressMap({ boxes }: ProgressMapProps) {
                     ))}
                 </tbody>
             </table>
-            <ul className="legend" aria-label="Legenda">
+            <ul className="legend" aria-label={Messages.getLabels().legend}>
                 {ProgressUtils.getLevels().map((level) => (
                     <li key={level}>
                         <span className={`legend__swatch level-${level}`} aria-hidden="true" />

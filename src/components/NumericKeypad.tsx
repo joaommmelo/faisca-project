@@ -1,4 +1,6 @@
 import { useEffect, useEffectEvent } from "react";
+import type { Labels } from "../copy/copy.ts";
+import { Messages } from "../utils/messages.ts";
 import { CheckIcon, EraseIcon } from "./Icons.tsx";
 
 interface NumericKeypadProps {
@@ -20,6 +22,7 @@ const DIGIT_ROWS: number[][] = [
 // decides where they go (the answer slot or the cell under the cursor in a column sum).
 // A physical keyboard also works (digits, Backspace, Enter) for keyboard-only users.
 export function NumericKeypad({ announcement, canConfirm, isDisabled, onDigit, onErase, onConfirm }: NumericKeypadProps) {
+    const labels: Labels = Messages.getLabels();
     const confirm = (): void => {
         if (canConfirm) {
             onConfirm();
@@ -57,7 +60,7 @@ export function NumericKeypad({ announcement, canConfirm, isDisabled, onDigit, o
     }, [isDisabled]);
 
     return (
-        <div className="keypad" role="group" aria-label="Teclado numérico">
+        <div className="keypad" role="group" aria-label={labels.keypad}>
             <output className="visually-hidden" aria-live="polite">
                 {announcement}
             </output>
@@ -66,13 +69,19 @@ export function NumericKeypad({ announcement, canConfirm, isDisabled, onDigit, o
                     {digit}
                 </button>
             ))}
-            <button type="button" className="keypad__key keypad__key--erase" aria-label="Apagar" disabled={isDisabled} onClick={onErase}>
+            <button type="button" className="keypad__key keypad__key--erase" aria-label={labels.erase} disabled={isDisabled} onClick={onErase}>
                 <EraseIcon />
             </button>
             <button type="button" className="keypad__key" disabled={isDisabled} onClick={() => onDigit(0)}>
                 0
             </button>
-            <button type="button" className="keypad__key keypad__key--confirm" aria-label="Confirmar" disabled={isDisabled || !canConfirm} onClick={confirm}>
+            <button
+                type="button"
+                className="keypad__key keypad__key--confirm"
+                aria-label={labels.confirm}
+                disabled={isDisabled || !canConfirm}
+                onClick={confirm}
+            >
                 <CheckIcon />
             </button>
         </div>

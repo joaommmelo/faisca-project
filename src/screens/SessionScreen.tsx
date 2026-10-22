@@ -12,6 +12,7 @@ import { KeypadAnswer } from "../components/KeypadAnswer.tsx";
 import { SessionClock } from "../components/SessionClock.tsx";
 import { TryAgainNote } from "../components/TryAgainNote.tsx";
 import { VerticalAnswer } from "../components/VerticalAnswer.tsx";
+import type { Labels } from "../copy/copy.ts";
 import { ClockUtils, type ClockSettings } from "../utils/clock/utils.ts";
 import { HelpsUtils, type HelpUnavailableReason } from "../utils/helps/utils.ts";
 import { Messages } from "../utils/messages.ts";
@@ -38,6 +39,7 @@ interface SessionScreenProps {
 
 export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: SessionScreenProps) {
     const questionHeadingRef = useRef<HTMLHeadingElement>(null);
+    const labels: Labels = Messages.getLabels();
     const [session, setSession] = useState<Session>(() => SessionUtils.create(profile));
     const [startedAt] = useState<number>(() => moment().valueOf());
     // Read once: the record only changes when this session ends.
@@ -166,13 +168,13 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
             <header className="session-header">
                 <button type="button" className="exit-button" onClick={() => setIsExitConfirmOpen(true)}>
                     <CloseIcon />
-                    Sair
+                    {labels.exit}
                 </button>
                 <p className="session-header__label">
                     {question.isRetry ? (
-                        <span className="retry-badge">Outra vez</span>
+                        <span className="retry-badge">{labels.again}</span>
                     ) : (
-                        `Pergunta ${SessionUtils.getFirstTryPosition(session)} de ${SessionUtils.getFirstTryTotal(session)}`
+                        labels.questionPosition(SessionUtils.getFirstTryPosition(session), SessionUtils.getFirstTryTotal(session))
                     )}
                 </p>
                 <CoinStatus wallet={profile.wallet} flightKey={coinFlightKey} />
@@ -181,7 +183,7 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
             <div
                 className="progress-bar"
                 role="progressbar"
-                aria-label="Progresso do jogo"
+                aria-label={labels.gameProgress}
                 aria-valuemin={0}
                 aria-valuemax={session.questions.length}
                 aria-valuenow={session.records.length}
@@ -254,7 +256,7 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
             </div>
 
             {isExitConfirmOpen && (
-                <ExitSheet question="Queres sair do jogo?" leaveIcon={<HomeIcon />} onLeave={onExit} onStay={() => setIsExitConfirmOpen(false)} />
+                <ExitSheet question={labels.exitQuestion} leaveIcon={<HomeIcon />} onLeave={onExit} onStay={() => setIsExitConfirmOpen(false)} />
             )}
         </main>
     );

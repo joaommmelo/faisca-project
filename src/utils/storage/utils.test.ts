@@ -247,6 +247,16 @@ describe("StorageUtils.load", () => {
         });
     });
 
+    it("migrates v6 progress: the language waits to be detected, and nothing else changes", () => {
+        const profile: Profile = ProfilesUtils.createProfile("Rui");
+        stubStorage({ [StorageUtils.getStorageKey()]: JSON.stringify({ version: 6, activeProfileId: profile.id, profiles: [profile] }) });
+
+        expect(StorageUtils.load()).toEqual({
+            data: { version: ProfilesUtils.getDataVersion(), activeProfileId: profile.id, profiles: [profile], locale: null },
+            status: "saved"
+        });
+    });
+
     it("reports storage the browser blocks and keeps working", () => {
         vi.stubGlobal("window", {
             localStorage: {

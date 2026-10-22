@@ -1,4 +1,6 @@
 import { useId, useState } from "react";
+import type { Labels } from "../copy/copy.ts";
+import { Messages } from "../utils/messages.ts";
 import type { AppData, Profile } from "../utils/profiles/utils.ts";
 import { PlusIcon } from "./Icons.tsx";
 import { ProfileForm } from "./ProfileForm.tsx";
@@ -14,12 +16,13 @@ interface ProfilesPanelProps {
 // Who is playing: switch, add or remove profiles. Opened from the name at the top of the home screen.
 export function ProfilesPanel({ data, profile, onSelectProfile, onCreateProfile, onDeleteProfile }: ProfilesPanelProps) {
     const deleteTitleId: string = useId();
+    const labels: Labels = Messages.getLabels();
     const [isAddingProfile, setIsAddingProfile] = useState<boolean>(false);
     const [isConfirmingDelete, setIsConfirmingDelete] = useState<boolean>(false);
 
     return (
-        <section className="card stack" aria-label="Perfis">
-            <h2 className="section-title">Quem vai jogar?</h2>
+        <section className="card stack" aria-label={labels.profiles}>
+            <h2 className="section-title">{labels.whoIsPlaying}</h2>
             <div className="profiles">
                 {data.profiles.map((candidate) => (
                     <button
@@ -34,14 +37,14 @@ export function ProfilesPanel({ data, profile, onSelectProfile, onCreateProfile,
                 ))}
                 <button type="button" className="chip chip--add" aria-expanded={isAddingProfile} onClick={() => setIsAddingProfile(true)}>
                     <PlusIcon />
-                    Novo
+                    {labels.newProfile}
                 </button>
             </div>
             {isAddingProfile && (
                 <ProfileForm
                     data={data}
-                    title="Nome do novo perfil"
-                    submitLabel="Criar perfil"
+                    title={labels.newProfileName}
+                    submitLabel={labels.createProfile}
                     onSubmit={onCreateProfile}
                     onCancel={() => setIsAddingProfile(false)}
                 />
@@ -49,21 +52,21 @@ export function ProfilesPanel({ data, profile, onSelectProfile, onCreateProfile,
             {isConfirmingDelete ? (
                 <div className="stack" role="alertdialog" aria-labelledby={deleteTitleId}>
                     <p id={deleteTitleId} className="section-title">
-                        Apagar o perfil «{profile.name}» e todo o progresso?
+                        {labels.deleteProfileQuestion(profile.name)}
                     </p>
-                    <p className="hint">Não dá para desfazer.</p>
+                    <p className="hint">{labels.cannotUndo}</p>
                     <div className="actions-row">
                         <button type="button" className="button button--secondary" autoFocus onClick={() => setIsConfirmingDelete(false)}>
-                            Cancelar
+                            {labels.cancel}
                         </button>
                         <button type="button" className="button button--secondary button--danger" onClick={() => onDeleteProfile(profile.id)}>
-                            Sim, apagar
+                            {labels.confirmDelete}
                         </button>
                     </div>
                 </div>
             ) : (
                 <button type="button" className="button button--ghost button--danger" onClick={() => setIsConfirmingDelete(true)}>
-                    Apagar perfil «{profile.name}»
+                    {labels.deleteProfile(profile.name)}
                 </button>
             )}
         </section>

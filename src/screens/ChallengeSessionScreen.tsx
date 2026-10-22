@@ -4,6 +4,7 @@ import { Equation } from "../components/Equation.tsx";
 import { ExitSheet } from "../components/ExitSheet.tsx";
 import { CheckIcon, CloseIcon, StarIcon } from "../components/Icons.tsx";
 import { NumericKeypad } from "../components/NumericKeypad.tsx";
+import type { Labels } from "../copy/copy.ts";
 import { ChallengeUtils, type ChallengeClock, type ChallengeEnding, type ChallengeQuestion, type ChallengeRun } from "../utils/challenge/utils.ts";
 import { KeypadUtils } from "../utils/keypad/utils.ts";
 import { Messages } from "../utils/messages.ts";
@@ -25,6 +26,7 @@ interface ChallengeSessionScreenProps {
 // Questions one after another, each against its own time, until a wrong answer, the time running out, or Sair.
 export function ChallengeSessionScreen({ onFinish }: ChallengeSessionScreenProps) {
     const questionHeadingRef = useRef<HTMLHeadingElement>(null);
+    const labels: Labels = Messages.getLabels();
     const [correctCount, setCorrectCount] = useState<number>(0);
     const [question, setQuestion] = useState<ChallengeQuestion>(() => ChallengeUtils.createQuestion(0, null));
     const [clock, setClock] = useState<ChallengeClock>(() => ChallengeUtils.startClock(question.timeLimitMilliseconds, moment().valueOf()));
@@ -114,7 +116,7 @@ export function ChallengeSessionScreen({ onFinish }: ChallengeSessionScreenProps
             <header className="session-header">
                 <button type="button" className="exit-button" onClick={openExitConfirm}>
                     <CloseIcon />
-                    Sair
+                    {labels.exit}
                 </button>
                 <p className="session-header__label">{Messages.getLevelName(ChallengeUtils.getLevel(correctCount))}</p>
                 <p className="challenge-score">
@@ -139,7 +141,7 @@ export function ChallengeSessionScreen({ onFinish }: ChallengeSessionScreenProps
                     {isLevelUp ? Messages.getChallengeLevelUp(ChallengeUtils.getLevel(correctCount)) : ""}
                 </p>
                 <NumericKeypad
-                    announcement={typedAnswer.length === 0 ? "Ainda sem resposta" : `A tua resposta: ${NumbersUtils.format(Number(typedAnswer))}`}
+                    announcement={typedAnswer.length === 0 ? labels.noAnswerYet : labels.yourAnswer(NumbersUtils.format(Number(typedAnswer)))}
                     canConfirm={KeypadUtils.canConfirm(typedAnswer)}
                     isDisabled={isAnswered || isExitConfirmOpen}
                     onDigit={(digit) => setTypedAnswer(KeypadUtils.appendDigit(typedAnswer, String(digit), ChallengeUtils.getMaxDigits()))}
@@ -150,7 +152,7 @@ export function ChallengeSessionScreen({ onFinish }: ChallengeSessionScreenProps
             </div>
 
             {isExitConfirmOpen && (
-                <ExitSheet question="Queres terminar o desafio?" leaveIcon={<StarIcon />} onLeave={() => finish("stop", null)} onStay={closeExitConfirm} />
+                <ExitSheet question={labels.challengeExitQuestion} leaveIcon={<StarIcon />} onLeave={() => finish("stop", null)} onStay={closeExitConfirm} />
             )}
         </main>
     );

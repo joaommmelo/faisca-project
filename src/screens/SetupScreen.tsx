@@ -5,6 +5,7 @@ import { BackIcon } from "../components/Icons.tsx";
 import { SegmentedField } from "../components/SegmentedField.tsx";
 import { SwitchField } from "../components/SwitchField.tsx";
 import { TablesPicker } from "../components/TablesPicker.tsx";
+import type { Labels } from "../copy/copy.ts";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
 import type { ClockSettings } from "../utils/clock/utils.ts";
 import { DifficultiesUtils, type Difficulty } from "../utils/difficulties/utils.ts";
@@ -26,6 +27,7 @@ interface SetupScreenProps {
 export function SetupScreen({ profile, onSettingsChange, onPlay, onBack }: SetupScreenProps) {
     const headingRef = useFocusOnMount<HTMLHeadingElement>();
     const moreOptionsId: string = useId();
+    const labels: Labels = Messages.getLabels();
     const [isMoreOpen, setIsMoreOpen] = useState<boolean>(false);
     const { settings } = profile;
     const { practice } = settings;
@@ -44,7 +46,7 @@ export function SetupScreen({ profile, onSettingsChange, onPlay, onBack }: Setup
             <header className="setup-header">
                 <button type="button" className="button button--ghost" onClick={onBack}>
                     <BackIcon />
-                    Início
+                    {labels.home}
                 </button>
                 <CoinButton wallet={profile.wallet} />
             </header>
@@ -70,7 +72,7 @@ export function SetupScreen({ profile, onSettingsChange, onPlay, onBack }: Setup
                     aria-controls={moreOptionsId}
                     onClick={() => setIsMoreOpen(!isMoreOpen)}
                 >
-                    Mais opções
+                    {labels.moreOptions}
                     <span className="more-options__chevron" aria-hidden="true" />
                 </button>
                 {isMoreOpen && (
@@ -88,7 +90,7 @@ export function SetupScreen({ profile, onSettingsChange, onPlay, onBack }: Setup
                     {playProblem === null ? "" : Messages.getPlayProblem(playProblem)}
                 </p>
                 <button type="button" className="button button--play" disabled={playProblem !== null} onClick={onPlay}>
-                    Jogar
+                    {labels.play}
                 </button>
             </div>
         </main>
@@ -108,7 +110,7 @@ function OperationFields({ profile, operation, onSettingsChange }: OperationFiel
     return (
         <>
             <SegmentedField<Difficulty>
-                legend="Que dificuldade?"
+                legend={Messages.getLabels().difficultyQuestion}
                 value={ProfilesUtils.getDifficulty(settings, operation)}
                 options={DifficultiesUtils.getValidDifficulties().map((difficulty) => ({
                     value: difficulty,
@@ -137,12 +139,12 @@ function LayoutField({ operation, settings, onSettingsChange }: AdditiveFieldPro
     const additiveSettings = settings[operation];
     const layoutExamples: Record<AnswerLayout, string> = {
         result: operation === "addition" ? "37 + 25 = ?" : "52 − 27 = ?",
-        vertical: "Uma por baixo da outra"
+        vertical: Messages.getLabels().verticalExample
     };
 
     return (
         <SegmentedField<AnswerLayout>
-            legend="Como queres fazer as contas?"
+            legend={Messages.getLabels().layoutQuestion}
             value={additiveSettings.layout}
             options={QuestionsUtils.getValidLayouts().map((layout) => ({
                 value: layout,
@@ -182,7 +184,7 @@ function MoreMultiplicativeFields({ operation, settings, onSettingsChange }: Mul
         <>
             {hasInverseQuestions && (
                 <SegmentedField<PracticeMode>
-                    legend="Que contas queres?"
+                    legend={Messages.getLabels().modeQuestion}
                     value={settings.multiplication.mode}
                     options={QuestionsUtils.getValidModes().map((mode) => ({
                         value: mode,
@@ -193,8 +195,8 @@ function MoreMultiplicativeFields({ operation, settings, onSettingsChange }: Mul
                 />
             )}
             <SwitchField
-                label="Escrever sempre a resposta"
-                description="Sem escolha múltipla, mesmo nas contas novas."
+                label={Messages.getLabels().alwaysTyped}
+                description={Messages.getLabels().alwaysTypedAbout}
                 isOn={multiplicativeSettings.isAlwaysTyped}
                 onChange={(isAlwaysTyped) => onSettingsChange({ ...settings, [operation]: { ...multiplicativeSettings, isAlwaysTyped } })}
             />
@@ -213,7 +215,7 @@ function MixFields({ profile, onSettingsChange }: MixFieldsProps) {
 
     return (
         <fieldset>
-            <legend className="section-title">Que contas queres misturar?</legend>
+            <legend className="section-title">{Messages.getLabels().mixQuestion}</legend>
             <div className="mix-options">
                 {OperationsUtils.getValidOperations().map((operation) => {
                     const isIncluded: boolean = settings.mix.operations.includes(operation);
@@ -239,7 +241,7 @@ function MixFields({ profile, onSettingsChange }: MixFieldsProps) {
                     );
                 })}
             </div>
-            <p className="hint hint--left">Cada conta usa a dificuldade que escolheste nela.</p>
+            <p className="hint hint--left">{Messages.getLabels().mixAbout}</p>
         </fieldset>
     );
 }

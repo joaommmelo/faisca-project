@@ -1,3 +1,4 @@
+import { Messages } from "../utils/messages.ts";
 import type { AnswerRecord } from "../utils/session/utils.ts";
 import { CheckIcon } from "./Icons.tsx";
 
@@ -25,7 +26,7 @@ export function ChoiceOptions({ options, answer, missedAttempts, hiddenOptions, 
     };
 
     return (
-        <div className="choices" role="group" aria-label="Escolhe a resposta">
+        <div className="choices" role="group" aria-label={Messages.getLabels().chooseAnswer}>
             {options.map((option) =>
                 hiddenOptions.includes(option) ? (
                     <span key={option} className="choice choice--hidden" aria-hidden="true" />

@@ -53,7 +53,7 @@ export function CoinButton({ wallet }: CoinButtonProps) {
             >
                 <CoinIcon />
                 <span aria-hidden="true">{wallet.coins}</span>
-                <span className="visually-hidden">{Messages.getCoinsCount(wallet.coins)}. Ver o mealheiro</span>
+                <span className="visually-hidden">{`${Messages.getCoinsCount(wallet.coins)}. ${Messages.getLabels().seePiggyBank}`}</span>
             </button>
             {isOpen && (
                 <div id={panelId} className="coin-button__panel">

@@ -1,12 +1,15 @@
 import { CoinButton } from "../components/CoinButton.tsx";
+import { LanguagePicker } from "../components/LanguagePicker.tsx";
 import { Logo } from "../components/Logo.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
 import { PracticeTiles } from "../components/PracticeTiles.tsx";
 import { ProfilesPanel } from "../components/ProfilesPanel.tsx";
 import { SwitchField } from "../components/SwitchField.tsx";
+import type { Labels } from "../copy/copy.ts";
 import { useInstallPrompt, type InstallPrompt } from "../hooks/useInstallPrompt.ts";
 import type { Difficulty } from "../utils/difficulties/utils.ts";
 import { LevelsUtils } from "../utils/levels/utils.ts";
+import type { Locale } from "../utils/locales/utils.ts";
 import { Messages } from "../utils/messages.ts";
 import { OperationsUtils, type Operation } from "../utils/operations/utils.ts";
 import { ProfilesUtils, type AppData, type Practice, type Profile } from "../utils/profiles/utils.ts";
@@ -16,6 +19,7 @@ interface HomeScreenProps {
     data: AppData;
     profile: Profile;
     storageStatus: StorageStatus;
+    locale: Locale;
     onSelectProfile: (profileId: string) => void;
     onCreateProfile: (name: string) => void;
     onDeleteProfile: (profileId: string) => void;
@@ -23,25 +27,29 @@ interface HomeScreenProps {
     onShowProgress: () => void;
     onOpenChallenge: () => void;
     onChallengeSwitch: (isChallengeEnabled: boolean) => void;
+    onLocaleChange: (locale: Locale) => void;
 }
 
 // Only the choice of what to practise; everything about how to play it waits on the next screen. The coins sit in
 // the corner and open the piggy bank; who is playing rarely changes, so it waits at the bottom, and the challenge for
-// adults is switched on below that.
+// adults is switched on below that, after the language.
 export function HomeScreen({
     data,
     profile,
     storageStatus,
+    locale,
     onSelectProfile,
     onCreateProfile,
     onDeleteProfile,
     onChoosePractice,
     onShowProgress,
     onOpenChallenge,
-    onChallengeSwitch
+    onChallengeSwitch,
+    onLocaleChange
 }: HomeScreenProps) {
     const { settings } = profile;
     const installPrompt: InstallPrompt = useInstallPrompt();
+    const labels: Labels = Messages.getLabels();
 
     const summaries: Record<Practice, string> = (() => {
         const getSummary = (operation: Operation): string => {
@@ -90,14 +98,14 @@ export function HomeScreen({
             )}
 
             <button type="button" className="button button--secondary button--block" onClick={onShowProgress}>
-                Ver progresso
+                {labels.seeProgress}
             </button>
 
             {/* One tap, and only where the browser offers it: the steps of the other browsers would sit here on every
                 visit, and on iPhone and iPad the installed app starts without the progress kept in Safari. */}
             {installPrompt.method === "prompt" && (
                 <button type="button" className="button button--secondary button--block" onClick={installPrompt.install}>
-                    Pôr no ecrã principal
+                    {labels.addToHomeScreen}
                 </button>
             )}
 
@@ -109,8 +117,10 @@ export function HomeScreen({
                 onDeleteProfile={onDeleteProfile}
             />
 
-            <section className="card" aria-label="Avançado">
-                <h2 className="section-title">Avançado</h2>
+            <LanguagePicker locale={locale} onChange={onLocaleChange} />
+
+            <section className="card" aria-label={labels.advanced}>
+                <h2 className="section-title">{labels.advanced}</h2>
                 <SwitchField
                     label={Messages.getChallengeName()}
                     description={Messages.getChallengeAbout()}

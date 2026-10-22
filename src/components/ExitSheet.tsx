@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import { Messages } from "../utils/messages.ts";
 import { PlayIcon } from "./Icons.tsx";
 import { MascotMessage } from "./Mascot.tsx";
 
@@ -47,11 +48,11 @@ export function ExitSheet({ question, leaveIcon, onLeave, onStay }: ExitSheetPro
                 <div className="exit-sheet__choices">
                     <button type="button" className="button exit-sheet__choice exit-sheet__choice--leave" onClick={onLeave}>
                         {leaveIcon}
-                        Sim
+                        {Messages.getLabels().yes}
                     </button>
                     <button ref={stayButtonRef} type="button" className="button exit-sheet__choice exit-sheet__choice--stay" onClick={onStay}>
                         <PlayIcon />
-                        Não
+                        {Messages.getLabels().no}
                     </button>
                 </div>
             </div>

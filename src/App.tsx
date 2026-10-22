@@ -9,6 +9,8 @@ import { SetupScreen } from "./screens/SetupScreen.tsx";
 import { SummaryScreen } from "./screens/SummaryScreen.tsx";
 import { WelcomeScreen } from "./screens/WelcomeScreen.tsx";
 import { ChallengeUtils, type ChallengeRun } from "./utils/challenge/utils.ts";
+import { LocalesUtils, type Locale } from "./utils/locales/utils.ts";
+import { Messages } from "./utils/messages.ts";
 import { ProfilesUtils, type AppData, type Profile } from "./utils/profiles/utils.ts";
 import { ProgressionUtils, type FinishSessionResult } from "./utils/progression/utils.ts";
 import type { SessionOutcome } from "./utils/session/utils.ts";
@@ -25,10 +27,23 @@ type View =
 
 export function App() {
     const [stored] = useState<LoadResult>(() => StorageUtils.load());
-    const [data, setData] = useState<AppData>(stored.data);
+    // The first start detects the language and keeps it.
+    const [data, setData] = useState<AppData>(() =>
+        stored.data.locale === null
+            ? ProfilesUtils.setLocale(stored.data, LocalesUtils.detect(Intl.DateTimeFormat().resolvedOptions().timeZone, navigator.languages))
+            : stored.data
+    );
     const [view, setView] = useState<View>({ name: "home" });
     const canSave: boolean = StorageUtils.canSave(stored.status);
     const hasProfiles: boolean = data.profiles.length > 0;
+    const locale: Locale = data.locale ?? LocalesUtils.getFallbackLocale();
+    // Before anything below renders, so every screen speaks the same language.
+    Messages.setLocale(locale);
+    const changeLocale = (newLocale: Locale): void => setData((current) => ProfilesUtils.setLocale(current, newLocale));
+
+    useEffect(() => {
+        document.documentElement.lang = LocalesUtils.getLanguageTag(locale);
+    }, [locale]);
 
     useEffect(() => {
         if (canSave) {
@@ -49,7 +64,7 @@ export function App() {
 
     const activeProfile: Profile | null = ProfilesUtils.getActive(data);
     if (activeProfile === null) {
-        return <WelcomeScreen data={data} onCreateProfile={(name) => setData(ProfilesUtils.add(data, name))} />;
+        return <WelcomeScreen data={data} locale={locale} onCreateProfile={(name) => setData(ProfilesUtils.add(data, name))} onLocaleChange={changeLocale} />;
     }
 
     const updateActiveProfile = (change: (profile: Profile) => Profile): void => {
@@ -120,6 +135,7 @@ export function App() {
                     data={data}
                     profile={activeProfile}
                     storageStatus={stored.status}
+                    locale={locale}
                     onSelectProfile={(profileId) => setData(ProfilesUtils.select(data, profileId))}
                     onCreateProfile={(name) => setData(ProfilesUtils.add(data, name))}
                     onDeleteProfile={(profileId) => setData(ProfilesUtils.remove(data, profileId))}
@@ -132,6 +148,7 @@ export function App() {
                     onChallengeSwitch={(isChallengeEnabled) =>
                         updateActiveProfile((profile) => ({ ...profile, settings: { ...profile.settings, isChallengeEnabled } }))
                     }
+                    onLocaleChange={changeLocale}
                 />
             );
     }

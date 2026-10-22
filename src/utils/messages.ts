@@ -1,8 +1,16 @@
+import type { Copy, Labels } from "../copy/copy.ts";
+import { de } from "../copy/de.ts";
+import { en } from "../copy/en.ts";
+import { es } from "../copy/es.ts";
+import { fr } from "../copy/fr.ts";
+import { it } from "../copy/it.ts";
+import { pt } from "../copy/pt.ts";
 import type { Skill } from "./arithmetic/utils.ts";
 import { ChallengeUtils, type ChallengeRun } from "./challenge/utils.ts";
 import { ClockUtils, type ClockDirection, type ClockReference, type ClockSettings } from "./clock/utils.ts";
 import { DifficultiesUtils, type Difficulty } from "./difficulties/utils.ts";
 import { HelpsUtils, type ArithmeticHint, type HelpUnavailableReason, type Calculation, type VerticalHelpStep } from "./helps/utils.ts";
+import type { Locale } from "./locales/utils.ts";
 import { NumbersUtils } from "./numbers/utils.ts";
 import { OperationsUtils, type Operation } from "./operations/utils.ts";
 import type { ClockOutcome, Milestone, SessionOffer } from "./progression/utils.ts";
@@ -32,94 +40,78 @@ export interface OfferText {
     declineLabel: string;
 }
 
-// Faísca's voice: the sentences that react to the child, in European Portuguese.
-// Short, warm, and never about being wrong. Fixed button labels live with their component.
+const COPIES: Record<Locale, Copy> = { pt, en, es, fr, de, it };
+
+// Faísca's voice and every word of the app, in the language App sets before each render. Messages decides what to
+// say; the copy of each language (src/copy) words it. Short, warm, and never about being wrong.
 export class Messages {
+    private static locale: Locale = "pt";
+
+    public static setLocale(locale: Locale): void {
+        this.locale = locale;
+    }
+
+    public static getLocale(): Locale {
+        return this.locale;
+    }
+
+    // The fixed words of buttons, titles and screen-reader labels.
+    public static getLabels(): Labels {
+        return this.getCopy().labels;
+    }
+
     public static getTagline(): string {
-        return "Acende o teu talento!";
+        return this.getCopy().tagline;
     }
 
     public static getWelcomeQuestion(): string {
-        return "Olá! Eu sou o Faísca. Como te chamas?";
+        return this.getCopy().welcomeQuestion;
     }
 
     public static getGreeting(name: string): string {
-        return `Olá, ${name}! O que vamos praticar hoje?`;
-    }
-
-    public static getCorrectMessages(): string[] {
-        return ["Muito bem!", "Boa! Acertaste!", "Isso mesmo!", "Excelente!", "Estás a melhorar!"];
-    }
-
-    public static getTryAgainMessages(): string[] {
-        return ["Quase! Tenta outra vez.", "Ainda não. Experimenta outra vez!", "Hmm, quase! Vamos ver outra vez?"];
+        return this.getCopy().greeting(name);
     }
 
     // The first miss never shows the answer: it points at what to look at and gives the second chance.
     public static getTryAgain(question: Question, variant: number, wrongColumnCount: number): string {
         if (question.format === "vertical") {
-            return wrongColumnCount === 1 ? "Quase! Vê a coluna realçada e tenta outra vez." : "Quase! Vê as colunas realçadas e tenta outra vez.";
+            return this.getCopy().tryAgainColumns(wrongColumnCount);
         }
-        const messages: string[] = this.getTryAgainMessages();
+        const messages: string[] = this.getCopy().tryAgains;
         return messages[variant % messages.length];
     }
 
     // Rotates through the praises so consecutive right answers do not repeat the same one.
     public static getFeedback(record: AnswerRecord, context: FeedbackContext): Feedback {
+        const copy: Copy = this.getCopy();
         if (record.isCorrect && record.question.isRetry) {
-            return { title: "Boa! Desta vez acertaste!", lines: [] };
+            return { title: copy.rightAtRetry, lines: [] };
         }
         if (record.isCorrect && !SessionUtils.isFirstTryCorrect(record)) {
-            return { title: "Boa! À segunda acertaste!", lines: [] };
+            return { title: copy.rightAtSecondTry, lines: [] };
         }
         if (record.isCorrect) {
-            const praises: string[] = this.getCorrectMessages();
-            return { title: praises[context.variant % praises.length], lines: [] };
+            return { title: copy.praises[context.variant % copy.praises.length], lines: [] };
         }
         return {
-            title: "Quase!",
-            lines: [
-                `A resposta certa é ${record.question.answer}.`,
-                context.hasRetryAhead ? "Vamos tentar outra vez mais à frente." : "Vamos treinar esta na próxima vez."
-            ]
+            title: copy.almost,
+            lines: [copy.rightAnswer(String(record.question.answer)), context.hasRetryAhead ? copy.retryAhead : copy.retryNextTime]
         };
     }
 
     public static getMilestone(milestone: Milestone): string {
         if (milestone.kind === "coin") {
-            return "Ganhaste uma moeda!";
+            return this.getCopy().coinMilestone;
         }
-        return `Subiste para o nível ${milestone.level}!`;
+        return this.getCopy().levelUpMilestone(milestone.level);
     }
 
     public static getOperationName(operation: Operation): string {
-        switch (operation) {
-            case "addition":
-                return "Soma";
-            case "subtraction":
-                return "Subtração";
-            case "multiplication":
-                return "Multiplicação";
-            default:
-                return "Divisão";
-        }
-    }
-
-    public static getOperationPluralName(operation: Operation): string {
-        switch (operation) {
-            case "addition":
-                return "somas";
-            case "subtraction":
-                return "subtrações";
-            case "multiplication":
-                return "multiplicações";
-            default:
-                return "divisões";
-        }
+        return this.getCopy().operationNames[operation];
     }
 
     public static getMixName(): string {
-        return "Misturado";
+        return this.getCopy().mixName;
     }
 
     public static getPracticeName(practice: Practice): string {
@@ -128,71 +120,45 @@ export class Messages {
 
     public static getPlayProblem(problem: PlayProblem): string {
         if (problem === "too-few-operations") {
-            return `Escolhe pelo menos ${ProfilesUtils.getMinMixOperations()} contas para misturar.`;
+            return this.getCopy().playProblemMix(ProfilesUtils.getMinMixOperations());
         }
-        return "Escolhe pelo menos uma tabuada.";
+        return this.getCopy().playProblemTables;
     }
 
     public static getDifficultyName(difficulty: Difficulty): string {
-        switch (difficulty) {
-            case "easy":
-                return "Fácil";
-            case "medium":
-                return "Médio";
-            default:
-                return "Difícil";
-        }
+        return this.getCopy().difficultyNames[difficulty];
     }
 
     // What a difficulty asks, in a few words: a range for + and −, an example for × and ÷.
     public static getDifficultyDetail(operation: Operation, difficulty: Difficulty): string {
         if (OperationsUtils.isAdditive(operation)) {
-            return `até ${DifficultiesUtils.getLimit(difficulty)}`;
+            return this.getCopy().difficultyRange(DifficultiesUtils.getLimit(difficulty));
         }
         if (OperationsUtils.usesTables(operation, difficulty)) {
-            return "tabuadas";
+            return this.getCopy().difficultyTables;
         }
         const examples: Record<"multiplication" | "division", Record<"medium" | "hard", string>> = {
-            multiplication: { medium: "como 23 × 4", hard: "como 157 × 6" },
-            division: { medium: "como 84 ÷ 4", hard: "como 936 ÷ 4" }
+            multiplication: { medium: "23 × 4", hard: "157 × 6" },
+            division: { medium: "84 ÷ 4", hard: "936 ÷ 4" }
         };
-        return examples[operation][difficulty === "medium" ? "medium" : "hard"];
+        return this.getCopy().difficultyExample(examples[operation][difficulty === "medium" ? "medium" : "hard"]);
     }
 
     public static getLayoutLabel(layout: AnswerLayout): string {
-        return layout === "result" ? "Só o resultado" : "Na vertical";
+        return this.getCopy().layoutNames[layout];
     }
 
     public static getSkillName(skill: Skill): string {
-        switch (skill) {
-            case "no-carry":
-                return "Sem transporte";
-            case "carry":
-                return "Transporte numa coluna";
-            case "chain-carry":
-                return "Transporte em cadeia";
-            case "no-borrow":
-                return "Sem empréstimo";
-            case "borrow":
-                return "Com empréstimo";
-            case "borrow-across-zero":
-                return "Empréstimo através do zero";
-            case "no-remainder":
-                return "Sem resto pelo caminho";
-            case "remainder":
-                return "Com resto pelo caminho";
-            default:
-                return "Zero no resultado";
-        }
+        return this.getCopy().skillNames[skill];
     }
 
     public static getLevelName(level: number): string {
-        return `Nível ${level}`;
+        return this.getCopy().levelName(level);
     }
 
     // The home screen's one-line summary of an operation: where the child is, not every level.
     public static getOperationSummary(difficulty: Difficulty, level: number): string {
-        return `${this.getDifficultyName(difficulty)} · ${this.getLevelName(level).toLocaleLowerCase("pt-PT")}`;
+        return this.getCopy().operationSummary(this.getDifficultyName(difficulty), level);
     }
 
     public static getEquationText(question: DisplayedQuestion): string {
@@ -201,189 +167,190 @@ export class Messages {
     }
 
     public static getSpokenQuestion(question: DisplayedQuestion): string {
+        const copy: Copy = this.getCopy();
         switch (question.operation) {
             case "addition":
-                return `Quanto é ${question.left} mais ${question.right}?`;
+                return copy.spokenAddition(question.left, question.right);
             case "subtraction":
-                return `Quanto é ${question.left} menos ${question.right}?`;
+                return copy.spokenSubtraction(question.left, question.right);
             case "division":
-                return `Quanto é ${question.left} a dividir por ${question.right}?`;
+                return copy.spokenDivision(question.left, question.right);
             default:
                 break;
         }
         switch (question.kind) {
             case "missing-left":
-                return `Que número vezes ${question.right} dá ${question.result}?`;
+                return copy.spokenMissingLeft(question.right, question.result);
             case "missing-right":
-                return `${question.left} vezes que número dá ${question.result}?`;
+                return copy.spokenMissingRight(question.left, question.result);
             default:
-                return `Quanto é ${question.left} vezes ${question.right}?`;
+                return copy.spokenMultiplication(question.left, question.right);
         }
     }
 
-    public static getColumnName(column: number): string {
-        const names: string[] = ["unidades", "dezenas", "centenas", "milhares"];
-        return names[column];
+    public static getCellLabel(column: number, digit: number | null): string {
+        return this.getCopy().cellLabel(column, digit);
     }
 
     public static getHelpUnavailable(reason: HelpUnavailableReason): string {
         if (reason === "limit") {
-            return `Já usaste as ${HelpsUtils.getMaxHelpsPerSession()} ajudas deste jogo.`;
+            return this.getCopy().helpLimit(HelpsUtils.getMaxHelpsPerSession());
         }
-        return "O mealheiro está vazio. Cada 5 certas dão uma moeda!";
+        return this.getCopy().helpNoCoins(WalletUtils.getAnswersPerCoin());
     }
 
     public static getChoiceHint(): string {
-        return "Tirei duas respostas. É uma destas!";
+        return this.getCopy().choiceHint;
     }
 
     public static getArithmeticHint(question: Question, hint: ArithmeticHint): string {
+        const copy: Copy = this.getCopy();
         const symbol: string = OperationsUtils.getSymbol(question.operation);
         switch (hint.kind) {
             case "split":
-                return `Pista: ${hint.firstStep.left} ${symbol} ${hint.firstStep.right} = ${hint.firstStep.result}. Agora ${symbol} ${hint.remaining}.`;
+                return copy.hintSplit(this.writeCalculation(hint.firstStep, symbol), `${symbol} ${hint.remaining}`);
             case "partial": {
-                const firstStep: string = `${hint.firstStep.left} ${symbol} ${hint.firstStep.right} = ${hint.firstStep.result}`;
+                const firstStep: string = this.writeCalculation(hint.firstStep, symbol);
                 const rest: string = `${hint.rest.left} ${symbol} ${hint.rest.right}`;
-                return question.operation === "division" ? `Pista: ${firstStep}. Agora faz ${rest} e junta.` : `Pista: ${firstStep}. Agora junta ${rest}.`;
+                return question.operation === "division" ? copy.hintPartialDivision(firstStep, rest) : copy.hintPartialSum(firstStep, rest);
             }
-            case "round": {
-                const zeros: string = hint.zeros === 1 ? "um zero" : `${hint.zeros} zeros`;
-                return `Pista: ${hint.base.left} ${symbol} ${hint.base.right} = ${hint.base.result}. Agora junta ${zeros}.`;
-            }
+            case "round":
+                return copy.hintRound(this.writeCalculation(hint.base, symbol), hint.zeros);
             default: {
-                const direction: string = question.operation === "addition" ? "para a frente" : "para trás";
+                const isForward: boolean = question.operation === "addition";
                 if (hint.unit === 10) {
-                    return `Pista: começa no ${hint.start} e conta ${hint.steps === 1 ? "1 dezena" : `${hint.steps} dezenas`} ${direction}.`;
+                    return copy.hintCountTens(hint.start, hint.steps, isForward);
                 }
-                return `Pista: começa no ${hint.start} e conta ${hint.steps} ${direction}.`;
+                return copy.hintCount(hint.start, hint.steps, isForward);
             }
         }
     }
 
     public static getNeighbourHint(fact: Calculation): string {
-        return `Pista: ${fact.left} × ${fact.right} = ${fact.result}`;
+        return this.getCopy().hintNeighbour(this.writeCalculation(fact, "×"));
     }
 
     public static getVerticalHint(question: Question, column: VerticalColumn, columnIndex: number, step: VerticalHelpStep): string {
-        const columnName: string = this.getColumnName(columnIndex);
+        const copy: Copy = this.getCopy();
         if (column.result === null) {
-            return "Esta casa fica vazia. Já podes confirmar!";
+            return copy.verticalEmpty;
         }
         if (step === "digit") {
-            return `Nas ${columnName} fica ${column.result}.`;
+            return copy.verticalDigit(columnIndex, column.result);
         }
         if (column.top === null && column.bottom === null) {
-            return "Aqui só desce o 1 que veio de trás.";
+            return copy.verticalCarryOnly;
         }
         // A number shorter than the other has nothing in this column, which is the same as 0.
         const top: number = column.top ?? 0;
         const bottom: number = column.bottom ?? 0;
         if (question.operation === "addition") {
             if (step === "marks") {
-                return `Não te esqueças do 1 que veio de trás: ${top} + ${bottom} + 1.`;
+                return copy.verticalCarry(top, bottom);
             }
-            return `Agora as ${columnName}: ${top} + ${bottom}.`;
+            return copy.verticalColumn(columnIndex, `${top} + ${bottom}`);
         }
         if (step === "marks") {
-            return `O ${top} passa a ${column.workingTop ?? top}. Agora faz ${column.workingTop ?? top} − ${bottom}.`;
+            return copy.verticalBorrow(top, column.workingTop ?? top, bottom);
         }
-        return `Agora as ${columnName}: ${top} − ${bottom}.`;
+        return copy.verticalColumn(columnIndex, `${top} − ${bottom}`);
     }
 
     public static getSessionEnd(): string {
-        return "Boa sessão! Até à próxima!";
+        return this.getCopy().sessionEnd;
     }
 
     public static getSummaryHeadline(correctAtFirstTry: number, total: number): string {
         const greatScoreRatio: number = 0.7;
         if (correctAtFirstTry === total) {
-            return "Perfeito! Acertaste todas!";
+            return this.getCopy().summaryPerfect;
         }
         if (correctAtFirstTry >= total * greatScoreRatio) {
-            return "Muito bem! Estás a melhorar!";
+            return this.getCopy().summaryGreat;
         }
-        return "Boa prática! Cada jogo ajuda a aprender.";
+        return this.getCopy().summaryGood;
     }
 
     public static getNothingToReinforce(): string {
-        return "Não ficou nenhuma conta para trás. Fantástico!";
+        return this.getCopy().nothingToReinforce;
     }
 
     public static getHelpedCount(helpedCount: number): string {
-        return helpedCount === 1 ? "1 com ajuda" : `${helpedCount} com ajuda`;
+        return this.getCopy().helpedCount(helpedCount);
     }
 
     // Names the operation too, because the offer can come from a mix.
     public static getOfferText(offer: SessionOffer): OfferText {
-        const difficultyName: string = this.getDifficultyName(offer.difficulty);
-        const operationName: string = this.getOperationName(offer.operation);
+        const copy: Copy = this.getCopy();
         if (offer.kind === "unlock") {
             return {
-                title: "Desafio desbloqueado!",
-                text: `Já podes experimentar a ${operationName} no ${difficultyName}, com contas ${this.getDifficultyDetail(offer.operation, offer.difficulty)}.`,
-                acceptLabel: `Experimentar o ${difficultyName}`,
-                declineLabel: "Agora não"
+                title: copy.unlockTitle,
+                text: copy.unlockText(offer.operation, offer.difficulty, this.getDifficultyDetail(offer.operation, offer.difficulty)),
+                acceptLabel: copy.unlockAccept(offer.difficulty),
+                declineLabel: copy.unlockDecline
             };
         }
         return {
-            title: "Esta foi puxada!",
-            text: `Queres praticar um bocadinho a ${operationName} no ${difficultyName}? Não perdes nível nem moedas.`,
-            acceptLabel: `Praticar no ${difficultyName}`,
-            declineLabel: "Continuar aqui"
+            title: copy.safetyNetTitle,
+            text: copy.safetyNetText(offer.operation, offer.difficulty),
+            acceptLabel: copy.safetyNetAccept(offer.difficulty),
+            declineLabel: copy.safetyNetDecline
         };
     }
 
     public static getClockDirectionLabel(direction: ClockDirection): string {
-        return direction === "up" ? "Para a frente" : "Para trás";
+        return this.getCopy().clockDirectionNames[direction];
     }
 
     public static getClockReferenceLabel(reference: ClockReference): string {
-        return reference === "default" ? `${ClockUtils.getDefaultMinutes()} minutos` : "O teu recorde";
+        return reference === "default" ? this.getCopy().clockReferenceDefault(ClockUtils.getDefaultMinutes()) : this.getCopy().clockReferenceRecord;
     }
 
     // Under the running clock: what it is measured against. Never a warning.
     public static getClockNote(settings: ClockSettings, referenceMilliseconds: number, hasRecord: boolean, isOvertime: boolean): string {
+        const copy: Copy = this.getCopy();
         if (isOvertime) {
-            return "tempo extra";
+            return copy.clockOvertime;
         }
         const reference: string = TimeUtils.formatElapsed(referenceMilliseconds);
         const isRecord: boolean = settings.reference === "record" && hasRecord;
         if (settings.direction === "down") {
-            return isRecord ? `do recorde ${reference}` : `de ${reference}`;
+            return isRecord ? copy.clockCountdownFromRecord(reference) : copy.clockCountdownFrom(reference);
         }
-        return isRecord ? `recorde ${reference}` : `meta ${reference}`;
+        return isRecord ? copy.clockRecord(reference) : copy.clockGoal(reference);
     }
 
     // The end of a timed session: always something kind, and the record only when it was perfect.
     public static getClockOutcomeLines(outcome: ClockOutcome): string[] {
+        const copy: Copy = this.getCopy();
         const lines: string[] = [];
         if (outcome.isNewRecord) {
             lines.push(
                 outcome.previousRecordMilliseconds === null
-                    ? "Primeiro recorde nesta categoria!"
-                    : `Novo recorde! Antes era ${TimeUtils.formatElapsed(outcome.previousRecordMilliseconds)}.`
+                    ? copy.clockFirstRecord
+                    : copy.clockNewRecord(TimeUtils.formatElapsed(outcome.previousRecordMilliseconds))
             );
         } else if (outcome.isWithinReference) {
-            lines.push("Ganhaste ao relógio!");
+            lines.push(copy.clockBeaten);
         } else {
             const extra: string = TimeUtils.formatElapsed(outcome.elapsedMilliseconds - outcome.referenceMilliseconds);
             lines.push(
                 outcome.isAgainstRecord
-                    ? `Ficaste a ${extra} do teu recorde, ${TimeUtils.formatElapsed(outcome.referenceMilliseconds)}. Para a próxima!`
-                    : `Mais ${extra} do que os ${ClockUtils.getDefaultMinutes()} minutos. Para a próxima!`
+                    ? copy.clockBehindRecord(extra, TimeUtils.formatElapsed(outcome.referenceMilliseconds))
+                    : copy.clockBehindDefault(extra, ClockUtils.getDefaultMinutes())
             );
         }
         if (!outcome.isNewRecord && !outcome.isAgainstRecord && outcome.previousRecordMilliseconds !== null) {
-            lines.push(`O teu recorde: ${TimeUtils.formatElapsed(outcome.previousRecordMilliseconds)}.`);
+            lines.push(copy.clockYourRecord(TimeUtils.formatElapsed(outcome.previousRecordMilliseconds)));
         }
         if (!outcome.isPerfect) {
-            lines.push("Os recordes contam quando acertas todas à primeira.");
+            lines.push(copy.clockRecordsNeedPerfect);
         }
         return lines;
     }
 
     public static getRecordCategoryName(category: RecordCategory): string {
+        const copy: Copy = this.getCopy();
         if (category.kind === "mix") {
             const operations: string = category.parts
                 .map((part) => `${this.getOperationName(part.operation)} ${this.getDifficultyName(part.difficulty)}`)
@@ -392,52 +359,48 @@ export class Messages {
         }
         const parts: string[] = [this.getOperationName(category.operation), this.getDifficultyName(category.difficulty)];
         if (category.layout !== null) {
-            parts.push(category.layout === "vertical" ? "na vertical" : "só o resultado");
+            parts.push(category.layout === "vertical" ? copy.recordVertical : copy.recordResult);
         }
         if (category.tables !== null) {
-            parts.push(category.tables.length === 1 ? `tabuada do ${category.tables[0]}` : `tabuadas ${category.tables.join(", ")}`);
+            parts.push(category.tables.length === 1 ? copy.recordTable(category.tables[0]) : copy.recordTables(category.tables.join(", ")));
         }
         if (category.mode === "mixed") {
-            parts.push("com inversas");
+            parts.push(copy.recordWithInverse);
         }
         if (category.isAlwaysTyped) {
-            parts.push("a escrever");
+            parts.push(copy.recordTyping);
         }
         return parts.join(" · ");
     }
 
     public static getChallengeName(): string {
-        return "Desafio sem fim";
+        return this.getCopy().challengeName;
     }
 
     // Next to the switch that shows it on the home screen: who it is for, and how it ends.
     public static getChallengeAbout(): string {
-        return "Para adultos: cada vez mais difícil e mais rápido, até falhar.";
+        return this.getCopy().challengeAbout;
     }
 
     public static getChallengeGreeting(): string {
-        return "Até onde consegues chegar?";
+        return this.getCopy().challengeGreeting;
     }
 
     public static getChallengeRules(): string[] {
-        return [
-            `Cada ${ChallengeUtils.getAnswersPerLevel()} certas sobes de nível. Começa com somas; depois entram as subtrações, as multiplicações e as divisões, e os números crescem até ${ChallengeUtils.getMaxDigits()} algarismos.`,
-            "Cada pergunta tem o seu tempo, e a cada nível há menos.",
-            "Uma resposta errada ou o tempo a acabar terminam o desafio."
-        ];
+        return this.getCopy().challengeRules(ChallengeUtils.getAnswersPerLevel(), ChallengeUtils.getMaxDigits());
     }
 
     public static getChallengeScore(correctCount: number): string {
-        return correctCount === 1 ? "1 certa" : `${correctCount} certas`;
+        return this.getCopy().challengeScore(correctCount);
     }
 
     // Under the challenge's name on the home screen.
     public static getChallengeSummary(record: number | null): string {
-        return record === null ? "Para adultos" : `Recorde: ${this.getChallengeScore(record)}`;
+        return record === null ? this.getCopy().challengeForAdults : this.getCopy().challengeRecordSummary(this.getChallengeScore(record));
     }
 
     public static getChallengeRecord(record: number | null): string {
-        return record === null ? "Ainda sem recorde." : `O teu recorde: ${this.getChallengeScore(record)}.`;
+        return record === null ? this.getCopy().challengeNoRecord : this.getCopy().challengeYourRecord(this.getChallengeScore(record));
     }
 
     // What changes at the new level: an operation joins, or the numbers grow and the time shrinks. Past the top
@@ -445,73 +408,64 @@ export class Messages {
     public static getChallengeLevelUp(level: number): string {
         const joiningOperation: Operation | null = ChallengeUtils.getJoiningOperation(level);
         if (joiningOperation !== null) {
-            return `Nível ${level}! Agora também há ${this.getOperationPluralName(joiningOperation)}.`;
+            return this.getCopy().challengeLevelUpJoin(level, joiningOperation);
         }
         if (level <= ChallengeUtils.getTopLevel()) {
-            return `Nível ${level}! Números maiores e menos tempo.`;
+            return this.getCopy().challengeLevelUpGrow(level);
         }
-        return `Nível ${level}!`;
+        return this.getCopy().challengeLevelUp(level);
     }
 
     // The last question shows next to it, with the right answer.
     public static getChallengeEnding(run: ChallengeRun): Feedback {
+        const copy: Copy = this.getCopy();
         switch (run.ending) {
             case "time":
-                return { title: "O tempo acabou!", lines: [] };
+                return { title: copy.challengeTimeUp, lines: [] };
             case "wrong":
-                return { title: "Quase!", lines: run.givenAnswer === null ? [] : [`Escreveste ${NumbersUtils.format(run.givenAnswer)}.`] };
+                return { title: copy.almost, lines: run.givenAnswer === null ? [] : [copy.challengeWrote(NumbersUtils.format(run.givenAnswer))] };
             default:
-                return { title: "Desafio terminado.", lines: [] };
+                return { title: copy.challengeStopped, lines: [] };
         }
     }
 
     public static getChallengeLevelReached(correctCount: number): string {
-        return `Chegaste ao nível ${ChallengeUtils.getLevel(correctCount)}.`;
+        return this.getCopy().challengeLevelReached(ChallengeUtils.getLevel(correctCount));
     }
 
     public static getCoinsCount(coins: number): string {
-        return coins === 1 ? "1 moeda" : `${coins} moedas`;
+        return this.getCopy().coinsCount(coins);
     }
 
     // Multiple choice counts half, so the progress can be "3½ de 5".
     public static getCoinProgress(answers: number): string {
         const wholeAnswers: number = Math.floor(answers);
         const half: string = answers > wholeAnswers ? "½" : "";
-        return `${wholeAnswers === 0 && half !== "" ? "" : wholeAnswers}${half} de ${WalletUtils.getAnswersPerCoin()}`;
+        return this.getCopy().coinProgress(`${wholeAnswers === 0 && half !== "" ? "" : wholeAnswers}${half}`, WalletUtils.getAnswersPerCoin());
     }
 
     public static getPiggyBankAbout(): string {
-        return `Cada ajuda custa 1 moeda. Cada ${WalletUtils.getAnswersPerCoin()} certas dão uma moeda nova.`;
+        return this.getCopy().piggyBankAbout(WalletUtils.getAnswersPerCoin());
     }
 
     public static getPiggyBankFull(): string {
-        return "Mealheiro cheio!";
+        return this.getCopy().piggyBankFull;
     }
 
     public static getStorageWarning(status: StorageStatus): string {
-        if (status === "newer-version") {
-            return "Este progresso foi guardado por uma versão mais nova do Faísca. Aqui nada fica guardado.";
-        }
-        return "Atenção: neste browser o teu progresso não fica guardado.";
+        return status === "newer-version" ? this.getCopy().storageNewerVersion : this.getCopy().storageNotSaved;
     }
 
     public static getProgressCheer(masteredCount: number): string {
-        if (masteredCount === 0) {
-            return "Cada jogo acende mais quadrados. Vamos a isso?";
-        }
-        if (masteredCount === 1) {
-            return "Já sabes 1 conta de cor. Que orgulho!";
-        }
-        return `Já sabes ${masteredCount} contas de cor. Que orgulho!`;
+        return masteredCount === 0 ? this.getCopy().progressCheerStart : this.getCopy().progressCheerKnown(masteredCount);
     }
 
     public static getMasteryLabel(level: number): string {
-        const labels: string[] = ["Por praticar", "A começar", "A aprender", "A melhorar", "Quase lá", "Dominado"];
-        return labels[level];
+        return this.getCopy().masteryNames[level];
     }
 
     public static getModeLabel(mode: PracticeMode): string {
-        return mode === "direct" ? "Só directas" : "Directas + inversas";
+        return this.getCopy().modeNames[mode];
     }
 
     public static getModeExample(mode: PracticeMode): string {
@@ -521,11 +475,19 @@ export class Messages {
     public static getNameProblem(problem: ProfileNameProblem): string {
         switch (problem) {
             case "too-long":
-                return `O nome pode ter até ${ProfilesUtils.getMaxNameLength()} letras.`;
+                return this.getCopy().nameTooLong(ProfilesUtils.getMaxNameLength());
             case "taken":
-                return "Já existe um perfil com esse nome.";
+                return this.getCopy().nameTaken;
             default:
-                return "Escreve o teu nome.";
+                return this.getCopy().nameEmpty;
         }
+    }
+
+    private static getCopy(): Copy {
+        return COPIES[this.locale];
+    }
+
+    private static writeCalculation(calculation: Calculation, symbol: string): string {
+        return `${calculation.left} ${symbol} ${calculation.right} = ${calculation.result}`;
     }
 }

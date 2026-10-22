@@ -1,3 +1,4 @@
+import type { Labels } from "../copy/copy.ts";
 import { ClockUtils, type ClockDirection, type ClockReference, type ClockSettings } from "../utils/clock/utils.ts";
 import { Messages } from "../utils/messages.ts";
 import { TimeUtils } from "../utils/time/utils.ts";
@@ -12,18 +13,20 @@ interface ClockFieldProps {
 
 // Off by default. When on it counts up, towards 3 minutes or the child's record, or counts down from either.
 export function ClockField({ clock, recordMilliseconds, onChange }: ClockFieldProps) {
+    const labels: Labels = Messages.getLabels();
+
     return (
         <div className="stack">
             <SwitchField
-                label="Relógio"
-                description="Para quem gosta de contar o tempo. Sem pressa!"
+                label={labels.clock}
+                description={labels.clockAbout}
                 isOn={clock.isEnabled}
                 onChange={(isEnabled) => onChange({ ...clock, isEnabled })}
             />
             {clock.isEnabled && (
                 <>
                     <SegmentedField<ClockDirection>
-                        legend="Como conta?"
+                        legend={labels.clockDirectionQuestion}
                         value={clock.direction}
                         options={ClockUtils.getValidDirections().map((direction) => ({
                             value: direction,
@@ -33,7 +36,7 @@ export function ClockField({ clock, recordMilliseconds, onChange }: ClockFieldPr
                         onChange={(direction) => onChange({ ...clock, direction })}
                     />
                     <SegmentedField<ClockReference>
-                        legend="Contra o quê?"
+                        legend={labels.clockReferenceQuestion}
                         value={clock.reference}
                         options={ClockUtils.getValidReferences().map((reference) => ({
                             value: reference,
@@ -42,7 +45,7 @@ export function ClockField({ clock, recordMilliseconds, onChange }: ClockFieldPr
                                 if (reference === "default") {
                                     return TimeUtils.formatElapsed(ClockUtils.getDefaultMilliseconds());
                                 }
-                                return recordMilliseconds === null ? "Ainda não tens" : TimeUtils.formatElapsed(recordMilliseconds);
+                                return recordMilliseconds === null ? labels.noRecordYet : TimeUtils.formatElapsed(recordMilliseconds);
                             })()
                         }))}
                         onChange={(reference) => onChange({ ...clock, reference })}

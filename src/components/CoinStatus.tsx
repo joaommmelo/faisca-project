@@ -12,7 +12,7 @@ interface CoinStatusProps {
 export function CoinStatus({ wallet, flightKey }: CoinStatusProps) {
     const answers: number = WalletUtils.getAnswersTowardsNextCoin(wallet);
     const label: string = `${Messages.getCoinsCount(wallet.coins)}. ${
-        WalletUtils.isFull(wallet) ? Messages.getPiggyBankFull() : `Próxima moeda: ${Messages.getCoinProgress(answers)}`
+        WalletUtils.isFull(wallet) ? Messages.getPiggyBankFull() : Messages.getLabels().nextCoin(Messages.getCoinProgress(answers))
     }`;
 
     return (

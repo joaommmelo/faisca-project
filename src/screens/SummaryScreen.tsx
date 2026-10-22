@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Celebration } from "../components/Celebration.tsx";
 import { ClockIcon, CoinIcon, HomeIcon, PlayIcon, StarIcon } from "../components/Icons.tsx";
 import { Mascot, MascotMessage } from "../components/Mascot.tsx";
+import type { Labels } from "../copy/copy.ts";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
 import { Messages, type OfferText } from "../utils/messages.ts";
 import type { Milestone, SessionOffer } from "../utils/progression/utils.ts";
@@ -18,6 +19,7 @@ interface SummaryScreenProps {
 
 export function SummaryScreen({ outcome, onAcceptOffer, onPlayAgain, onShowProgress, onHome }: SummaryScreenProps) {
     const headingRef = useFocusOnMount<HTMLHeadingElement>();
+    const labels: Labels = Messages.getLabels();
     const [isOfferOpen, setIsOfferOpen] = useState<boolean>(outcome.offer !== null);
     const { summary, offer } = outcome;
     const coinsEarned: number = outcome.milestones.filter((milestone) => milestone.kind === "coin").length;
@@ -39,14 +41,14 @@ export function SummaryScreen({ outcome, onAcceptOffer, onPlayAgain, onShowProgr
                 </h1>
                 <p className="score__value">
                     {summary.correctAtFirstTry}
-                    <span className="score__total"> de {summary.firstTryCount}</span>
+                    <span className="score__total"> {labels.outOf(summary.firstTryCount)}</span>
                 </p>
-                <p className="score__label">certas à primeira</p>
+                <p className="score__label">{labels.correctAtFirstTry}</p>
                 {summary.helpedCount > 0 && <p className="score__time">{Messages.getHelpedCount(summary.helpedCount)}</p>}
             </section>
 
             {outcome.clock !== null && (
-                <section className={isNewRecord ? "card clock-result clock-result--record" : "card clock-result"} aria-label="Tempo">
+                <section className={isNewRecord ? "card clock-result clock-result--record" : "card clock-result"} aria-label={labels.time}>
                     <p className="clock-result__time">
                         <ClockIcon />
                         {TimeUtils.formatElapsed(outcome.clock.elapsedMilliseconds)}
@@ -60,18 +62,18 @@ export function SummaryScreen({ outcome, onAcceptOffer, onPlayAgain, onShowProgr
             )}
 
             {(coinsEarned > 0 || levelUps.length > 0 || isNewRecord) && (
-                <section className="card rewards" aria-label="Conquistas deste jogo">
+                <section className="card rewards" aria-label={labels.achievements}>
                     <ul className="milestones milestones--summary">
                         {coinsEarned > 0 && (
                             <li className="milestone milestone--coin">
                                 <CoinIcon />
-                                {coinsEarned === 1 ? "Ganhaste 1 moeda!" : `Ganhaste ${coinsEarned} moedas!`}
+                                {labels.coinsEarned(coinsEarned)}
                             </li>
                         )}
                         {isNewRecord && (
                             <li className="milestone milestone--record">
                                 <StarIcon />
-                                Novo recorde!
+                                {labels.newRecord}
                             </li>
                         )}
                         {levelUps.map((milestone, index) => (
@@ -85,7 +87,7 @@ export function SummaryScreen({ outcome, onAcceptOffer, onPlayAgain, onShowProgr
             )}
 
             <section className="card">
-                <h2 className="section-title">Para treinar mais</h2>
+                <h2 className="section-title">{labels.toPractiseMore}</h2>
                 {summary.questionsToReinforce.length === 0 ? (
                     <p>{Messages.getNothingToReinforce()}</p>
                 ) : (
@@ -98,17 +100,17 @@ export function SummaryScreen({ outcome, onAcceptOffer, onPlayAgain, onShowProgr
             </section>
 
             <button type="button" className="button button--secondary button--block" onClick={onShowProgress}>
-                Ver progresso
+                {labels.seeProgress}
             </button>
 
             <div className="summary-actions">
                 <button type="button" className="button button--secondary" onClick={onHome}>
                     <HomeIcon />
-                    Início
+                    {labels.home}
                 </button>
                 <button type="button" className="button button--play" onClick={onPlayAgain}>
                     <PlayIcon />
-                    Jogar outra vez
+                    {labels.playAgain}
                 </button>
             </div>
         </main>

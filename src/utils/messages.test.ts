@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { LocalesUtils } from "./locales/utils.ts";
 import { Messages } from "./messages.ts";
 import type { Question } from "./questions/utils.ts";
 
@@ -143,5 +144,47 @@ describe("Messages for bigger numbers and mixes", () => {
     it("says why Jogar is off", () => {
         expect(Messages.getPlayProblem("too-few-operations")).toBe("Escolhe pelo menos 2 contas para misturar.");
         expect(Messages.getPlayProblem("no-tables")).toBe("Escolhe pelo menos uma tabuada.");
+    });
+});
+
+describe("Messages in every language", () => {
+    afterEach(() => Messages.setLocale("pt"));
+
+    // A sample of what each screen says, wordings built from the most pieces included.
+    const sayEverything = (): string[] => [
+        Messages.getGreeting("Rita"),
+        ...[0, 1, 2, 3, 4, 5].map((level) => Messages.getMasteryLabel(level)),
+        ...[0, 1, 2, 3].flatMap((column) => [Messages.getCellLabel(column, null), Messages.getCellLabel(column, 6)]),
+        ...[0, 1, 2, 3, 4].map(
+            (variant) => Messages.getFeedback({ question, givenAnswers: [56], isCorrect: true, isHelped: false }, { variant, hasRetryAhead: false }).title
+        ),
+        ...[0, 1, 2].map((variant) => Messages.getTryAgain(question, variant, 0)),
+        ...Messages.getChallengeRules(),
+        Messages.getOfferText({ kind: "unlock", operation: "addition", difficulty: "medium" }).text,
+        Messages.getOfferText({ kind: "safety-net", operation: "division", difficulty: "easy" }).text,
+        Messages.getOperationSummary("hard", 3),
+        Messages.getCoinProgress(3.5),
+        Messages.getChallengeLevelUp(3),
+        Messages.getLabels().questionPosition(3, 10),
+        Messages.getLabels().deleteProfileQuestion("Rita")
+    ];
+
+    it("words every message, with nothing missing", () => {
+        for (const locale of LocalesUtils.getValidLocales()) {
+            Messages.setLocale(locale);
+            for (const sentence of sayEverything()) {
+                expect(sentence.trim(), `${locale}: ${sentence}`).not.toBe("");
+                expect(sentence, locale).not.toMatch(/undefined|NaN|\[object/);
+            }
+            expect(Messages.getChallengeRules(), locale).toHaveLength(3);
+        }
+    });
+
+    it("speaks the language it is set to", () => {
+        Messages.setLocale("en");
+        const english: string = Messages.getLabels().play;
+        Messages.setLocale("pt");
+        expect(Messages.getLabels().play).toBe("Jogar");
+        expect(english).not.toBe("Jogar");
     });
 });
