@@ -34,6 +34,14 @@ describe("LeitnerUtils.applyAnswer", () => {
     });
 });
 
+describe("LeitnerUtils.applySkillAnswer", () => {
+    it("moves a skill up when right and only one box down when wrong", () => {
+        expect(LeitnerUtils.applySkillAnswer({ "addition:easy:carry": 4 }, "addition:easy:carry", true)["addition:easy:carry"]).toBe(5);
+        expect(LeitnerUtils.applySkillAnswer({ "addition:easy:carry": 4 }, "addition:easy:carry", false)["addition:easy:carry"]).toBe(3);
+        expect(LeitnerUtils.applySkillAnswer({}, "addition:easy:carry", false)["addition:easy:carry"]).toBe(1);
+    });
+});
+
 describe("LeitnerUtils.getBox", () => {
     it("treats a never-practised fact as box 1", () => {
         expect(LeitnerUtils.getBox({}, "6x7")).toBe(1);

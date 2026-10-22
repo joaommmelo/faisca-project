@@ -1,6 +1,6 @@
 import type { Fact } from "../facts/utils.ts";
 
-// factId → Leitner box (1 to 5). A fact that is absent has never been practised.
+// key → Leitner box (1 to 5): a fact ("7x8") or a skill ("addition:easy:carry"). An absent key has never been practised.
 export type LeitnerBoxes = Record<string, number>;
 
 export class LeitnerUtils {
@@ -38,8 +38,20 @@ export class LeitnerUtils {
         return { ...boxes, [factId]: nextBox };
     }
 
+    // The weaker the box, the more often it is drawn.
+    public static getBoxDrawWeight(boxes: LeitnerBoxes, key: string): number {
+        return 1 / this.getBox(boxes, key);
+    }
+
+    // A skill sums up many different questions, so one slip only takes it down one box instead of back to the start.
+    public static applySkillAnswer(boxes: LeitnerBoxes, skillId: string, isCorrect: boolean): LeitnerBoxes {
+        const box: number = this.getBox(boxes, skillId);
+        const nextBox: number = isCorrect ? Math.min(box + 1, this.getMaxBox()) : Math.max(box - 1, this.getMinBox());
+        return { ...boxes, [skillId]: nextBox };
+    }
+
     public static getDrawWeight(fact: Fact, boxes: LeitnerBoxes): number {
-        const boxWeight: number = 1 / this.getBox(boxes, fact.id);
+        const boxWeight: number = this.getBoxDrawWeight(boxes, fact.id);
         const isEasyFact: boolean = this.getEasyFactors().some((factor) => fact.smallerFactor === factor || fact.largerFactor === factor);
         return isEasyFact ? boxWeight * this.getEasyFactWeightMultiplier() : boxWeight;
     }

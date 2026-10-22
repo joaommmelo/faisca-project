@@ -21,6 +21,14 @@ export class RandomUtils {
         return random() < 0.5;
     }
 
+    // Both ends included.
+    public static integerBetween(min: number, max: number, random: RandomSource = Math.random): number {
+        if (max < min) {
+            throw new Error(`Empty range: ${min} to ${max}.`);
+        }
+        return min + Math.floor(random() * (max - min + 1));
+    }
+
     public static pickOne<T>(items: T[], random: RandomSource = Math.random): T {
         if (items.length === 0) {
             throw new Error("Cannot pick from an empty list.");

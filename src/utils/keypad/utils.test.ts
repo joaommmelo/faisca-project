@@ -2,14 +2,19 @@ import { describe, expect, it } from "vitest";
 import { KeypadUtils } from "./utils.ts";
 
 describe("KeypadUtils", () => {
-    it("allows up to three digits, enough for 144", () => {
-        expect(KeypadUtils.getMaxDigits()).toBe(3);
-        expect(KeypadUtils.appendDigit("14", "4")).toBe("144");
-        expect(KeypadUtils.appendDigit("144", "1")).toBe("144");
+    it("allows up to four digits, enough for 1000", () => {
+        expect(KeypadUtils.getMaxDigits()).toBe(4);
+        expect(KeypadUtils.appendDigit("100", "0", KeypadUtils.getMaxDigits())).toBe("1000");
+        expect(KeypadUtils.appendDigit("1000", "1", KeypadUtils.getMaxDigits())).toBe("1000");
+    });
+
+    it("takes more digits when asked, as in the challenge", () => {
+        expect(KeypadUtils.appendDigit("1000", "1", 7)).toBe("10001");
+        expect(KeypadUtils.appendDigit("1234567", "8", 7)).toBe("1234567");
     });
 
     it("replaces a lone leading zero", () => {
-        expect(KeypadUtils.appendDigit("0", "7")).toBe("7");
+        expect(KeypadUtils.appendDigit("0", "7", KeypadUtils.getMaxDigits())).toBe("7");
     });
 
     it("erases the last digit", () => {

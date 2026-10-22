@@ -1,15 +1,34 @@
+import { MigrationsUtils } from "../migrations/utils.ts";
 import { ProfilesUtils, type AppData } from "../profiles/utils.ts";
 
+// saved: progress is written to localStorage. unavailable: the browser blocks it (private mode, site data off).
+// newer-version: the data was written by a newer Faísca; this one runs in memory and never overwrites it.
+export type StorageStatus = "saved" | "unavailable" | "newer-version";
+
+export interface LoadResult {
+    data: AppData;
+    status: StorageStatus;
+}
+
+// The single place that knows progress lives in localStorage, so it can be swapped later.
 export class StorageUtils {
     public static getStorageKey(): string {
         return "faisca:data";
     }
 
-    // Data that is missing, unreadable or from another version starts the app fresh instead of crashing it.
-    public static load(): AppData {
-        const raw: string | null = this.readRaw();
+    public static getProbeKey(): string {
+        return "faisca:probe";
+    }
+
+    // Unreadable data starts the app fresh instead of crashing it. Older versions are migrated.
+    public static load(): LoadResult {
+        if (!this.isAvailable()) {
+            return { data: ProfilesUtils.createEmptyData(), status: "unavailable" };
+        }
+
+        const raw: string | null = window.localStorage.getItem(this.getStorageKey());
         if (raw === null) {
-            return ProfilesUtils.createEmptyData();
+            return { data: ProfilesUtils.createEmptyData(), status: "saved" };
         }
 
         const parsed: unknown = (() => {
@@ -19,35 +38,64 @@ export class StorageUtils {
                 return null;
             }
         })();
-        if (!this.isCurrentData(parsed)) {
-            return ProfilesUtils.createEmptyData();
+        if (!this.hasProfiles(parsed)) {
+            return { data: ProfilesUtils.createEmptyData(), status: "saved" };
         }
-        return parsed;
+        if (parsed.version > ProfilesUtils.getDataVersion()) {
+            return { data: ProfilesUtils.createEmptyData(), status: "newer-version" };
+        }
+        if (parsed.version === ProfilesUtils.getDataVersion()) {
+            return { data: parsed as unknown as AppData, status: "saved" };
+        }
+        if (parsed.version >= MigrationsUtils.getOldestMigratableVersion()) {
+            return { data: MigrationsUtils.migrate(parsed), status: "saved" };
+        }
+        return { data: ProfilesUtils.createEmptyData(), status: "saved" };
     }
 
     public static save(data: AppData): void {
         try {
             window.localStorage.setItem(this.getStorageKey(), JSON.stringify(data));
         } catch (error) {
-            // Storage can be blocked (private browsing, site data disabled) or full; the app keeps working in memory.
+            // The quota can run out after loading; the app keeps working in memory.
             console.warn("Faísca: could not save progress to localStorage.", error);
         }
     }
 
-    private static readRaw(): string | null {
+    public static canSave(status: StorageStatus): boolean {
+        return status === "saved";
+    }
+
+    // Reading can work while writing throws (old Safari private mode), so this writes for real.
+    public static isAvailable(): boolean {
         try {
-            return window.localStorage.getItem(this.getStorageKey());
+            window.localStorage.setItem(this.getProbeKey(), "1");
+            window.localStorage.removeItem(this.getProbeKey());
+            return true;
         } catch {
-            // Accessing localStorage throws when the browser blocks site data; behave as a first visit.
-            return null;
+            return false;
         }
     }
 
-    private static isCurrentData(value: unknown): value is AppData {
+    // Asks the browser not to clear the progress under storage pressure. A refusal changes nothing.
+    public static async requestPersistence(): Promise<void> {
+        if (typeof navigator === "undefined" || navigator.storage === undefined || typeof navigator.storage.persist !== "function") {
+            return;
+        }
+        try {
+            if (!(await navigator.storage.persisted())) {
+                await navigator.storage.persist();
+            }
+        } catch (error) {
+            console.warn("Faísca: could not ask for persistent storage.", error);
+        }
+    }
+
+    private static hasProfiles(value: unknown): value is { version: number; profiles: unknown[] } {
         if (typeof value !== "object" || value === null) {
             return false;
         }
-        const candidate = value as Partial<AppData>;
-        return candidate.version === ProfilesUtils.getDataVersion() && Array.isArray(candidate.profiles);
+        const candidate = value as { version?: unknown; profiles?: unknown };
+        return typeof candidate.version === "number" && Array.isArray(candidate.profiles);
     }
 }

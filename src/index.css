@@ -18,12 +18,35 @@
     --color-warm: #b4471c;
     --color-warm-soft: #ffe7da;
 
+    /* One colour per operation: the ink is for white text and borders, the soft tone for backgrounds. */
+    --op-addition: #a8380b;
+    --op-addition-soft: #ffe7d6;
+    --op-subtraction: #0e7490;
+    --op-subtraction-soft: #d7f3f9;
+    --op-multiplication: #1f5fd1;
+    --op-multiplication-soft: #e4edff;
+    --op-division: #7c3aed;
+    --op-division-soft: #efe6ff;
+    /* The challenge for adults: a quiet slate, set apart from the children's operations. */
+    --op-challenge: #3d4757;
+    --op-challenge-soft: #e7eaef;
+
+    --color-coin: #ffc83d;
+    --color-coin-edge: #c98a00;
+
     --level-0: #e8e2da;
     --level-1: #ffd2b8;
     --level-2: #ffe08a;
     --level-3: #dcee95;
     --level-4: #a6dd8e;
     --level-5: #43ad62;
+
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
 
     --radius-sm: 12px;
     --radius-md: 18px;
@@ -252,7 +275,13 @@ fieldset {
     border: 2px solid var(--color-border);
     border-radius: 50%;
     background: var(--color-surface);
+    box-shadow: 0 3px 0 var(--color-border);
     color: var(--color-text-muted);
+}
+
+.icon-button .icon {
+    width: 26px;
+    height: 26px;
 }
 
 .icon {
@@ -388,7 +417,8 @@ fieldset {
 
 /* Profiles */
 
-.profiles {
+.profiles,
+.languages {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
@@ -448,9 +478,9 @@ fieldset {
 }
 
 .table-toggle:has(input:checked) {
-    background: var(--color-primary);
-    border-color: var(--color-primary-pressed);
-    box-shadow: 0 3px 0 var(--color-primary-pressed);
+    background: var(--op-ink, var(--color-primary));
+    border-color: var(--color-text);
+    box-shadow: 0 3px 0 var(--color-text);
     color: #ffffff;
 }
 
@@ -475,6 +505,7 @@ fieldset {
 }
 
 .segmented__option {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -488,13 +519,14 @@ fieldset {
     text-align: center;
     font-weight: 800;
     cursor: pointer;
+    container-type: inline-size;
 }
 
 .segmented__option:has(input:checked) {
-    background: var(--color-primary-soft);
-    border-color: var(--color-primary);
-    box-shadow: inset 0 0 0 2px var(--color-primary);
-    color: var(--color-primary);
+    background: var(--op-soft, var(--color-primary-soft));
+    border-color: var(--op-ink, var(--color-primary));
+    box-shadow: inset 0 0 0 2px var(--op-ink, var(--color-primary));
+    color: var(--op-ink, var(--color-primary));
 }
 
 .segmented__option:has(input:focus-visible) {
@@ -502,10 +534,46 @@ fieldset {
     outline-offset: 3px;
 }
 
-.segmented__example {
+.segmented__detail {
     color: var(--color-text-muted);
     font-size: 0.95rem;
     font-variant-numeric: tabular-nums;
+}
+
+.segmented__option--locked {
+    border-style: dashed;
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+}
+
+/* The padlock is a badge on the card's corner, so the name keeps the card's whole width and never touches it. */
+.segmented__lock {
+    position: absolute;
+    top: -9px;
+    right: -9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: 2px solid var(--color-border);
+    border-radius: 50%;
+    background: var(--color-surface);
+}
+
+.segmented__lock .icon {
+    width: 13px;
+    height: 13px;
+}
+
+/* "desbloquear" cannot break and is wider than a third of a phone: the card gives it its side padding,
+   and the word shrinks with the card to stay inside. */
+.segmented__option--locked {
+    padding-inline: 4px;
+}
+
+.segmented__option--locked .segmented__detail {
+    font-size: min(0.95rem, 16cqi);
 }
 
 /* Switch */
@@ -585,7 +653,7 @@ fieldset {
 
 .session-header {
     display: grid;
-    grid-template-columns: 72px 1fr 72px;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
     gap: 8px;
 }
@@ -596,6 +664,155 @@ fieldset {
     font-weight: 800;
 }
 
+.exit-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 48px;
+    padding: 6px 14px 6px 10px;
+    border: 2px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-weight: 900;
+}
+
+/* A question that stops the screen (leaving a game, a locked difficulty) comes up in a sheet over it, dimmed behind,
+   so it cannot be mistaken for part of the screen. */
+.sheet {
+    inset: auto 0 0;
+    width: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+.sheet::backdrop {
+    background: rgba(42, 31, 23, 0.55);
+}
+
+.sheet__inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    max-width: 608px;
+    margin: 0 auto;
+    padding: var(--space-5) var(--space-4) calc(var(--space-5) + env(safe-area-inset-bottom));
+}
+
+/* Yes and no side by side and equally big, so neither looks like the wrong one. */
+.exit-sheet__choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+}
+
+.exit-sheet__choice {
+    flex-direction: column;
+    min-height: 120px;
+    padding: var(--space-3);
+    border: 3px solid;
+    font-size: 1.6rem;
+    text-align: center;
+}
+
+.exit-sheet__choice .icon {
+    width: 1.6em;
+    height: 1.6em;
+}
+
+.exit-sheet__choice--leave {
+    --button-shadow: var(--color-fur-dark);
+    border-color: var(--color-fur-dark);
+    background: var(--color-accent-soft);
+    color: var(--color-fur-dark);
+}
+
+.exit-sheet__choice--stay {
+    --button-shadow: var(--color-primary-pressed);
+    border-color: var(--color-primary-pressed);
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+/* What opens a locked difficulty: a tick and a bar per step, readable without reading. */
+.unlock-steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.unlock-step {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+}
+
+.unlock-step__mark {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--color-border);
+    border-radius: 50%;
+    color: #ffffff;
+}
+
+.unlock-step--done .unlock-step__mark {
+    border-color: var(--color-success);
+    background: var(--color-success);
+}
+
+.unlock-step__mark .icon {
+    width: 20px;
+    height: 20px;
+}
+
+.unlock-step__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.unlock-step__text {
+    font-weight: 800;
+}
+
+.unlock-step__progress {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.unlock-step__progress .meter {
+    flex: 1;
+}
+
+.unlock-step__count {
+    flex: none;
+    color: var(--color-text-muted);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.unlock-step__note {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
 .retry-badge {
     display: inline-block;
     padding: 4px 14px;
@@ -603,16 +820,6 @@ fieldset {
     background: var(--color-accent-soft);
     color: var(--color-fur-dark);
     font-weight: 900;
-}
-
-.stopwatch {
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 4px;
-    color: var(--color-text-muted);
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
 }
 
 .session-body {
@@ -633,10 +840,12 @@ fieldset {
     height: 100%;
     border-radius: inherit;
     background: var(--color-accent);
+    transform-origin: left center;
 }
 
 .equation {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     gap: 0.25em;
@@ -645,6 +854,19 @@ fieldset {
     font-weight: 900;
     font-variant-numeric: tabular-nums;
     line-height: 1;
+}
+
+.equation__side {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25em;
+}
+
+/* Numbers of five digits or more: smaller, and the result on a line of its own. */
+.equation--long {
+    flex-direction: column;
+    gap: 0.2em;
+    font-size: clamp(1.6rem, 8vw, 3.25rem);
 }
 
 .equation__operator {
@@ -673,6 +895,30 @@ fieldset {
     border-color: var(--color-success);
     background: var(--color-success-soft);
     color: var(--color-success);
+}
+
+/* With two slots to fill, the one the next tap goes to. */
+.equation__slot--next {
+    border-style: solid;
+    background: var(--color-primary-soft);
+    box-shadow: 0 4px 0 var(--color-primary-pressed);
+}
+
+/* The pair just missed, crossed out like a wrong option, until the next tap. */
+.equation__slot--missed {
+    border-color: var(--color-warm);
+    background: var(--color-warm-soft);
+    color: var(--color-warm);
+    text-decoration: line-through;
+    text-decoration-thickness: 0.08em;
+}
+
+/* The factor the help gave, in the colours of the help's bubble. */
+.equation__slot--hinted {
+    border-style: solid;
+    border-color: var(--color-accent-pressed);
+    background: var(--color-accent-soft);
+    color: var(--color-text);
 }
 
 .choices {
@@ -712,14 +958,25 @@ fieldset {
     color: var(--color-success);
 }
 
-.choice--chosen-wrong {
+.choice--tried {
+    border-style: dashed;
     border-color: var(--color-warm);
     background: var(--color-warm-soft);
-    box-shadow: 0 4px 0 var(--color-warm);
+    box-shadow: none;
+    color: var(--color-warm);
+    text-decoration: line-through;
+    text-decoration-thickness: 3px;
 }
 
 .choice--dimmed {
     opacity: 0.45;
+}
+
+.choice--hidden {
+    border-style: dashed;
+    background: transparent;
+    box-shadow: none;
+    opacity: 0.5;
 }
 
 .choice .icon {
@@ -771,27 +1028,31 @@ fieldset {
     color: #ffffff;
 }
 
+/* A sheet over the bottom of the screen, covering the keypad or the options once they have nothing left to do.
+   It sits above the invisible tap-to-continue layer so "Seguinte" stays directly tappable. */
 .feedback {
     position: fixed;
     right: 0;
     bottom: 0;
     left: 0;
     z-index: 10;
-    padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+    padding: var(--space-4) var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom));
+    border: 3px solid var(--color-success);
+    border-bottom: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     background: var(--color-success-soft);
-    border-top: 4px solid var(--color-success);
 }
 
 .feedback--wrong {
+    border-color: var(--color-warm);
     background: var(--color-warm-soft);
-    border-top-color: var(--color-warm);
 }
 
 .feedback__inner {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    max-width: 640px;
+    max-width: 608px;
     margin: 0 auto;
 }
 
@@ -998,22 +1259,1149 @@ fieldset {
     border-radius: 5px;
 }
 
-/* Motion: small rewards only, and none when the device asks for less motion. */
+/* Operation colours: every screen of an operation picks up its ink and soft tone. */
+
+.practice--addition,
+.mix-option--addition,
+.card--addition,
+.screen--addition {
+    --op-ink: var(--op-addition);
+    --op-soft: var(--op-addition-soft);
+}
+
+.practice--subtraction,
+.mix-option--subtraction,
+.card--subtraction,
+.screen--subtraction {
+    --op-ink: var(--op-subtraction);
+    --op-soft: var(--op-subtraction-soft);
+}
+
+.practice--multiplication,
+.mix-option--multiplication,
+.card--multiplication,
+.screen--multiplication {
+    --op-ink: var(--op-multiplication);
+    --op-soft: var(--op-multiplication-soft);
+}
+
+.practice--division,
+.mix-option--division,
+.card--division,
+.screen--division {
+    --op-ink: var(--op-division);
+    --op-soft: var(--op-division-soft);
+}
+
+.card[class*="card--"] {
+    border-top: 6px solid var(--op-ink);
+}
+
+.card[class*="card--"] > .section-title,
+.card[class*="card--"] legend.section-title {
+    color: var(--op-ink);
+}
+
+/* Home: storage notice, piggy bank, operations */
+
+.notice {
+    padding: var(--space-3) var(--space-4);
+    border: 2px solid var(--color-accent-pressed);
+    border-radius: var(--radius-md);
+    background: var(--color-accent-soft);
+    font-weight: 800;
+}
+
+.install-steps {
+    display: grid;
+    gap: var(--space-2);
+    margin: 0;
+    padding-left: 1.4em;
+    font-weight: 700;
+}
+
+.install-steps .icon {
+    vertical-align: -0.2em;
+}
+
+.piggy {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.piggy__drawing {
+    flex: none;
+    width: 88px;
+    height: 74px;
+}
+
+.piggy__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.piggy__coins {
+    font-size: 1.35rem;
+    font-weight: 900;
+}
+
+.piggy__max {
+    color: var(--color-text-muted);
+    font-size: 1rem;
+}
+
+.piggy__next {
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.coin-slots {
+    display: flex;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.coin-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 2px dashed var(--color-border);
+    border-radius: 50%;
+}
+
+.coin-slot--filled {
+    border-color: transparent;
+}
+
+.coin-slot .icon {
+    width: 30px;
+    height: 30px;
+}
+
+.meter {
+    height: 12px;
+    border-radius: 999px;
+    background: var(--color-border);
+    overflow: hidden;
+}
+
+.meter__fill {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-coin);
+    transform-origin: left center;
+}
+
+.practice--mix,
+.card--mix,
+.screen--mix {
+    --op-ink: var(--color-fur-dark);
+    --op-soft: var(--color-accent-soft);
+}
+
+.practice--challenge,
+.card--challenge,
+.screen--challenge {
+    --op-ink: var(--op-challenge);
+    --op-soft: var(--op-challenge-soft);
+}
+
+.practices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.practices__wide {
+    grid-column: 1 / -1;
+}
+
+/* Tiles side by side keep the same height, also when one name takes two lines. */
+.practice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    height: 100%;
+    min-height: 136px;
+    padding: var(--space-3) var(--space-2);
+    border: 3px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: 0 5px 0 var(--color-border);
+    text-align: center;
+}
+
+.practice:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 var(--color-border);
+}
+
+.practice--challenge {
+    min-height: 96px;
+    flex-direction: row;
+    gap: var(--space-3);
+}
+
+.practice__symbol {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-md);
+    background: var(--op-ink);
+    color: #ffffff;
+    font-size: 2.4rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.practice__symbol--mix {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 60px;
+    font-size: 1.3rem;
+}
+
+.practice__symbol--factors {
+    font-size: 1.45rem;
+}
+
+.practice__name {
+    font-size: clamp(1rem, 4.4vw, 1.25rem);
+    font-weight: 900;
+    line-height: 1.15;
+}
+
+/* The challenge's name and record, one under the other, next to its symbol. */
+.practice__text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    text-align: left;
+}
+
+.practice__summary {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+/* Setup: one operation or the mix, before playing */
+
+.setup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.setup-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: 1.9rem;
+    font-weight: 900;
+    line-height: 1.1;
+}
+
+/* Never wraps nor shrinks: a symbol of several signs (+−×÷, ?×?) stays on one line next to a long name. */
+.setup-title__symbol {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    min-width: 56px;
+    white-space: nowrap;
+    height: 56px;
+    padding: 0 10px;
+    border-radius: var(--radius-md);
+    background: var(--op-ink);
+    color: #ffffff;
+    font-size: 2rem;
+}
+
+.more-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 52px;
+    padding: 8px 4px;
+    border: 0;
+    border-top: 2px solid var(--color-border);
+    background: transparent;
+    color: var(--color-primary);
+    font-size: 1.1rem;
+    font-weight: 900;
+}
+
+.more-options__chevron {
+    width: 12px;
+    height: 12px;
+    border-right: 3px solid currentColor;
+    border-bottom: 3px solid currentColor;
+    transform: rotate(45deg);
+}
+
+.more-options[aria-expanded="true"] .more-options__chevron {
+    transform: rotate(225deg);
+}
+
+.mix-options {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+}
+
+@media (min-width: 560px) {
+    .mix-options {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.mix-option {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: var(--space-2);
+    align-items: center;
+    min-height: 72px;
+    padding: var(--space-2) var(--space-3);
+    border: 3px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    text-align: left;
+}
+
+.mix-option[aria-pressed="true"] {
+    border-style: solid;
+    border-color: var(--op-ink);
+    background: var(--op-soft);
+    color: var(--color-text);
+}
+
+.mix-option__symbol {
+    grid-row: span 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    background: var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 1.6rem;
+    font-weight: 900;
+}
+
+.mix-option[aria-pressed="true"] .mix-option__symbol {
+    background: var(--op-ink);
+    color: #ffffff;
+}
+
+.mix-option__name {
+    font-weight: 900;
+}
+
+.mix-option__difficulty {
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.mix-option__name,
+.mix-option__difficulty {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+
+/* Session: try again, helps, milestones */
+
+.session-body {
+    position: relative;
+}
+
+.try-again {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.try-again .bubble {
+    border-color: var(--color-warm);
+    background: var(--color-warm-soft);
+}
+
+.try-again .bubble::before {
+    border-color: var(--color-warm);
+}
+
+.help {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.button--help {
+    --button-shadow: var(--color-accent-pressed);
+    min-height: 52px;
+    padding: 8px 20px;
+    background: var(--color-accent-soft);
+    border: 2px solid var(--color-accent-pressed);
+    color: var(--color-fur-dark);
+    font-size: 1.15rem;
+}
+
+.button--help:disabled {
+    opacity: 1;
+    border-color: var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+}
+
+.button--help:disabled .icon--coin {
+    filter: grayscale(1);
+    opacity: 0.6;
+}
+
+.help__cost {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 4px;
+    padding: 2px 8px 2px 4px;
+    border-radius: 999px;
+    background: var(--color-surface);
+    font-size: 1rem;
+}
+
+.help__reason {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.hint-bubble {
+    align-self: center;
+    max-width: 420px;
+    padding: var(--space-3) var(--space-4);
+    border: 2px solid var(--color-accent-pressed);
+    border-radius: var(--radius-md);
+    background: var(--color-accent-soft);
+    font-size: 1.2rem;
+    font-weight: 800;
+    text-align: center;
+}
+
+.milestones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: var(--space-2) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.milestones--summary {
+    justify-content: center;
+    margin: 0;
+}
+
+.milestone {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px 6px 8px;
+    border-radius: 999px;
+    background: var(--color-surface);
+    border: 2px solid var(--color-accent-pressed);
+    font-weight: 900;
+}
+
+.milestone .icon {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+.milestone--level-up .icon {
+    color: var(--color-accent-pressed);
+}
+
+.tap-to-continue {
+    position: fixed;
+    inset: 0;
+    z-index: 9;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* Vertical (column) sums */
+
+.vertical {
+    --vertical-cell: clamp(52px, 15vw, 72px);
+    display: grid;
+    justify-content: center;
+    column-gap: 6px;
+    row-gap: 4px;
+    font-size: clamp(2.1rem, 10vw, 3rem);
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.vertical__operator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0.9em;
+    color: var(--op-ink);
+}
+
+.vertical__cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.35em;
+    border-radius: var(--radius-sm);
+}
+
+.vertical__digit--crossed {
+    color: var(--color-text-muted);
+    text-decoration: line-through;
+    text-decoration-thickness: 4px;
+    text-decoration-color: var(--op-ink);
+}
+
+/* Written by the help only, small above the digits, like by hand. Blue, never warm: it is not a miss. */
+.vertical__mark {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    color: var(--color-primary);
+    font-size: 1.4rem;
+}
+
+.vertical__line {
+    grid-column: 1 / -1;
+    height: 0;
+    border-top: 5px solid var(--color-text);
+    border-radius: 999px;
+    margin: 2px 0;
+}
+
+.vertical__result {
+    height: auto;
+    min-height: 1.5em;
+    border: 3px dashed var(--color-primary);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+}
+
+.vertical__result--spare {
+    border-color: var(--color-border);
+}
+
+.vertical__result--cursor {
+    border-style: solid;
+    border-width: 4px;
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    box-shadow: 0 4px 0 var(--color-primary-pressed);
+}
+
+.vertical__result--answered {
+    border-style: solid;
+    border-color: var(--color-success);
+    background: var(--color-success-soft);
+    color: var(--color-success);
+}
+
+.vertical__result:disabled {
+    cursor: default;
+}
+
+.vertical__cell--highlighted {
+    background: var(--color-accent-soft);
+    box-shadow: inset 0 0 0 3px var(--color-accent-pressed);
+}
+
+.vertical__cell--wrong {
+    background: var(--color-warm-soft);
+    box-shadow: inset 0 0 0 3px var(--color-warm);
+}
+
+.vertical__digit:empty {
+    background: none;
+    box-shadow: none;
+}
+
+.vertical__result.vertical__cell--wrong {
+    border-color: var(--color-warm);
+    color: var(--color-warm);
+}
+
+/* Summary: offers and rewards */
+
+/* "Início" and "Jogar outra vez" stay in view at the bottom of the summary, however long it is. The icon sits above the
+   words, so a button is never narrower than its longest word, whatever the language. */
+.summary-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: var(--space-3);
+    margin: 0 -16px;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: linear-gradient(to bottom, transparent, var(--color-bg) 30%);
+}
+
+.summary-actions .button {
+    flex-direction: column;
+    gap: 2px;
+    min-height: 64px;
+    padding: 8px 16px;
+    text-wrap: balance;
+}
+
+.summary-actions .icon {
+    width: 1.4em;
+    height: 1.4em;
+}
+
+.summary-actions .button--play {
+    border-radius: var(--radius-md);
+    font-size: 1.4rem;
+}
+
+.offer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    border: 3px solid var(--color-accent-pressed);
+    background: var(--color-accent-soft);
+}
+
+.offer--safety-net {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.offer__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.offer__title {
+    font-size: 1.5rem;
+    font-weight: 900;
+}
+
+.rewards {
+    background: var(--color-accent-soft);
+}
+
+.screen--summary,
+.feedback {
+    isolation: isolate;
+}
+
+.screen--summary {
+    position: relative;
+}
+
+.celebration {
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: -1;
+    height: 220px;
+    pointer-events: none;
+}
+
+.feedback .celebration {
+    inset: -60px 0 auto;
+    height: 120px;
+}
+
+.celebration__spark {
+    position: absolute;
+    opacity: 0;
+}
+
+/* Progress: levels, difficulties, skills */
+
+.level-meter {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.level-meter .meter {
+    flex: 1;
+}
+
+.level-meter .meter__fill {
+    background: var(--op-ink, var(--color-primary));
+}
+
+.level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px 4px 8px;
+    border-radius: 999px;
+    background: var(--op-ink, var(--color-primary));
+    color: #ffffff;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.level-badge .icon {
+    color: var(--color-accent);
+}
+
+.hint--left {
+    margin: var(--space-3) 0;
+    text-align: left;
+}
+
+.difficulty-progress {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.difficulty-progress__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.difficulty-progress__item + .difficulty-progress__item {
+    padding-top: var(--space-4);
+    border-top: 2px solid var(--color-border);
+}
+
+.difficulty-progress__name {
+    font-size: 1.15rem;
+    font-weight: 900;
+}
+
+.difficulty-progress__range {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    font-weight: 800;
+}
+
+.skills {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.skill {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-weight: 800;
+}
+
+.skill__swatch {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+}
+
+.skill__name {
+    flex: 1;
+}
+
+.skill__mastery {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+}
+
+.locked {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-text-muted);
+    font-weight: 800;
+}
+
+/* Home header, coins and clock */
+
+.home-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.home-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.coin-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 44px;
+    padding: 4px 12px 4px 6px;
+    border: 2px solid var(--color-accent-pressed);
+    border-radius: 999px;
+    background: var(--color-accent-soft);
+    font-size: 1.2rem;
+    font-weight: 900;
+}
+
+.coin-pill .icon {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+.coin-pill--button {
+    cursor: pointer;
+    box-shadow: 0 3px 0 var(--color-accent-pressed);
+}
+
+.coin-pill--button[aria-expanded="true"] {
+    background: var(--color-accent);
+}
+
+.coin-button {
+    position: relative;
+}
+
+.coin-button__panel {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    right: 0;
+    z-index: 20;
+    width: min(340px, calc(100vw - 32px));
+    filter: drop-shadow(0 8px 16px rgba(42, 31, 23, 0.18));
+}
+
+.piggy__about {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.card-divider {
+    border-top: 2px solid var(--color-border);
+}
+
+.coin-status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.coin-status__coins {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 1.2rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.coin-status__coins .icon {
+    width: 1.4em;
+    height: 1.4em;
+}
+
+.coin-status__dots {
+    display: flex;
+    gap: 3px;
+}
+
+.coin-dot {
+    width: 10px;
+    height: 10px;
+    border: 2px solid var(--color-coin-edge);
+    border-radius: 50%;
+}
+
+.coin-dot--full {
+    background: var(--color-coin);
+}
+
+.coin-dot--half {
+    background: linear-gradient(to right, var(--color-coin) 50%, transparent 50%);
+}
+
+/* Above the feedback sheet, where its flight starts. */
+.coin-flight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 11;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.coin-flight .icon {
+    width: 1.4em;
+    height: 1.4em;
+}
+
+.session-clock {
+    display: inline-flex;
+    align-items: baseline;
+    align-self: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border: 2px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+
+.session-clock .icon {
+    align-self: center;
+    color: var(--color-text-muted);
+}
+
+.session-clock__time {
+    font-size: 1.3rem;
+}
+
+.session-clock__note {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    font-weight: 800;
+}
+
+.session-clock--overtime {
+    border-color: var(--color-warm);
+    background: var(--color-warm-soft);
+    color: var(--color-warm);
+}
+
+/* Challenge: the time left on the question, the score, the rules and the result */
+
+.challenge-timer {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.challenge-timer__bar {
+    flex: 1;
+    height: 14px;
+    border-radius: 999px;
+    background: var(--color-border);
+    overflow: hidden;
+}
+
+.challenge-timer__fill {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--op-ink);
+    transform-origin: left center;
+}
+
+.challenge-timer__time {
+    min-width: 3.5em;
+    text-align: right;
+    font-size: 1.2rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Little time left: a warm tone, never an alarm. */
+.challenge-timer--low .challenge-timer__fill {
+    background: var(--color-warm);
+}
+
+.challenge-timer--low .challenge-timer__time {
+    color: var(--color-warm);
+}
+
+.challenge-score {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--color-success-soft);
+    color: var(--color-success);
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+
+.challenge-status {
+    min-height: 1.4em;
+    color: var(--op-ink);
+    font-weight: 900;
+    text-align: center;
+}
+
+.challenge-rules {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding-left: 1.2em;
+    font-weight: 700;
+}
+
+.challenge-record {
+    color: var(--color-text-muted);
+    font-weight: 900;
+    text-align: center;
+}
+
+/* Inside a card the last question has less room than on the session screen. */
+.challenge-last .equation--long {
+    font-size: clamp(1.4rem, 7vw, 2.75rem);
+}
+
+/* Descobre a conta: the example of the rules, smaller than a question. */
+.factor-example .equation {
+    padding: 0;
+    font-size: clamp(1.75rem, 9vw, 3rem);
+}
+
+.clock-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+    font-weight: 800;
+}
+
+.clock-result__time {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 2rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+
+.clock-result--record {
+    border-color: var(--color-accent-pressed);
+    background: var(--color-accent-soft);
+}
+
+.milestone--record .icon {
+    color: var(--color-accent-pressed);
+}
+
+.records {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.record {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-weight: 800;
+}
+
+.record__time {
+    font-size: 1.2rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Motion: transform and opacity only, never while the child is thinking. A right answer stays within
+   a second; the bigger parties are kept for milestones. With reduced motion, everything becomes a short fade. */
 
 @media (prefers-reduced-motion: no-preference) {
     .button,
     .choice,
     .keypad__key,
-    .table-toggle {
+    .table-toggle,
+    .practice {
         transition: transform 80ms, box-shadow 80ms;
     }
 
-    .progress-bar__fill {
-        transition: width 300ms ease-out;
+    .progress-bar__fill,
+    .meter__fill {
+        transition: transform 300ms ease-out;
+    }
+
+    /* Smooths the steps between redraws of the time left. */
+    .challenge-timer__fill {
+        transition: transform 100ms linear;
     }
 
     .feedback {
-        animation: feedback-slide-up 180ms ease-out;
+        animation: slide-up 180ms ease-out;
+    }
+
+    .sheet[open] {
+        animation: slide-up 200ms ease-out;
+    }
+
+    .sheet[open]::backdrop {
+        animation: fade-in 200ms ease-out;
+    }
+
+    .feedback--correct .feedback__title {
+        animation: pop 360ms ease-out;
+    }
+
+    .equation__slot--answered,
+    .vertical__result--answered,
+    .choice--correct {
+        animation: pop 360ms ease-out;
+    }
+
+    /* A miss sinks softly away: no shaking, no flashing. */
+    .choice--tried {
+        animation: sink 300ms ease-out;
+    }
+
+    .try-again,
+    .hint-bubble {
+        animation: rise-in 260ms ease-out;
     }
 
     .mascot--cheer {
@@ -1023,21 +2411,120 @@ fieldset {
     .mascot__spark {
         transform-box: fill-box;
         transform-origin: center;
-        animation: spark-twinkle 900ms ease-in-out infinite alternate;
+        animation: spark-twinkle 300ms ease-in-out 3 alternate;
     }
 
     .mascot__spark:nth-of-type(2) {
-        animation-delay: 300ms;
+        animation-delay: 100ms;
     }
 
     .mascot__spark:nth-of-type(3) {
-        animation-delay: 600ms;
+        animation-delay: 200ms;
+    }
+
+    .milestone {
+        animation: milestone-in 600ms cubic-bezier(0.3, 1.6, 0.5, 1) both;
+    }
+
+    .milestone .icon {
+        animation: coin-spin 700ms ease-out 150ms both;
+    }
+
+    .celebration__spark {
+        animation: spark-burst 1100ms ease-out both;
+    }
+
+    .offer--unlock {
+        animation: milestone-in 600ms cubic-bezier(0.3, 1.6, 0.5, 1) both;
+    }
+
+    /* The coin earned flies from the answer up into the balance at the top. */
+    .coin-flight {
+        animation: coin-flight 900ms cubic-bezier(0.25, 0.8, 0.4, 1) both;
+    }
+
+    .choice--hidden {
+        animation: fade-in 250ms ease-out;
+    }
+
+    .coin-button__panel {
+        animation: rise-in 180ms ease-out;
     }
 }
 
-@keyframes feedback-slide-up {
+@media (prefers-reduced-motion: reduce) {
+    .coin-flight {
+        animation: fade-out 600ms ease-out both;
+    }
+
+    .feedback,
+    .sheet[open],
+    .sheet[open]::backdrop,
+    .try-again,
+    .hint-bubble,
+    .milestone,
+    .offer {
+        animation: fade-in 200ms ease-out;
+    }
+
+    .celebration {
+        display: none;
+    }
+}
+
+@keyframes slide-up {
     from {
         transform: translateY(100%);
+    }
+}
+
+@keyframes pop {
+    40% {
+        transform: scale(1.12);
+    }
+}
+
+@keyframes sink {
+    from {
+        transform: translateY(-4px);
+        opacity: 0.6;
+    }
+}
+
+@keyframes rise-in {
+    from {
+        transform: translateY(8px);
+        opacity: 0;
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes fade-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes coin-flight {
+    0% {
+        transform: translate(-38vw, 62vh) scale(2.2);
+        opacity: 1;
+    }
+    80% {
+        transform: translate(0, 0) scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0;
     }
 }
 
@@ -1061,5 +2548,32 @@ fieldset {
     to {
         transform: scale(1.1);
         opacity: 1;
+    }
+}
+
+@keyframes milestone-in {
+    from {
+        transform: scale(0.6);
+        opacity: 0;
+    }
+}
+
+@keyframes coin-spin {
+    from {
+        transform: rotate(-200deg) scale(0.4);
+    }
+}
+
+@keyframes spark-burst {
+    0% {
+        transform: translateY(24px) scale(0.2) rotate(0deg);
+        opacity: 0;
+    }
+    35% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-12px) scale(1) rotate(90deg);
+        opacity: 0;
     }
 }

@@ -1,37 +1,54 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { LocalesUtils } from "./locales/utils.ts";
+import type { FactorRound } from "./factorGame/utils.ts";
 import { Messages } from "./messages.ts";
+import { RecordsUtils } from "./records/utils.ts";
 import type { Question } from "./questions/utils.ts";
 
 const question: Question = {
-    factId: "7x8",
-    leftFactor: 7,
-    rightFactor: 8,
-    product: 56,
+    id: "multiplication:7×8:direct",
+    operation: "multiplication",
+    left: 7,
+    right: 8,
+    result: 56,
     kind: "direct",
     answer: 56,
     format: "choice",
+    allowsChoice: true,
     options: [48, 56, 63, 65],
-    isRetry: false
+    isRetry: false,
+    boxType: "fact",
+    boxKey: "7x8",
+    trackId: "multiplication"
 };
 
 describe("Messages.getFeedback", () => {
     it("praises a right answer, varying the words", () => {
-        const first = Messages.getFeedback({ question, givenAnswer: 56, isCorrect: true }, 0);
-        const second = Messages.getFeedback({ question, givenAnswer: 56, isCorrect: true }, 1);
+        const first = Messages.getFeedback({ question, givenAnswers: [56], isCorrect: true, isHelped: false }, { variant: 0, hasRetryAhead: false });
+        const second = Messages.getFeedback({ question, givenAnswers: [56], isCorrect: true, isHelped: false }, { variant: 1, hasRetryAhead: false });
         expect(first.title).not.toBe(second.title);
         expect(first.lines).toEqual([]);
     });
 
-    it("shows the right answer and promises another try after a miss", () => {
-        expect(Messages.getFeedback({ question, givenAnswer: 54, isCorrect: false }, 0)).toEqual({
+    it("celebrates getting it at the second try", () => {
+        const feedback = Messages.getFeedback({ question, givenAnswers: [54, 56], isCorrect: true, isHelped: false }, { variant: 0, hasRetryAhead: true });
+        expect(feedback.title).toBe("Boa! À segunda acertaste!");
+    });
+
+    it("shows the right answer after two misses and says when it comes back", () => {
+        const missed = { question, givenAnswers: [54, 55], isCorrect: false, isHelped: false };
+        expect(Messages.getFeedback(missed, { variant: 0, hasRetryAhead: true })).toEqual({
             title: "Quase!",
             lines: ["A resposta certa é 56.", "Vamos tentar outra vez mais à frente."]
         });
+        expect(Messages.getFeedback(missed, { variant: 0, hasRetryAhead: false }).lines[1]).toBe("Vamos treinar esta na próxima vez.");
     });
+});
 
-    it("leaves a missed retry for next time", () => {
-        const feedback = Messages.getFeedback({ question: { ...question, isRetry: true }, givenAnswer: 54, isCorrect: false }, 0);
-        expect(feedback.lines[1]).toBe("Vamos treinar esta na próxima vez.");
+describe("Messages.getTryAgain", () => {
+    it("never reveals the answer", () => {
+        expect(Messages.getTryAgain(question, 0, 0)).not.toContain("56");
+        expect(Messages.getTryAgain({ ...question, format: "vertical" }, 0, 2)).toBe("Quase! Vê as colunas realçadas e tenta outra vez.");
     });
 });
 
@@ -40,6 +57,20 @@ describe("Messages.getSpokenQuestion", () => {
         expect(Messages.getSpokenQuestion(question)).toBe("Quanto é 7 vezes 8?");
         expect(Messages.getSpokenQuestion({ ...question, kind: "missing-left", answer: 7 })).toBe("Que número vezes 8 dá 56?");
         expect(Messages.getSpokenQuestion({ ...question, kind: "missing-right", answer: 8 })).toBe("7 vezes que número dá 56?");
+        expect(Messages.getSpokenQuestion({ ...question, operation: "division", left: 56, right: 7, result: 8, answer: 8 })).toBe(
+            "Quanto é 56 a dividir por 7?"
+        );
+        expect(Messages.getSpokenQuestion({ ...question, operation: "subtraction", left: 52, right: 27, result: 25, answer: 25 })).toBe(
+            "Quanto é 52 menos 27?"
+        );
+    });
+});
+
+describe("Messages.getCoinProgress", () => {
+    it("shows halves from multiple choice", () => {
+        expect(Messages.getCoinProgress(3)).toBe("3 de 5");
+        expect(Messages.getCoinProgress(3.5)).toBe("3½ de 5");
+        expect(Messages.getCoinProgress(0.5)).toBe("½ de 5");
     });
 });
 
@@ -48,5 +79,169 @@ describe("Messages.getSummaryHeadline", () => {
         expect(Messages.getSummaryHeadline(10, 10)).toBe("Perfeito! Acertaste todas!");
         expect(Messages.getSummaryHeadline(7, 10)).toBe("Muito bem! Estás a melhorar!");
         expect(Messages.getSummaryHeadline(2, 10)).toBe("Boa prática! Cada jogo ajuda a aprender.");
+    });
+});
+
+describe("Messages.getClockOutcomeLines", () => {
+    const base = {
+        elapsedMilliseconds: 72_000,
+        referenceMilliseconds: 180_000,
+        isAgainstRecord: false,
+        isWithinReference: true,
+        isPerfect: true,
+        isNewRecord: false,
+        previousRecordMilliseconds: null
+    };
+
+    it("celebrates a first or a new record", () => {
+        expect(Messages.getClockOutcomeLines({ ...base, isNewRecord: true })).toEqual(["Primeiro recorde nesta categoria!"]);
+        expect(Messages.getClockOutcomeLines({ ...base, isNewRecord: true, previousRecordMilliseconds: 80_000 })).toEqual(["Novo recorde! Antes era 1:20."]);
+    });
+
+    it("compares with the record or the default time without blame", () => {
+        const slowerThanRecord = {
+            ...base,
+            elapsedMilliseconds: 75_000,
+            referenceMilliseconds: 72_000,
+            isAgainstRecord: true,
+            isWithinReference: false,
+            previousRecordMilliseconds: 72_000
+        };
+        expect(Messages.getClockOutcomeLines(slowerThanRecord)).toEqual(["Ficaste a 0:03 do teu recorde, 1:12. Para a próxima!"]);
+        expect(Messages.getClockOutcomeLines({ ...base, elapsedMilliseconds: 190_000, isWithinReference: false, isPerfect: false })).toEqual([
+            "Mais 0:10 do que os 3 minutos. Para a próxima!",
+            "Os recordes contam quando acertas todas à primeira."
+        ]);
+    });
+});
+
+describe("Messages for bigger numbers and mixes", () => {
+    it("describes each difficulty in a few words", () => {
+        expect(Messages.getDifficultyDetail("addition", "medium")).toBe("até 100");
+        expect(Messages.getDifficultyDetail("multiplication", "easy")).toBe("tabuadas");
+        expect(Messages.getDifficultyDetail("multiplication", "medium")).toBe("como 23 × 4");
+        expect(Messages.getDifficultyDetail("division", "hard")).toBe("como 936 ÷ 4");
+    });
+
+    it("names the operation in an offer, because it can come from a mix", () => {
+        expect(Messages.getOfferText({ kind: "unlock", operation: "division", difficulty: "medium" }).text).toBe(
+            "Já podes experimentar a Divisão no Médio, com contas como 84 ÷ 4."
+        );
+    });
+
+    it("words the first-step hints", () => {
+        const multiplication: Question = { ...question, left: 23, right: 4, result: 92, answer: 92, boxType: "skill" };
+        const division: Question = { ...question, operation: "division", left: 72, right: 4, result: 18, answer: 18, boxType: "skill" };
+        expect(
+            Messages.getArithmeticHint(multiplication, { kind: "partial", firstStep: { left: 20, right: 4, result: 80 }, rest: { left: 3, right: 4 } })
+        ).toBe("Pista: 20 × 4 = 80. Agora junta 3 × 4.");
+        expect(Messages.getArithmeticHint(division, { kind: "partial", firstStep: { left: 40, right: 4, result: 10 }, rest: { left: 32, right: 4 } })).toBe(
+            "Pista: 40 ÷ 4 = 10. Agora faz 32 ÷ 4 e junta."
+        );
+        expect(Messages.getArithmeticHint(multiplication, { kind: "round", base: { left: 2, right: 4, result: 8 }, zeros: 1 })).toBe(
+            "Pista: 2 × 4 = 8. Agora junta um zero."
+        );
+    });
+
+    it("says why Jogar is off", () => {
+        expect(Messages.getPlayProblem("too-few-operations")).toBe("Escolhe pelo menos 2 contas para misturar.");
+        expect(Messages.getPlayProblem("no-tables")).toBe("Escolhe pelo menos uma tabuada.");
+    });
+});
+
+const round24: FactorRound = {
+    target: 24,
+    pairs: [
+        { first: 2, second: 12 },
+        { first: 3, second: 8 },
+        { first: 4, second: 6 }
+    ],
+    answer: { first: 4, second: 6 }
+};
+
+describe("Messages for Descobre a conta", () => {
+    it("says what a missed multiplication makes, never the answer", () => {
+        expect(Messages.getFactorGameTryAgain({ first: 4, second: 7 })).toBe("Quase! 4 × 7 dá 28. Tenta outra vez.");
+    });
+
+    it("shows the other multiplications of the number after a right answer", () => {
+        const feedback = Messages.getFactorGameFeedback({ round: round24, givenPairs: [{ first: 6, second: 4 }], isCorrect: true, isHelped: false }, 0);
+        expect(feedback.lines).toEqual(["Também podia ser 2 × 12 ou 3 × 8."]);
+    });
+
+    it("shows every multiplication after two misses, or the only one", () => {
+        const missed = {
+            givenPairs: [
+                { first: 4, second: 7 },
+                { first: 5, second: 5 }
+            ],
+            isCorrect: false,
+            isHelped: false
+        };
+        expect(Messages.getFactorGameFeedback({ ...missed, round: round24 }, 0)).toEqual({ title: "Quase!", lines: ["Podia ser 2 × 12, 3 × 8 ou 4 × 6."] });
+        const round144: FactorRound = { target: 144, pairs: [{ first: 12, second: 12 }], answer: { first: 12, second: 12 } };
+        expect(Messages.getFactorGameFeedback({ ...missed, round: round144 }, 0).lines).toEqual(["A resposta certa é 12 × 12."]);
+    });
+
+    it("writes every multiplication of a number in one line", () => {
+        expect(Messages.getFactorRoundText(round24)).toBe("24 = 2 × 12 = 3 × 8 = 4 × 6");
+    });
+
+    it("gives the bigger factor of the answer as the help", () => {
+        expect(Messages.getFactorGameHint(round24)).toBe("Começa pelo 6. Qual é o outro número?");
+    });
+
+    it("names a record by its tables", () => {
+        expect(Messages.getRecordCategoryName(RecordsUtils.getFactorGameCategory([5, 2]))).toBe("Descobre a conta · tabuadas 2, 5");
+        expect(Messages.getRecordCategoryName(RecordsUtils.getFactorGameCategory([7]))).toBe("Descobre a conta · tabuada do 7");
+    });
+});
+
+describe("Messages in every language", () => {
+    afterEach(() => Messages.setLocale("pt"));
+
+    // A sample of what each screen says, wordings built from the most pieces included.
+    const sayEverything = (): string[] => [
+        Messages.getGreeting("Rita"),
+        ...[0, 1, 2, 3, 4, 5].map((level) => Messages.getMasteryLabel(level)),
+        ...[0, 1, 2, 3].flatMap((column) => [Messages.getCellLabel(column, null), Messages.getCellLabel(column, 6)]),
+        ...[0, 1, 2, 3, 4].map(
+            (variant) => Messages.getFeedback({ question, givenAnswers: [56], isCorrect: true, isHelped: false }, { variant, hasRetryAhead: false }).title
+        ),
+        ...[0, 1, 2].map((variant) => Messages.getTryAgain(question, variant, 0)),
+        ...Messages.getChallengeRules(),
+        Messages.getOfferText({ kind: "unlock", operation: "addition", difficulty: "medium" }).text,
+        Messages.getOfferText({ kind: "safety-net", operation: "division", difficulty: "easy" }).text,
+        Messages.getOperationSummary("hard", 3),
+        Messages.getCoinProgress(3.5),
+        Messages.getChallengeLevelUp(3),
+        Messages.getLabels().questionPosition(3, 10),
+        Messages.getLabels().deleteProfileQuestion("Rita"),
+        Messages.getFactorGameNeedsTable(),
+        Messages.getFactorGameQuestion(24),
+        Messages.getFactorGameTryAgain({ first: 4, second: 7 }),
+        Messages.getFactorGameHint(round24),
+        Messages.getRecordCategoryName(RecordsUtils.getFactorGameCategory([2, 5])),
+        ...Messages.getFactorGameFeedback({ round: round24, givenPairs: [{ first: 4, second: 6 }], isCorrect: true, isHelped: false }, 0).lines,
+        ...Messages.getFactorGameFeedback({ round: round24, givenPairs: [], isCorrect: false, isHelped: false }, 0).lines
+    ];
+
+    it("words every message, with nothing missing", () => {
+        for (const locale of LocalesUtils.getValidLocales()) {
+            Messages.setLocale(locale);
+            for (const sentence of sayEverything()) {
+                expect(sentence.trim(), `${locale}: ${sentence}`).not.toBe("");
+                expect(sentence, locale).not.toMatch(/undefined|NaN|\[object/);
+            }
+            expect(Messages.getChallengeRules(), locale).toHaveLength(3);
+        }
+    });
+
+    it("speaks the language it is set to", () => {
+        Messages.setLocale("en");
+        const english: string = Messages.getLabels().play;
+        Messages.setLocale("pt");
+        expect(Messages.getLabels().play).toBe("Jogar");
+        expect(english).not.toBe("Jogar");
     });
 });

@@ -29,13 +29,23 @@ export function Mascot({ mood, size }: MascotProps) {
             {mood === "cheer" && (
                 <g>
                     <path className="mascot__spark" d={getSparkPath(22, 30, 9)} fill={MASCOT_COLORS.spark} stroke={MASCOT_COLORS.sparkEdge} strokeWidth="1.5" />
-                    <path className="mascot__spark" d={getSparkPath(140, 22, 11)} fill={MASCOT_COLORS.spark} stroke={MASCOT_COLORS.sparkEdge} strokeWidth="1.5" />
-                    <path className="mascot__spark" d={getSparkPath(150, 66, 6)} fill={MASCOT_COLORS.spark} stroke={MASCOT_COLORS.sparkEdge} strokeWidth="1.5" />
+                    <path
+                        className="mascot__spark"
+                        d={getSparkPath(140, 22, 11)}
+                        fill={MASCOT_COLORS.spark}
+                        stroke={MASCOT_COLORS.sparkEdge}
+                        strokeWidth="1.5"
+                    />
+                    <path
+                        className="mascot__spark"
+                        d={getSparkPath(150, 66, 6)}
+                        fill={MASCOT_COLORS.spark}
+                        stroke={MASCOT_COLORS.sparkEdge}
+                        strokeWidth="1.5"
+                    />
                 </g>
             )}
-            {mood === "proud" && (
-                <path d={getSparkPath(140, 24, 11)} fill={MASCOT_COLORS.spark} stroke={MASCOT_COLORS.sparkEdge} strokeWidth="1.5" />
-            )}
+            {mood === "proud" && <path d={getSparkPath(140, 24, 11)} fill={MASCOT_COLORS.spark} stroke={MASCOT_COLORS.sparkEdge} strokeWidth="1.5" />}
 
             <g transform={mood === "encourage" ? "rotate(-8 80 110)" : undefined}>
                 <ellipse cx="80" cy="142" rx="40" ry="30" fill={MASCOT_COLORS.fur} />
@@ -75,7 +85,10 @@ export function Mascot({ mood, size }: MascotProps) {
 
                 {hasOpenMouth ? (
                     <g>
-                        <path d={mood === "cheer" ? "M65 104 Q80 128 95 104 Q80 110 65 104 Z" : "M67 104 Q80 121 93 104 Q80 109 67 104 Z"} fill={MASCOT_COLORS.ink} />
+                        <path
+                            d={mood === "cheer" ? "M65 104 Q80 128 95 104 Q80 110 65 104 Z" : "M67 104 Q80 121 93 104 Q80 109 67 104 Z"}
+                            fill={MASCOT_COLORS.ink}
+                        />
                         <ellipse cx="80" cy={mood === "cheer" ? 114 : 111} rx="6" ry="4" fill={MASCOT_COLORS.tongue} />
                     </g>
                 ) : (

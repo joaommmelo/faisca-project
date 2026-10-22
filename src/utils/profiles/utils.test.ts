@@ -11,7 +11,26 @@ describe("ProfilesUtils.add", () => {
         const profile = ProfilesUtils.getActive(data);
 
         expect(profile?.name).toBe("Rita");
-        expect(profile?.settings).toEqual({ tables: [2, 5, 10], mode: "direct", isTimerEnabled: false });
+        expect(profile?.settings.practice).toBe("multiplication");
+        expect(profile?.settings.mix).toEqual({
+            operations: ["addition", "subtraction", "multiplication", "division"],
+            clock: { isEnabled: true, direction: "up", reference: "default" }
+        });
+        expect(profile?.settings.multiplication).toEqual({
+            difficulty: "easy",
+            tables: [2, 5, 10],
+            mode: "direct",
+            isAlwaysTyped: false,
+            clock: { isEnabled: true, direction: "up", reference: "default" }
+        });
+        expect(profile?.settings.addition).toEqual({
+            difficulty: "easy",
+            layout: "result",
+            clock: { isEnabled: true, direction: "up", reference: "default" }
+        });
+        expect(profile?.records).toEqual({});
+        expect(profile?.unlockedDifficulties).toEqual({ addition: "easy", subtraction: "easy", multiplication: "easy", division: "easy" });
+        expect(profile?.wallet).toEqual({ coins: 3, points: 0 });
         expect(profile?.boxes).toEqual({});
         expect(profile?.stats.sessionsCompleted).toBe(0);
     });
@@ -73,6 +92,37 @@ describe("ProfilesUtils.toggleTable", () => {
 
     it("removes a selected table", () => {
         expect(ProfilesUtils.toggleTable([2, 5, 10], 5)).toEqual([2, 10]);
+    });
+});
+
+describe("ProfilesUtils.canPlay", () => {
+    it("needs a table for multiplication and division only", () => {
+        const settings = ProfilesUtils.createDefaultSettings();
+        expect(ProfilesUtils.canPlay({ ...settings, practice: "division", division: { ...settings.division, tables: [] } })).toBe(false);
+        expect(ProfilesUtils.canPlay({ ...settings, practice: "multiplication" })).toBe(true);
+        expect(ProfilesUtils.canPlay({ ...settings, practice: "subtraction" })).toBe(true);
+        expect(ProfilesUtils.canPlay({ ...settings, practice: "division", division: { ...settings.division, difficulty: "medium", tables: [] } })).toBe(true);
+    });
+});
+
+describe("ProfilesUtils mixes", () => {
+    const settings = ProfilesUtils.createDefaultSettings();
+
+    it("needs two operations to mix, and tables for any times table inside it", () => {
+        expect(ProfilesUtils.getPlayProblem({ ...settings, practice: "mix" })).toBeNull();
+        expect(ProfilesUtils.getPlayProblem({ ...settings, practice: "mix", mix: { ...settings.mix, operations: ["addition"] } })).toBe("too-few-operations");
+        const noTables = { ...settings, practice: "mix" as const, division: { ...settings.division, tables: [] } };
+        expect(ProfilesUtils.getPlayProblem(noTables)).toBe("no-tables");
+    });
+
+    it("toggles operations keeping the menu order", () => {
+        expect(ProfilesUtils.toggleMixOperation(["division"], "addition")).toEqual(["addition", "division"]);
+        expect(ProfilesUtils.toggleMixOperation(["addition", "division"], "division")).toEqual(["addition"]);
+    });
+
+    it("plays the mix's operations, or the single one chosen", () => {
+        expect(ProfilesUtils.getPracticeOperations({ ...settings, practice: "subtraction" })).toEqual(["subtraction"]);
+        expect(ProfilesUtils.getPracticeOperations({ ...settings, practice: "mix" })).toEqual(settings.mix.operations);
     });
 });
 

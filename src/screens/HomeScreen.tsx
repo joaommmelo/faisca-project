@@ -1,119 +1,87 @@
-import { useId, useState } from "react";
-import { PlusIcon } from "../components/Icons.tsx";
+import { CoinButton } from "../components/CoinButton.tsx";
+import { GameTiles } from "../components/GameTiles.tsx";
+import { SettingsIcon } from "../components/Icons.tsx";
 import { Logo } from "../components/Logo.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
-import { ModePicker } from "../components/ModePicker.tsx";
-import { ProfileForm } from "../components/ProfileForm.tsx";
-import { SwitchField } from "../components/SwitchField.tsx";
-import { TablesPicker } from "../components/TablesPicker.tsx";
+import { PracticeTiles } from "../components/PracticeTiles.tsx";
+import type { Labels } from "../copy/copy.ts";
+import { useInstallPrompt, type InstallPrompt } from "../hooks/useInstallPrompt.ts";
+import type { Difficulty } from "../utils/difficulties/utils.ts";
+import { LevelsUtils } from "../utils/levels/utils.ts";
 import { Messages } from "../utils/messages.ts";
-import type { AppData, Profile, ProfileSettings } from "../utils/profiles/utils.ts";
+import type { Operation } from "../utils/operations/utils.ts";
+import { ProfilesUtils, type Practice, type Profile } from "../utils/profiles/utils.ts";
+import type { StorageStatus } from "../utils/storage/utils.ts";
 
 interface HomeScreenProps {
-    data: AppData;
     profile: Profile;
-    onSelectProfile: (profileId: string) => void;
-    onCreateProfile: (name: string) => void;
-    onDeleteProfile: (profileId: string) => void;
-    onSettingsChange: (settings: ProfileSettings) => void;
-    onPlay: () => void;
+    storageStatus: StorageStatus;
+    onChoosePractice: (practice: Practice) => void;
     onShowProgress: () => void;
+    onOpenFactorGame: () => void;
+    onOpenChallenge: () => void;
+    onOpenSettings: () => void;
 }
 
-export function HomeScreen({ data, profile, onSelectProfile, onCreateProfile, onDeleteProfile, onSettingsChange, onPlay, onShowProgress }: HomeScreenProps) {
-    const deleteTitleId: string = useId();
-    const [isAddingProfile, setIsAddingProfile] = useState<boolean>(false);
-    const [isConfirmingDelete, setIsConfirmingDelete] = useState<boolean>(false);
+// Only the choice of what to practise: the operations, then the games. Everything about how to play it waits on the
+// next screen. The coins sit in
+// the corner and open the piggy bank. What an adult changes once in a while (who is playing, the language, the
+// challenge for adults) waits behind the gear next to them.
+export function HomeScreen({ profile, storageStatus, onChoosePractice, onShowProgress, onOpenFactorGame, onOpenChallenge, onOpenSettings }: HomeScreenProps) {
     const { settings } = profile;
-    const hasTables: boolean = settings.tables.length > 0;
+    const installPrompt: InstallPrompt = useInstallPrompt();
+    const labels: Labels = Messages.getLabels();
+
+    const summaries: Record<Operation, string> = (() => {
+        const getSummary = (operation: Operation): string => {
+            const difficulty: Difficulty = ProfilesUtils.getDifficulty(settings, operation);
+            const level: number = LevelsUtils.getTrack(profile.tracks, LevelsUtils.getTrackId(operation, difficulty)).level;
+            return Messages.getOperationSummary(difficulty, level);
+        };
+        return {
+            addition: getSummary("addition"),
+            subtraction: getSummary("subtraction"),
+            multiplication: getSummary("multiplication"),
+            division: getSummary("division")
+        };
+    })();
 
     return (
-        <main className="screen">
-            <Logo />
-            <MascotMessage mood="happy" size={96}>
+        <main className="screen screen--home">
+            <header className="home-header">
+                <Logo />
+                {/* The coins keep the corner, where the piggy bank opens under them. */}
+                <div className="home-header__actions">
+                    <button type="button" className="icon-button" aria-label={labels.settings} onClick={onOpenSettings}>
+                        <SettingsIcon />
+                    </button>
+                    <CoinButton wallet={profile.wallet} />
+                </div>
+            </header>
+
+            <MascotMessage mood="happy" size={80}>
                 {Messages.getGreeting(profile.name)}
             </MascotMessage>
 
-            <section className="card">
-                <h2 className="section-title">Quem vai jogar?</h2>
-                <div className="profiles">
-                    {data.profiles.map((candidate) => (
-                        <button
-                            key={candidate.id}
-                            type="button"
-                            className="chip"
-                            aria-pressed={candidate.id === profile.id}
-                            onClick={() => onSelectProfile(candidate.id)}
-                        >
-                            {candidate.name}
-                        </button>
-                    ))}
-                    <button type="button" className="chip chip--add" aria-expanded={isAddingProfile} onClick={() => setIsAddingProfile(true)}>
-                        <PlusIcon />
-                        Novo
-                    </button>
-                </div>
-                {isAddingProfile && (
-                    <div className="card-section">
-                        <ProfileForm
-                            data={data}
-                            title="Nome do novo perfil"
-                            submitLabel="Criar perfil"
-                            onSubmit={onCreateProfile}
-                            onCancel={() => setIsAddingProfile(false)}
-                        />
-                    </div>
-                )}
-            </section>
-
-            <section className="card">
-                <TablesPicker selectedTables={settings.tables} onChange={(tables) => onSettingsChange({ ...settings, tables })} />
-            </section>
-
-            <section className="card">
-                <ModePicker mode={settings.mode} onChange={(mode) => onSettingsChange({ ...settings, mode })} />
-            </section>
-
-            <section className="card">
-                <SwitchField
-                    label="Cronómetro"
-                    description="Mostra o tempo de cada jogo. Sem pressa!"
-                    isOn={settings.isTimerEnabled}
-                    onChange={(isTimerEnabled) => onSettingsChange({ ...settings, isTimerEnabled })}
-                />
-            </section>
-
-            <div className="play-bar">
-                <p className="hint" role="status">
-                    {hasTables ? "" : "Escolhe pelo menos uma tabuada."}
+            {storageStatus !== "saved" && (
+                <p className="notice" role="status">
+                    {Messages.getStorageWarning(storageStatus)}
                 </p>
-                <button type="button" className="button button--play" disabled={!hasTables} onClick={onPlay}>
-                    Jogar
-                </button>
-            </div>
+            )}
+
+            <PracticeTiles summaries={summaries} onChoose={onChoosePractice} />
+
+            <GameTiles profile={profile} onChooseMix={() => onChoosePractice("mix")} onOpenFactorGame={onOpenFactorGame} onOpenChallenge={onOpenChallenge} />
 
             <button type="button" className="button button--secondary button--block" onClick={onShowProgress}>
-                Ver progresso
+                {labels.seeProgress}
             </button>
 
-            {isConfirmingDelete ? (
-                <section className="card stack" role="alertdialog" aria-labelledby={deleteTitleId}>
-                    <p id={deleteTitleId} className="section-title">
-                        Apagar o perfil «{profile.name}» e todo o progresso?
-                    </p>
-                    <p className="hint">Não dá para desfazer.</p>
-                    <div className="actions-row">
-                        <button type="button" className="button button--secondary" autoFocus onClick={() => setIsConfirmingDelete(false)}>
-                            Cancelar
-                        </button>
-                        <button type="button" className="button button--secondary button--danger" onClick={() => onDeleteProfile(profile.id)}>
-                            Sim, apagar
-                        </button>
-                    </div>
-                </section>
-            ) : (
-                <button type="button" className="button button--ghost button--danger" onClick={() => setIsConfirmingDelete(true)}>
-                    Apagar perfil «{profile.name}»
+            {/* One tap, and only where the browser offers it: the steps of the other browsers would sit here on every
+                visit, and on iPhone and iPad the installed app starts without the progress kept in Safari. */}
+            {installPrompt.method === "prompt" && (
+                <button type="button" className="button button--secondary button--block" onClick={installPrompt.install}>
+                    {labels.addToHomeScreen}
                 </button>
             )}
         </main>
