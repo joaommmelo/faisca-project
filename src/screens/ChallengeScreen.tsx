@@ -1,6 +1,6 @@
 import { Celebration } from "../components/Celebration.tsx";
 import { Equation } from "../components/Equation.tsx";
-import { BackIcon, StarIcon } from "../components/Icons.tsx";
+import { BackIcon, HomeIcon, PlayIcon, StarIcon } from "../components/Icons.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
 import { ChallengeUtils, type ChallengeRun } from "../utils/challenge/utils.ts";
@@ -39,9 +39,11 @@ export function ChallengeScreen({ profile, run, onPlay, onHome }: ChallengeScree
 
             <div className="summary-actions">
                 <button type="button" className="button button--secondary" onClick={onHome}>
+                    <HomeIcon />
                     Início
                 </button>
                 <button type="button" className="button button--play" onClick={onPlay}>
+                    <PlayIcon />
                     {run === null ? "Jogar" : "Jogar outra vez"}
                 </button>
             </div>

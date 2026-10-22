@@ -12,8 +12,8 @@ import { VerticalProblem } from "./VerticalProblem.tsx";
 interface VerticalAnswerProps {
     question: Question;
     record: AnswerRecord | null;
-    // The result or the second-chance note, shown right under the sum.
-    status: ReactNode;
+    // The second-chance note, shown right under the sum.
+    tryAgainNote: ReactNode;
     help: HelpControl;
     onSubmit: (givenAnswer: number) => AttemptOutcome;
 }
@@ -24,7 +24,7 @@ interface HelpProgress {
 }
 
 // Writing a sum in columns. Mount it with a key per question so every question starts with empty cells.
-export function VerticalAnswer({ question, record, status, help, onSubmit }: VerticalAnswerProps) {
+export function VerticalAnswer({ question, record, tryAgainNote, help, onSubmit }: VerticalAnswerProps) {
     const columns: VerticalColumn[] = VerticalUtils.getColumns(question);
     const [entry, setEntry] = useState<VerticalEntry>(() => VerticalUtils.createEntry(columns.length));
     const [wrongColumns, setWrongColumns] = useState<number[]>([]);
@@ -92,7 +92,7 @@ export function VerticalAnswer({ question, record, status, help, onSubmit }: Ver
                 isAnswered={isAnswered}
                 onSelectCell={(column) => setEntry(VerticalUtils.moveCursor(entry, column))}
             />
-            {status}
+            {tryAgainNote}
             {!isAnswered && <HelpButton control={{ ...help, onUse: showNextHelpStep }} />}
             {hintText !== null && <HintBubble text={hintText} />}
             <NumericKeypad

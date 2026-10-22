@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Celebration } from "../components/Celebration.tsx";
-import { ClockIcon, CoinIcon, StarIcon } from "../components/Icons.tsx";
+import { ClockIcon, CoinIcon, HomeIcon, PlayIcon, StarIcon } from "../components/Icons.tsx";
 import { Mascot, MascotMessage } from "../components/Mascot.tsx";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
 import { Messages, type OfferText } from "../utils/messages.ts";
@@ -103,9 +103,11 @@ export function SummaryScreen({ outcome, onAcceptOffer, onPlayAgain, onShowProgr
 
             <div className="summary-actions">
                 <button type="button" className="button button--secondary" onClick={onHome}>
+                    <HomeIcon />
                     Início
                 </button>
                 <button type="button" className="button button--play" onClick={onPlayAgain}>
+                    <PlayIcon />
                     Jogar outra vez
                 </button>
             </div>

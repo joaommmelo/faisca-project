@@ -511,6 +511,7 @@ fieldset {
     text-align: center;
     font-weight: 800;
     cursor: pointer;
+    container-type: inline-size;
 }
 
 .segmented__option:has(input:checked) {
@@ -547,6 +548,16 @@ fieldset {
 .segmented__option--locked .icon {
     width: 1em;
     height: 1em;
+}
+
+/* "desbloquear" cannot break and is wider than a third of a phone: the card gives it its side padding,
+   and the word shrinks with the card to stay inside. */
+.segmented__option--locked {
+    padding-inline: 4px;
+}
+
+.segmented__option--locked .segmented__detail {
+    font-size: min(0.95rem, 16cqi);
 }
 
 /* Switch */
@@ -875,14 +886,18 @@ fieldset {
     color: #ffffff;
 }
 
-/* Inline, right under the question: above the keypad or the options, never covering them. It sits above the
-   invisible tap-to-continue layer so "Seguinte" stays directly tappable. */
+/* A sheet over the bottom of the screen, covering the keypad or the options once they have nothing left to do.
+   It sits above the invisible tap-to-continue layer so "Seguinte" stays directly tappable. */
 .feedback {
-    position: relative;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
     z-index: 10;
-    padding: var(--space-4);
+    padding: var(--space-4) var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom));
     border: 3px solid var(--color-success);
-    border-radius: var(--radius-lg);
+    border-bottom: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     background: var(--color-success-soft);
 }
 
@@ -895,6 +910,8 @@ fieldset {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    max-width: 608px;
+    margin: 0 auto;
 }
 
 .feedback__message {
@@ -916,7 +933,7 @@ fieldset {
     font-weight: 800;
 }
 
-/* On phones the question stays at the top; tablets centre it. */
+/* On phones the question stays at the top so the feedback sheet covers empty space; tablets centre it. */
 @media (min-width: 600px) and (min-height: 800px) {
     .session-body {
         justify-content: center;
@@ -1711,9 +1728,11 @@ fieldset {
 
 .summary-actions .button {
     min-height: 64px;
+    text-wrap: balance;
 }
 
 .summary-actions .button--play {
+    border-radius: var(--radius-md);
     font-size: 1.4rem;
 }
 
@@ -1763,8 +1782,8 @@ fieldset {
 }
 
 .feedback .celebration {
-    inset: -40px 0 auto;
-    height: 100px;
+    inset: -60px 0 auto;
+    height: 120px;
 }
 
 .celebration__spark {
@@ -1981,10 +2000,12 @@ fieldset {
     background: linear-gradient(to right, var(--color-coin) 50%, transparent 50%);
 }
 
+/* Above the feedback sheet, where its flight starts. */
 .coin-flight {
     position: absolute;
     top: 0;
     left: 0;
+    z-index: 11;
     pointer-events: none;
     opacity: 0;
 }
@@ -2181,7 +2202,7 @@ fieldset {
     }
 
     .feedback {
-        animation: rise-in 200ms ease-out;
+        animation: slide-up 180ms ease-out;
     }
 
     .feedback--correct .feedback__title {
@@ -2267,6 +2288,12 @@ fieldset {
 
     .celebration {
         display: none;
+    }
+}
+
+@keyframes slide-up {
+    from {
+        transform: translateY(100%);
     }
 }
 

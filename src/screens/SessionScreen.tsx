@@ -152,24 +152,8 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
         }
         return <HintBubble text={Messages.getArithmeticHint(question, HelpsUtils.getArithmeticHint(question))} />;
     })();
-    // The result, or the second-chance note, sits right under the question so it is never hidden.
-    const status: ReactNode = (() => {
-        if (record !== null) {
-            return (
-                <FeedbackPanel
-                    key={session.currentIndex}
-                    feedback={Messages.getFeedback(record, { variant: session.records.length, hasRetryAhead: SessionUtils.hasRetryAhead(session) })}
-                    isCorrect={record.isCorrect}
-                    milestones={answerMilestones}
-                    onContinue={goToNextQuestion}
-                />
-            );
-        }
-        if (tryAgainText !== null) {
-            return <TryAgainNote key={tryAgainCount} text={tryAgainText} />;
-        }
-        return null;
-    })();
+    // The second-chance note sits right under the question so it is never hidden.
+    const tryAgainNote: ReactNode = tryAgainText === null ? null : <TryAgainNote key={tryAgainCount} text={tryAgainText} />;
     const useChoiceHelp: HelpControl = {
         ...helpControl,
         onUse: () => {
@@ -248,7 +232,7 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
                             key={session.currentIndex}
                             question={question}
                             record={record}
-                            status={status}
+                            tryAgainNote={tryAgainNote}
                             help={helpControl}
                             onSubmit={submitAnswer}
                         />
@@ -258,7 +242,7 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
                             key={session.currentIndex}
                             question={question}
                             record={record}
-                            status={status}
+                            tryAgainNote={tryAgainNote}
                             help={oneStepHelp}
                             onSubmit={submitAnswer}
                         />
@@ -266,7 +250,7 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
                     {question.format === "choice" && (
                         <>
                             <Equation question={question} typedAnswer="" isAnswered={record !== null} />
-                            {status}
+                            {tryAgainNote}
                             <ChoiceOptions
                                 options={question.options}
                                 answer={question.answer}
@@ -278,7 +262,18 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
                             {record === null && !session.isCurrentHelped ? <HelpButton control={useChoiceHelp} /> : oneStepHelp}
                         </>
                     )}
-                    {record !== null && <button type="button" className="tap-to-continue" tabIndex={-1} aria-hidden="true" onClick={goToNextQuestion} />}
+                    {record !== null && (
+                        <>
+                            <button type="button" className="tap-to-continue" tabIndex={-1} aria-hidden="true" onClick={goToNextQuestion} />
+                            <FeedbackPanel
+                                key={session.currentIndex}
+                                feedback={Messages.getFeedback(record, { variant: session.records.length, hasRetryAhead: SessionUtils.hasRetryAhead(session) })}
+                                isCorrect={record.isCorrect}
+                                milestones={answerMilestones}
+                                onContinue={goToNextQuestion}
+                            />
+                        </>
+                    )}
                 </div>
             )}
         </main>

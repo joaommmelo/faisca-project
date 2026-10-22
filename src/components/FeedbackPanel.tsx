@@ -2,7 +2,7 @@ import { useEffect, useId, useRef } from "react";
 import { Messages, type Feedback } from "../utils/messages.ts";
 import type { Milestone } from "../utils/progression/utils.ts";
 import { Celebration } from "./Celebration.tsx";
-import { CoinIcon, StarIcon } from "./Icons.tsx";
+import { CoinIcon, NextIcon, StarIcon } from "./Icons.tsx";
 import { Mascot } from "./Mascot.tsx";
 
 interface FeedbackPanelProps {
@@ -12,7 +12,7 @@ interface FeedbackPanelProps {
     onContinue: () => void;
 }
 
-// Right under the question, above the keypad or the options, so the result is always in view.
+// A sheet over the bottom of the screen: once answered, the keypad and the options have nothing left to do.
 export function FeedbackPanel({ feedback, isCorrect, milestones, onContinue }: FeedbackPanelProps) {
     const messageId: string = useId();
     const continueButtonRef = useRef<HTMLButtonElement>(null);
@@ -57,6 +57,7 @@ export function FeedbackPanel({ feedback, isCorrect, milestones, onContinue }: F
                     onClick={onContinue}
                 >
                     Seguinte
+                    <NextIcon />
                 </button>
             </div>
         </section>

@@ -52,6 +52,14 @@ export function BackIcon() {
     );
 }
 
+export function NextIcon() {
+    return (
+        <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
 export function PlusIcon() {
     return (
         <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
