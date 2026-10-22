@@ -121,6 +121,7 @@ export interface Copy {
     clockBehindDefault: (extraTime: string, minutes: number) => string;
     clockYourRecord: (time: string) => string;
     clockRecordsNeedPerfect: string;
+    clockRecordsNeedNoHelp: string;
     // The parts of a record's name: "Soma · Fácil · na vertical", "Multiplicação · Fácil · tabuadas 2, 5 · com inversas".
     recordVertical: string;
     recordResult: string;

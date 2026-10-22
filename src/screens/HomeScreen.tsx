@@ -11,6 +11,7 @@ import { LevelsUtils } from "../utils/levels/utils.ts";
 import { Messages } from "../utils/messages.ts";
 import type { Operation } from "../utils/operations/utils.ts";
 import { ProfilesUtils, type Practice, type Profile } from "../utils/profiles/utils.ts";
+import type { RoundGameId } from "../utils/roundGame/utils.ts";
 import type { StorageStatus } from "../utils/storage/utils.ts";
 
 interface HomeScreenProps {
@@ -19,6 +20,9 @@ interface HomeScreenProps {
     onChoosePractice: (practice: Practice) => void;
     onShowProgress: () => void;
     onOpenFactorGame: () => void;
+    onOpenRoundGame: (game: RoundGameId) => void;
+    onOpenMemoryGame: () => void;
+    onOpenMahjong: () => void;
     onOpenChallenge: () => void;
     onOpenSettings: () => void;
 }
@@ -27,7 +31,18 @@ interface HomeScreenProps {
 // next screen. The coins sit in
 // the corner and open the piggy bank. What an adult changes once in a while (who is playing, the language, the
 // challenge for adults) waits behind the gear next to them.
-export function HomeScreen({ profile, storageStatus, onChoosePractice, onShowProgress, onOpenFactorGame, onOpenChallenge, onOpenSettings }: HomeScreenProps) {
+export function HomeScreen({
+    profile,
+    storageStatus,
+    onChoosePractice,
+    onShowProgress,
+    onOpenFactorGame,
+    onOpenRoundGame,
+    onOpenMemoryGame,
+    onOpenMahjong,
+    onOpenChallenge,
+    onOpenSettings
+}: HomeScreenProps) {
     const { settings } = profile;
     const installPrompt: InstallPrompt = useInstallPrompt();
     const labels: Labels = Messages.getLabels();
@@ -71,7 +86,15 @@ export function HomeScreen({ profile, storageStatus, onChoosePractice, onShowPro
 
             <PracticeTiles summaries={summaries} onChoose={onChoosePractice} />
 
-            <GameTiles profile={profile} onChooseMix={() => onChoosePractice("mix")} onOpenFactorGame={onOpenFactorGame} onOpenChallenge={onOpenChallenge} />
+            <GameTiles
+                profile={profile}
+                onChooseMix={() => onChoosePractice("mix")}
+                onOpenFactorGame={onOpenFactorGame}
+                onOpenRoundGame={onOpenRoundGame}
+                onOpenMemoryGame={onOpenMemoryGame}
+                onOpenMahjong={onOpenMahjong}
+                onOpenChallenge={onOpenChallenge}
+            />
 
             <button type="button" className="button button--secondary button--block" onClick={onShowProgress}>
                 {labels.seeProgress}

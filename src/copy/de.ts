@@ -142,6 +142,7 @@ export const de: Copy = {
     clockBehindDefault: (extraTime, minutes) => `Du hast ${extraTime} länger gebraucht als die ${minutes} Minuten. Vielleicht klappt's nächstes Mal!`,
     clockYourRecord: (time) => `Dein Rekord: ${time}.`,
     clockRecordsNeedPerfect: "Rekorde zählen, wenn du alles beim ersten Versuch richtig hast.",
+    clockRecordsNeedNoHelp: "Rekorde zählen in Spielen ohne Hilfe.",
     recordVertical: "schriftlich",
     recordResult: "nur Ergebnis",
     recordTable: (table) => `${table}er-Reihe`,
@@ -249,7 +250,7 @@ export const de: Copy = {
 
     memoryGameName: "Memory",
     memoryGameGreeting: "Dreh immer zwei Karten um und finde die Paare!",
-    memoryContentNames: { quantities: "Mengen", additions: "Plus bis 10", tables: "Einmaleins" },
+    memoryContentNames: { quantities: "Knochen", additions: "Plus bis 10", tables: "Einmaleins" },
     memoryMiss: "Das ist kein Paar. Merk dir, wo sie liegen!",
     memoryHint: "Das Paar zu dieser Karte leuchtet!",
     memoryHelpNeedsCard: "Dreh zuerst eine Karte um.",

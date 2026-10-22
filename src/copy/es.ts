@@ -137,6 +137,7 @@ export const es: Copy = {
     clockBehindDefault: (extraTime, minutes) => `${extraTime} por encima de los ${minutes} minutos. ¡A la próxima!`,
     clockYourRecord: (time) => `Tu récord: ${time}.`,
     clockRecordsNeedPerfect: "Los récords cuentan cuando aciertas todas a la primera.",
+    clockRecordsNeedNoHelp: "Los récords cuentan en las partidas sin ayuda.",
     recordVertical: "en vertical",
     recordResult: "solo el resultado",
     recordTable: (table) => `tabla del ${table}`,
@@ -241,7 +242,7 @@ export const es: Copy = {
 
     memoryGameName: "Memoria",
     memoryGameGreeting: "¡Destapa dos cartas cada vez y encuentra las parejas!",
-    memoryContentNames: { quantities: "Cantidades", additions: "Sumas hasta 10", tables: "Tablas" },
+    memoryContentNames: { quantities: "Huesos", additions: "Sumas hasta 10", tables: "Tablas" },
     memoryMiss: "No son pareja. ¡Recuerda dónde están!",
     memoryHint: "¡La pareja de esta carta está brillando!",
     memoryHelpNeedsCard: "Destapa una carta primero.",

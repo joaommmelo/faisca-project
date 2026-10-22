@@ -27,9 +27,12 @@
     --op-multiplication-soft: #e4edff;
     --op-division: #7c3aed;
     --op-division-soft: #efe6ff;
-    /* The challenge for adults: a quiet slate, set apart from the children's operations. */
+    /* The challenge and Mahjong, for adults: a quiet slate, set apart from the children's operations. */
     --op-challenge: #3d4757;
     --op-challenge-soft: #e7eaef;
+    /* Memória: the one game that is not an operation's, in a rose of its own. */
+    --op-memory: #b4236b;
+    --op-memory-soft: #ffe4f0;
 
     --color-coin: #ffc83d;
     --color-coin-edge: #c98a00;
@@ -512,7 +515,7 @@ fieldset {
     justify-content: center;
     gap: 4px;
     min-height: 80px;
-    padding: 10px;
+    padding: 10px 6px;
     border: 2px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface);
@@ -532,6 +535,15 @@ fieldset {
 .segmented__option:has(input:focus-visible) {
     outline: 3px solid var(--color-text);
     outline-offset: 3px;
+}
+
+/* A name shrinks with its card, and long words break with a hyphen, so three options fit side by side on the
+   narrowest phone in every language ("Einmaleins"). */
+.segmented__label {
+    max-width: 100%;
+    font-size: clamp(0.85rem, 21cqi, 1.125rem);
+    overflow-wrap: anywhere;
+    hyphens: auto;
 }
 
 .segmented__detail {
@@ -1415,6 +1427,51 @@ fieldset {
     --op-soft: var(--op-challenge-soft);
 }
 
+/* Each game of rounds takes the colour of the operation it is closest to: counting is adding, what is missing to 10
+   is taking away, jumping is the times tables, the signs are the mix, and the balance compares like a division. */
+
+.practice--counting,
+.card--counting,
+.screen--counting {
+    --op-ink: var(--op-addition);
+    --op-soft: var(--op-addition-soft);
+}
+
+.practice--number-bonds,
+.card--number-bonds,
+.screen--number-bonds {
+    --op-ink: var(--op-subtraction);
+    --op-soft: var(--op-subtraction-soft);
+}
+
+.practice--skip-counting,
+.card--skip-counting,
+.screen--skip-counting {
+    --op-ink: var(--op-multiplication);
+    --op-soft: var(--op-multiplication-soft);
+}
+
+.practice--missing-sign,
+.card--missing-sign,
+.screen--missing-sign {
+    --op-ink: var(--color-fur-dark);
+    --op-soft: var(--color-accent-soft);
+}
+
+.practice--balance,
+.card--balance,
+.screen--balance {
+    --op-ink: var(--op-division);
+    --op-soft: var(--op-division-soft);
+}
+
+.practice--memory,
+.card--memory,
+.screen--memory {
+    --op-ink: var(--op-memory);
+    --op-soft: var(--op-memory-soft);
+}
+
 .practices {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1480,6 +1537,17 @@ fieldset {
 
 .practice__symbol--factors {
     font-size: 1.45rem;
+}
+
+.practice__symbol--game .icon,
+.setup-title__symbol .icon {
+    width: 38px;
+    height: 38px;
+}
+
+.game-symbol__text {
+    font-size: 1.45rem;
+    white-space: nowrap;
 }
 
 .practice__name {
@@ -1549,6 +1617,11 @@ fieldset {
     color: var(--color-primary);
     font-size: 1.1rem;
     font-weight: 900;
+}
+
+/* Alone in its card, with nothing above it to set apart. */
+.more-options:first-child {
+    border-top: 0;
 }
 
 .more-options__chevron {
@@ -2350,6 +2423,561 @@ fieldset {
     font-variant-numeric: tabular-nums;
 }
 
+/* Games of rounds */
+
+/* The rules show a round already answered: it is a picture, not something to tap. */
+.round-example {
+    pointer-events: none;
+}
+
+.round-example .choice {
+    min-height: 64px;
+    font-size: 1.8rem;
+}
+
+.choices--numbers {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.choices--signs {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* Each sign in the colour of its operation, so a child who does not read the sign yet still tells them apart. */
+.choice--sign {
+    color: var(--op-ink);
+    font-size: 2.6rem;
+}
+
+.choice--sign.choice--correct {
+    color: var(--color-success);
+}
+
+.round-picture {
+    display: flex;
+    justify-content: center;
+    padding: var(--space-2) 0;
+}
+
+.bones-groups {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.bones-groups__plus {
+    color: var(--color-text-muted);
+    font-size: 2.5rem;
+    font-weight: 900;
+}
+
+.bones {
+    display: grid;
+    gap: 6px;
+    color: var(--color-fur);
+}
+
+.bones--dice {
+    grid-template-columns: repeat(3, 1fr);
+    padding: 10px;
+    border: 3px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+}
+
+.bones--rows-of-5 {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+/* Rows of ten keep a gap after the fifth bone, so the fives can be seen. */
+.bones--rows-of-10 {
+    grid-template-columns: repeat(5, 1fr) 10px repeat(5, 1fr);
+}
+
+.bones--rows-of-10 .bones__cell:nth-child(10n + 6) {
+    grid-column-start: 7;
+}
+
+.bones--scattered {
+    width: 100%;
+    max-width: 340px;
+    gap: 4px;
+}
+
+.bones__cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+}
+
+.bones--dice .bones__cell {
+    width: 48px;
+    height: 48px;
+}
+
+.bones--rows-of-10 .bones__cell {
+    width: 26px;
+    height: 26px;
+}
+
+.bones--scattered .bones__cell {
+    width: auto;
+    aspect-ratio: 1;
+}
+
+.bones__cell .icon {
+    width: 100%;
+    height: 100%;
+}
+
+.ten-frame {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    align-self: center;
+    width: min(100%, 300px);
+    padding: 8px;
+    border: 3px solid var(--color-text-muted);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+}
+
+.ten-frame__cell {
+    aspect-ratio: 1;
+    border: 3px dashed var(--color-border);
+    border-radius: 50%;
+}
+
+.ten-frame__cell--part {
+    border-style: solid;
+    border-color: var(--color-fur-dark);
+    background: var(--color-fur);
+}
+
+.ten-frame__cell--answer {
+    border-style: solid;
+    border-color: var(--color-success);
+    background: var(--color-success-soft);
+}
+
+/* Salta com o Faísca: five stops on a line, a jump between each two. */
+.jumps {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    padding-top: 28px;
+    font-size: clamp(1.4rem, 7vw, 2.4rem);
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+
+.jumps__stop {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding-bottom: 8px;
+    border-bottom: 4px solid var(--color-border);
+}
+
+.jumps__stop .equation__slot {
+    min-width: 1.6em;
+    height: 1.4em;
+    border-width: 3px;
+}
+
+/* The jump from the stop before lands here: an arc over the gap, with its step once answered. */
+.jumps__arc {
+    position: absolute;
+    top: -28px;
+    left: -50%;
+    width: 100%;
+    height: 26px;
+    border: 3px solid var(--op-ink);
+    border-bottom: 0;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    color: var(--op-ink);
+    font-size: 0.9rem;
+    line-height: 1;
+    text-align: center;
+}
+
+/* Qual pesa mais?: the pans are the options. */
+.balance {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.balance__beam {
+    width: 86%;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--op-ink);
+}
+
+.balance__choices {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: start;
+    gap: var(--space-3);
+    width: 100%;
+    margin-top: 14px;
+}
+
+.balance__choice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 96px;
+    padding: var(--space-2);
+    border: 3px solid var(--color-border);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: 0 4px 0 var(--color-border);
+    font-size: clamp(1.4rem, 7vw, 2.2rem);
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+
+.balance__choice:disabled {
+    cursor: default;
+}
+
+/* The middle button: both pans weigh the same. */
+.balance__choice--equal {
+    align-self: center;
+    min-width: 64px;
+    min-height: 64px;
+    margin-top: 16px;
+    border-radius: 50%;
+}
+
+.balance__equal {
+    font-size: 2rem;
+}
+
+.balance__calculation {
+    white-space: nowrap;
+}
+
+.balance__value {
+    color: var(--color-text-muted);
+    font-size: 0.6em;
+}
+
+.balance__choice .icon {
+    width: 0.8em;
+    height: 0.8em;
+}
+
+.balance__choice--right {
+    border-color: var(--color-success);
+    background: var(--color-success-soft);
+    box-shadow: 0 4px 0 var(--color-success);
+    color: var(--color-success);
+}
+
+.balance__choice--tried {
+    border-style: dashed;
+    border-color: var(--color-warm);
+    background: var(--color-warm-soft);
+    box-shadow: none;
+    color: var(--color-warm);
+}
+
+.balance__choice--tried .balance__calculation,
+.balance__choice--tried .balance__equal {
+    text-decoration: line-through;
+    text-decoration-thickness: 3px;
+}
+
+.balance__choice--dimmed {
+    opacity: 0.45;
+}
+
+/* A pan the help took away keeps its number, so the balance still reads, but cannot be tapped. */
+.balance__choice--hidden {
+    border-style: dashed;
+    box-shadow: none;
+    opacity: 0.4;
+}
+
+/* The hook the balance hangs from, over the middle of the beam. */
+.balance__stand {
+    width: 20px;
+    height: 20px;
+    margin-bottom: -6px;
+    border: 4px solid var(--op-ink);
+    border-radius: 50%;
+}
+
+.balance--tilt-left .balance__beam {
+    transform: rotate(-6deg);
+}
+
+.balance--tilt-right .balance__beam {
+    transform: rotate(6deg);
+}
+
+.balance--tilt-left .balance__choice--left,
+.balance--tilt-right .balance__choice--right {
+    transform: translateY(10px);
+}
+
+.balance--tilt-left .balance__choice--right,
+.balance--tilt-right .balance__choice--left {
+    transform: translateY(-10px);
+}
+
+/* Memória */
+
+/* Sixteen cards fit a short phone without scrolling: the grid narrows with the height of the screen. */
+.memory-grid {
+    display: grid;
+    gap: 8px;
+    width: 100%;
+    max-width: min(480px, calc((100dvh - 300px) * 0.85));
+    margin: 0 auto;
+}
+
+.memory-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 4 / 5;
+    min-height: 64px;
+    padding: 4px;
+    border: 3px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    box-shadow: 0 4px 0 var(--color-border);
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    overflow: hidden;
+}
+
+.memory-card:disabled {
+    cursor: default;
+}
+
+/* Face down: the colour of the game with Faísca's spark, the same on every card. */
+.memory-card:not(.memory-card--up, .memory-card--matched, .memory-card--missed) {
+    border-color: var(--op-ink);
+    background: var(--op-soft);
+}
+
+.memory-card__back .icon {
+    width: 36px;
+    height: 36px;
+}
+
+.memory-card--up {
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 0 var(--color-primary-pressed);
+}
+
+.memory-card--matched {
+    border-color: var(--color-success);
+    background: var(--color-success-soft);
+    box-shadow: none;
+    color: var(--color-success);
+}
+
+.memory-card--missed {
+    border-style: dashed;
+    border-color: var(--color-warm);
+    background: var(--color-warm-soft);
+    box-shadow: none;
+}
+
+/* The pair the help points at, in the colours of the help's bubble. */
+.memory-card--hinted {
+    border-color: var(--color-accent-pressed);
+    box-shadow: 0 0 0 4px var(--color-accent);
+}
+
+.memory-card__number {
+    font-size: clamp(1.6rem, 9vw, 2.6rem);
+}
+
+.memory-card__calculation {
+    font-size: clamp(1.1rem, 5.4vw, 1.8rem);
+    white-space: nowrap;
+}
+
+.memory-card__bones .bones--dice {
+    padding: 2px;
+    border: 0;
+    background: transparent;
+    gap: 1px;
+}
+
+.memory-card__bones .bones__cell {
+    width: clamp(14px, 5vw, 24px);
+    height: clamp(14px, 5vw, 24px);
+}
+
+.bones--domino {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0 4px;
+}
+
+.bones--domino .bones__cell {
+    height: clamp(11px, 3.6vw, 18px);
+}
+
+.memory-status {
+    min-height: 1.4em;
+    color: var(--color-text-muted);
+    font-weight: 800;
+    text-align: center;
+}
+
+.memory-example {
+    display: grid;
+    grid-template-columns: repeat(2, 88px);
+    justify-content: center;
+    gap: var(--space-3);
+}
+
+.memory-detail-bones {
+    display: inline-flex;
+    gap: 2px;
+    color: var(--color-fur);
+}
+
+.memory-detail-bones .icon {
+    width: 14px;
+    height: 14px;
+}
+
+/* How big the board is, drawn as rows of small cards: four rows of two, three or four. */
+.memory-detail-grid {
+    display: inline-block;
+    width: 32px;
+    height: 20px;
+    background-image: radial-gradient(circle, var(--color-text-muted) 2px, transparent 2.5px);
+    background-size: 8px 5px;
+}
+
+.memory-detail-grid--4 {
+    width: 16px;
+}
+
+.memory-detail-grid--6 {
+    width: 24px;
+}
+
+/* Mahjong */
+
+.mahjong-board {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    margin: 8px auto 0;
+    container-type: inline-size;
+}
+
+.mahjong-tile {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 2px solid #b9a78f;
+    border-radius: 6px;
+    background: #fffdf8;
+    box-shadow: 3px 3px 0 #b9a78f;
+    color: var(--color-text);
+    font-size: 4cqw;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* Blocked tiles stay readable but quieter, so the free ones stand out. */
+.mahjong-tile--blocked {
+    background: #f1e9dc;
+    color: var(--color-text-muted);
+    cursor: default;
+}
+
+.mahjong-tile--selected {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    box-shadow: 3px 3px 0 var(--color-primary-pressed);
+    color: var(--color-primary);
+}
+
+.mahjong-tile--hinted {
+    border-color: var(--color-accent-pressed);
+    background: var(--color-accent-soft);
+}
+
+.mahjong-status {
+    min-height: 1.4em;
+    color: var(--color-warm);
+    font-weight: 800;
+    text-align: center;
+}
+
+/* The icon above the word, so a long word ("Suggerimento") still fits half the width. */
+.mahjong-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+}
+
+.mahjong-actions .button {
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+}
+
+.skill__mastery--locked {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+@media (min-width: 600px) and (min-height: 800px) {
+    .bones--dice .bones__cell {
+        width: 76px;
+        height: 76px;
+    }
+
+    .bones--rows-of-5 .bones__cell {
+        width: 64px;
+        height: 64px;
+    }
+
+    .bones--rows-of-10 .bones__cell {
+        width: 44px;
+        height: 44px;
+    }
+
+    .bones--scattered {
+        max-width: 480px;
+    }
+
+    .ten-frame {
+        width: 420px;
+    }
+
+    .balance__choice {
+        min-height: 140px;
+    }
+}
+
 /* Motion: transform and opacity only, never while the child is thinking. A right answer stays within
    a second; the bigger parties are kept for milestones. With reduced motion, everything becomes a short fade. */
 
@@ -2390,8 +3018,19 @@ fieldset {
 
     .equation__slot--answered,
     .vertical__result--answered,
-    .choice--correct {
+    .choice--correct,
+    .memory-card--up,
+    .memory-card--matched {
         animation: pop 360ms ease-out;
+    }
+
+    .balance__beam,
+    .balance__choice {
+        transition: transform 400ms ease-out;
+    }
+
+    .memory-card--missed {
+        animation: sink 300ms ease-out;
     }
 
     /* A miss sinks softly away: no shaking, no flashing. */

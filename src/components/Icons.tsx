@@ -159,15 +159,17 @@ export function ShareIcon() {
     );
 }
 
-// Faísca's bone: what the counting games count.
+// Faísca's bone: what the counting games count. Chunky and level, so it reads as one thing to count.
 export function BoneIcon() {
     return (
         <svg className="icon icon--bone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path
-                d="M6.5 8.6A2.6 2.6 0 1 1 8.6 5l6.8 6.8a2.6 2.6 0 1 1 3.6 3.6 2.6 2.6 0 1 1-3.6 3.6L8.6 12.2A2.6 2.6 0 1 1 5 8.6a2.6 2.6 0 0 1 1.5 0z"
-                fill="currentColor"
-                strokeLinejoin="round"
-            />
+            <g fill="currentColor">
+                <rect x="5" y="9" width="14" height="6" rx="2" />
+                <circle cx="5" cy="8.8" r="3.2" />
+                <circle cx="5" cy="15.2" r="3.2" />
+                <circle cx="19" cy="8.8" r="3.2" />
+                <circle cx="19" cy="15.2" r="3.2" />
+            </g>
         </svg>
     );
 }

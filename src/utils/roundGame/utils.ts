@@ -37,6 +37,17 @@ export interface RoundBase {
 
 export type GameRound = CountingRound | NumberBondsRound | SkipCountingRound | MissingSignRound | BalanceRound;
 
+// How an option shows. right: the one that answered the round, or the answer after two misses. tried: missed,
+// crossed out. dimmed: the others once answered. hidden: taken away by the help.
+export type RoundOptionState = "idle" | "right" | "tried" | "dimmed" | "hidden";
+
+// What decides how the options of the current round show.
+export interface RoundOptionsView {
+    missedOptions: RoundOption[];
+    hiddenOptions: RoundOption[];
+    result: RoundResult | null;
+}
+
 // hide-options: two options stay, the answer and one other. show-value: a calculation of the round worked out.
 export type RoundHelp = "hide-options" | "show-value";
 
@@ -163,6 +174,61 @@ export class RoundGameUtils {
         }
     }
 
+    // The round the rules show, already answered: always the same, so the rules never change under the child.
+    public static getExampleRound(game: RoundGameId): GameRound {
+        switch (game) {
+            case "counting":
+                return {
+                    game,
+                    id: "counting:to-five:4",
+                    skill: "to-five",
+                    groups: [4],
+                    layout: "dice",
+                    spots: [],
+                    options: [3, 4, 5],
+                    answers: [4],
+                    answer: 4
+                };
+            case "number-bonds":
+                return { game, id: "number-bonds:7+?=10", skill: "ten-frame", part: 7, whole: 10, hasFrame: true, options: [2, 3, 4], answers: [3], answer: 3 };
+            case "skip-counting":
+                return {
+                    game,
+                    id: "skip-counting:3,6,9,12,15:2",
+                    skill: "threes-fours",
+                    numbers: [3, 6, 9, 12, 15],
+                    missingIndex: 2,
+                    step: 3,
+                    options: [7, 9, 10],
+                    answers: [9],
+                    answer: 9
+                };
+            case "missing-sign":
+                return {
+                    game,
+                    id: "missing-sign:6?3=18",
+                    skill: "multiply",
+                    left: 6,
+                    right: 3,
+                    result: 18,
+                    options: ["addition", "subtraction", "multiplication", "division"],
+                    answers: ["multiplication"],
+                    answer: "multiplication"
+                };
+            default:
+                return {
+                    game,
+                    id: "balance:3+4|6",
+                    skill: "sum-and-number",
+                    leftPan: { operation: "addition", left: 3, right: 4 },
+                    rightPan: { operation: null, left: 6, right: 0 },
+                    options: ["left", "equal", "right"],
+                    answers: ["left"],
+                    answer: "left"
+                };
+        }
+    }
+
     // Each round draws a kind among the open ones, the weaker more often, then a round of that kind not asked yet.
     public static create(profile: Profile, game: RoundGameId, random: RandomSource = Math.random): RoundGame {
         const skills: string[] = this.getOpenSkills(game, this.getLevel(profile, game));
@@ -235,6 +301,21 @@ export class RoundGameUtils {
     // answer.
     public static getShownOption(result: RoundResult): RoundOption {
         return result.isCorrect ? result.givenOptions[result.givenOptions.length - 1] : result.round.answer;
+    }
+
+    public static getOptionState(view: RoundOptionsView, option: RoundOption): RoundOptionState {
+        const { result } = view;
+        if (result !== null && option === this.getShownOption(result)) {
+            return "right";
+        }
+        const triedOptions: RoundOption[] = result === null ? view.missedOptions : result.givenOptions;
+        if (triedOptions.includes(option)) {
+            return "tried";
+        }
+        if (result !== null) {
+            return "dimmed";
+        }
+        return view.hiddenOptions.includes(option) ? "hidden" : "idle";
     }
 
     // As in the practice, only the first try counts, and a helped round moves no box, level or coin.

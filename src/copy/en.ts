@@ -132,6 +132,7 @@ export const en: Copy = {
     clockBehindDefault: (extraTime, minutes) => `${extraTime} over the ${minutes} minutes. Maybe next time!`,
     clockYourRecord: (time) => `Your record: ${time}.`,
     clockRecordsNeedPerfect: "Records count when you get them all right on the first try.",
+    clockRecordsNeedNoHelp: "Records count in games without help.",
     recordVertical: "in columns",
     recordResult: "just the answer",
     recordTable: (table) => `${table} times table`,
@@ -236,7 +237,7 @@ export const en: Copy = {
 
     memoryGameName: "Memory",
     memoryGameGreeting: "Turn over two cards at a time and find the pairs!",
-    memoryContentNames: { quantities: "Quantities", additions: "Sums up to 10", tables: "Times tables" },
+    memoryContentNames: { quantities: "Bones", additions: "Sums up to 10", tables: "Times tables" },
     memoryMiss: "Not a pair. Remember where they are!",
     memoryHint: "This card's pair is glowing!",
     memoryHelpNeedsCard: "Turn over a card first.",

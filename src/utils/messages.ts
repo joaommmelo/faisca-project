@@ -38,6 +38,9 @@ export interface FeedbackContext {
     hasRetryAhead: boolean;
 }
 
+// What makes a game count for a record: every answer right at the first try, or no help.
+export type ClockRecordRule = "perfect" | "no-help";
+
 export interface OfferText {
     title: string;
     text: string;
@@ -82,6 +85,12 @@ export class Messages {
         if (question.format === "vertical") {
             return this.getCopy().tryAgainColumns(wrongColumnCount);
         }
+        const messages: string[] = this.getCopy().tryAgains;
+        return messages[variant % messages.length];
+    }
+
+    // The games of rounds: a gentle word, rotating so two misses in a row read differently.
+    public static getTryAgainText(variant: number): string {
         const messages: string[] = this.getCopy().tryAgains;
         return messages[variant % messages.length];
     }
@@ -352,8 +361,9 @@ export class Messages {
         return isRecord ? copy.clockRecord(reference) : copy.clockGoal(reference);
     }
 
-    // The end of a timed session: always something kind, and the record only when it was perfect.
-    public static getClockOutcomeLines(outcome: ClockOutcome): string[] {
+    // The end of a timed session: always something kind, and the record only when it was perfect. Memória has no
+    // wrong answers, so there a perfect game is one without help.
+    public static getClockOutcomeLines(outcome: ClockOutcome, recordRule: ClockRecordRule = "perfect"): string[] {
         const copy: Copy = this.getCopy();
         const lines: string[] = [];
         if (outcome.isNewRecord) {
@@ -376,7 +386,7 @@ export class Messages {
             lines.push(copy.clockYourRecord(TimeUtils.formatElapsed(outcome.previousRecordMilliseconds)));
         }
         if (!outcome.isPerfect) {
-            lines.push(copy.clockRecordsNeedPerfect);
+            lines.push(recordRule === "perfect" ? copy.clockRecordsNeedPerfect : copy.clockRecordsNeedNoHelp);
         }
         return lines;
     }

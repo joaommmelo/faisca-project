@@ -147,6 +147,7 @@ export const fr: Copy = {
     clockBehindDefault: (extraTime, minutes) => `${extraTime} de plus que les ${minutes} minutes. Ce sera pour la prochaine fois !`,
     clockYourRecord: (time) => `Ton record : ${time}.`,
     clockRecordsNeedPerfect: "Les records comptent quand tu trouves tout du premier coup.",
+    clockRecordsNeedNoHelp: "Les records comptent dans les parties sans aide.",
     recordVertical: "en colonnes",
     recordResult: "juste le résultat",
     recordTable: (table) => `table de ${table}`,
@@ -252,7 +253,7 @@ export const fr: Copy = {
 
     memoryGameName: "Memory",
     memoryGameGreeting: "Retourne deux cartes à la fois et trouve les paires !",
-    memoryContentNames: { quantities: "Quantités", additions: "Additions jusqu’à 10", tables: "Tables" },
+    memoryContentNames: { quantities: "Os", additions: "Additions jusqu’à 10", tables: "Tables" },
     memoryMiss: "Ce n’est pas une paire. Retiens où elles sont !",
     memoryHint: "La paire de cette carte brille !",
     memoryHelpNeedsCard: "Retourne d’abord une carte.",

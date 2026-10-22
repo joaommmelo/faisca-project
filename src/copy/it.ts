@@ -160,6 +160,7 @@ export const it: Copy = {
     clockBehindDefault: (extraTime, minutes) => `${extraTime} in più dei ${minutes} minuti. Sarà per la prossima!`,
     clockYourRecord: (time) => `Il tuo record: ${time}.`,
     clockRecordsNeedPerfect: "I record contano quando le fai tutte giuste al primo colpo.",
+    clockRecordsNeedNoHelp: "I record contano nelle partite senza aiuto.",
     recordVertical: "in colonna",
     recordResult: "solo il risultato",
     recordTable: (table) => `tabellina ${ofTable(table)}`,
@@ -264,7 +265,7 @@ export const it: Copy = {
 
     memoryGameName: "Memory",
     memoryGameGreeting: "Gira due carte alla volta e trova le coppie!",
-    memoryContentNames: { quantities: "Quantità", additions: "Addizioni fino a 10", tables: "Tabelline" },
+    memoryContentNames: { quantities: "Ossi", additions: "Addizioni fino a 10", tables: "Tabelline" },
     memoryMiss: "Non sono una coppia. Ricorda dove sono!",
     memoryHint: "La gemella di questa carta sta brillando!",
     memoryHelpNeedsCard: "Prima gira una carta.",

@@ -137,6 +137,7 @@ export const pt: Copy = {
     clockBehindDefault: (extraTime, minutes) => `Mais ${extraTime} do que os ${minutes} minutos. Para a próxima!`,
     clockYourRecord: (time) => `O teu recorde: ${time}.`,
     clockRecordsNeedPerfect: "Os recordes contam quando acertas todas à primeira.",
+    clockRecordsNeedNoHelp: "Os recordes contam nos jogos sem ajuda.",
     recordVertical: "na vertical",
     recordResult: "só o resultado",
     recordTable: (table) => `tabuada do ${table}`,
@@ -241,7 +242,7 @@ export const pt: Copy = {
 
     memoryGameName: "Memória",
     memoryGameGreeting: "Vira duas cartas de cada vez e encontra os pares!",
-    memoryContentNames: { quantities: "Quantidades", additions: "Somas até 10", tables: "Tabuadas" },
+    memoryContentNames: { quantities: "Ossos", additions: "Somas até 10", tables: "Tabuadas" },
     memoryMiss: "Não são par. Lembra-te onde estão!",
     memoryHint: "O par desta carta está a brilhar!",
     memoryHelpNeedsCard: "Vira uma carta primeiro.",

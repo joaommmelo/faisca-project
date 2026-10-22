@@ -37,7 +37,7 @@ export function SegmentedField<T extends string>({ legend, options, value, onCha
                             <span className="segmented__lock">
                                 <LockIcon />
                             </span>
-                            <span>{option.label}</span>
+                            <span className="segmented__label">{option.label}</span>
                             <span className="segmented__detail">{Messages.getLabels().locked}</span>
                         </button>
                     ) : (
@@ -50,7 +50,7 @@ export function SegmentedField<T extends string>({ legend, options, value, onCha
                                 checked={value === option.value}
                                 onChange={() => onChange(option.value)}
                             />
-                            <span>{option.label}</span>
+                            <span className="segmented__label">{option.label}</span>
                             <span className="segmented__detail">{option.detail}</span>
                         </label>
                     )

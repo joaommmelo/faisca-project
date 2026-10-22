@@ -5,7 +5,13 @@ import { ChallengeSessionScreen } from "./screens/ChallengeSessionScreen.tsx";
 import { FactorGameScreen } from "./screens/FactorGameScreen.tsx";
 import { FactorGameSessionScreen } from "./screens/FactorGameSessionScreen.tsx";
 import { HomeScreen } from "./screens/HomeScreen.tsx";
+import { MahjongScreen } from "./screens/MahjongScreen.tsx";
+import { MahjongSessionScreen } from "./screens/MahjongSessionScreen.tsx";
+import { MemoryGameScreen } from "./screens/MemoryGameScreen.tsx";
+import { MemoryGameSessionScreen } from "./screens/MemoryGameSessionScreen.tsx";
 import { ProgressScreen } from "./screens/ProgressScreen.tsx";
+import { RoundGameScreen } from "./screens/RoundGameScreen.tsx";
+import { RoundGameSessionScreen } from "./screens/RoundGameSessionScreen.tsx";
 import { SessionScreen } from "./screens/SessionScreen.tsx";
 import { SettingsScreen } from "./screens/SettingsScreen.tsx";
 import { SetupScreen } from "./screens/SetupScreen.tsx";
@@ -14,9 +20,12 @@ import { WelcomeScreen } from "./screens/WelcomeScreen.tsx";
 import { ChallengeUtils, type ChallengeRun } from "./utils/challenge/utils.ts";
 import { FactorGameUtils, type FactorGameOutcome, type FinishedFactorGame } from "./utils/factorGame/utils.ts";
 import { LocalesUtils, type Locale } from "./utils/locales/utils.ts";
+import { MahjongUtils, type MahjongRun } from "./utils/mahjong/utils.ts";
+import { MemoryGameUtils, type FinishedMemoryGame, type MemoryGameOutcome } from "./utils/memoryGame/utils.ts";
 import { Messages } from "./utils/messages.ts";
 import { ProfilesUtils, type AppData, type Profile } from "./utils/profiles/utils.ts";
 import { ProgressionUtils, type FinishSessionResult, type TimedProfile } from "./utils/progression/utils.ts";
+import { RoundGameUtils, type FinishedRoundGame, type RoundGameId, type RoundGameOutcome } from "./utils/roundGame/utils.ts";
 import type { SessionOutcome } from "./utils/session/utils.ts";
 import { StorageUtils, type LoadResult } from "./utils/storage/utils.ts";
 
@@ -30,7 +39,13 @@ type View =
     | { name: "challenge"; run: ChallengeRun | null }
     | { name: "challenge-session" }
     | { name: "factor-game"; outcome: FactorGameOutcome | null }
-    | { name: "factor-game-session" };
+    | { name: "factor-game-session" }
+    | { name: "round-game"; game: RoundGameId; outcome: RoundGameOutcome | null }
+    | { name: "round-game-session"; game: RoundGameId }
+    | { name: "memory-game"; outcome: MemoryGameOutcome | null }
+    | { name: "memory-game-session" }
+    | { name: "mahjong"; run: MahjongRun | null }
+    | { name: "mahjong-session" };
 
 export function App() {
     const [stored] = useState<LoadResult>(() => StorageUtils.load());
@@ -95,6 +110,24 @@ export function App() {
         setView({ name: "factor-game", outcome: { ...finished, clock: timed.clock } });
     };
 
+    const finishRoundGame = (finished: FinishedRoundGame): void => {
+        const timed: TimedProfile = RoundGameUtils.finish(activeProfile, moment(), finished);
+        updateActiveProfile(() => timed.profile);
+        setView({ name: "round-game", game: finished.game, outcome: { ...finished, clock: timed.clock } });
+    };
+
+    const finishMemoryGame = (finished: FinishedMemoryGame): void => {
+        const timed: TimedProfile = MemoryGameUtils.finish(activeProfile, moment(), finished);
+        updateActiveProfile(() => timed.profile);
+        setView({ name: "memory-game", outcome: { ...finished, clock: timed.clock } });
+    };
+
+    const finishMahjong = (ending: Omit<MahjongRun, "previousRecordMilliseconds">): void => {
+        const run: MahjongRun = { ...ending, previousRecordMilliseconds: activeProfile.mahjongRecord };
+        updateActiveProfile((profile) => MahjongUtils.finishRun(profile, run));
+        setView({ name: "mahjong", run });
+    };
+
     const finishChallenge = (ending: Omit<ChallengeRun, "previousRecord">): void => {
         const run: ChallengeRun = { ...ending, previousRecord: activeProfile.challengeRecord };
         updateActiveProfile((profile) => ChallengeUtils.finishRun(profile, run));
@@ -149,6 +182,9 @@ export function App() {
                     onChallengeSwitch={(isChallengeEnabled) =>
                         updateActiveProfile((profile) => ({ ...profile, settings: { ...profile.settings, isChallengeEnabled } }))
                     }
+                    onMahjongSwitch={(isMahjongEnabled) =>
+                        updateActiveProfile((profile) => ({ ...profile, settings: { ...profile.settings, isMahjongEnabled } }))
+                    }
                     onBack={() => setView({ name: "home" })}
                 />
             );
@@ -169,6 +205,62 @@ export function App() {
                     onSettingsChange={(settings) => updateActiveProfile((profile) => ({ ...profile, settings }))}
                     onPlay={() => setView({ name: "factor-game-session" })}
                     onShowProgress={() => setView({ name: "progress" })}
+                    onHome={() => setView({ name: "home" })}
+                />
+            );
+        case "round-game-session":
+            return (
+                <RoundGameSessionScreen
+                    key={view.game}
+                    game={view.game}
+                    profile={activeProfile}
+                    onProfileChange={(profile) => updateActiveProfile(() => profile)}
+                    onFinish={finishRoundGame}
+                    onExit={() => setView({ name: "home" })}
+                />
+            );
+        case "round-game": {
+            const { game } = view;
+            return (
+                <RoundGameScreen
+                    game={game}
+                    profile={activeProfile}
+                    outcome={view.outcome}
+                    onSettingsChange={(settings) => updateActiveProfile((profile) => ({ ...profile, settings }))}
+                    onPlay={() => setView({ name: "round-game-session", game })}
+                    onShowProgress={() => setView({ name: "progress" })}
+                    onHome={() => setView({ name: "home" })}
+                />
+            );
+        }
+        case "memory-game-session":
+            return (
+                <MemoryGameSessionScreen
+                    profile={activeProfile}
+                    onProfileChange={(profile) => updateActiveProfile(() => profile)}
+                    onFinish={finishMemoryGame}
+                    onExit={() => setView({ name: "home" })}
+                />
+            );
+        case "memory-game":
+            return (
+                <MemoryGameScreen
+                    profile={activeProfile}
+                    outcome={view.outcome}
+                    onSettingsChange={(settings) => updateActiveProfile((profile) => ({ ...profile, settings }))}
+                    onPlay={() => setView({ name: "memory-game-session" })}
+                    onShowProgress={() => setView({ name: "progress" })}
+                    onHome={() => setView({ name: "home" })}
+                />
+            );
+        case "mahjong-session":
+            return <MahjongSessionScreen onFinish={finishMahjong} />;
+        case "mahjong":
+            return (
+                <MahjongScreen
+                    profile={activeProfile}
+                    run={view.run}
+                    onPlay={() => setView({ name: "mahjong-session" })}
                     onHome={() => setView({ name: "home" })}
                 />
             );
@@ -195,6 +287,9 @@ export function App() {
                     }}
                     onShowProgress={() => setView({ name: "progress" })}
                     onOpenFactorGame={() => setView({ name: "factor-game", outcome: null })}
+                    onOpenRoundGame={(game) => setView({ name: "round-game", game, outcome: null })}
+                    onOpenMemoryGame={() => setView({ name: "memory-game", outcome: null })}
+                    onOpenMahjong={() => setView({ name: "mahjong", run: null })}
                     onOpenChallenge={() => setView({ name: "challenge", run: null })}
                     onOpenSettings={() => setView({ name: "settings" })}
                 />
