@@ -6,13 +6,15 @@ Este ficheiro é a fonte de verdade para quem trabalha neste repositório: o bri
 
 A v2 foi juntada à `main` a 22 de Outubro de 2026, e o GitHub Pages passou a publicar a pasta `/docs` da `main`. A branch `v2` ficou igual à `main`.
 
+Os sete jogos novos (ver «Jogos novos») estão na branch `jogos`, à espera de o dono os testar antes de irem para a `main`.
+
 **Feito e verificado na v2:**
 
 - Quatro operações no menu principal, mais «Misturado»: Soma, Subtração, Multiplicação e Divisão, cada uma com Fácil, Médio e Difícil. Na multiplicação e na divisão o Fácil são as tabuadas (como na v1) e o Médio e o Difícil usam números maiores.
 - Soma e subtração por dificuldade (Fácil até 20, Médio até 100, Difícil até 1000), com tipos de competência (transporte e empréstimo), em resposta directa ou na vertical.
 - Conta na vertical com cursor da direita para a esquerda e feedback por coluna; o «e vai 1» e o empréstimo só aparecem por cima da conta quando a ajuda os mostra.
 - Segunda tentativa antes de mostrar a resposta; níveis que abrem competências mais difíceis; desbloqueio por convite; rede de segurança; mealheiro com moedas e ajudas graduadas.
-- Dados na versão 8, com migração testada de todas as anteriores (v1 → v2 → v3 → v4 → v5 → v6 → v7 → v8: caixas, tabuadas, níveis, moedas, recordes e estatísticas mantêm-se). Dados de uma versão mais nova nunca são reescritos. Aviso no ecrã inicial quando o browser não guarda.
+- Dados na versão 9, com migração testada de todas as anteriores (v1 → v2 → v3 → v4 → v5 → v6 → v7 → v8 → v9: caixas, tabuadas, níveis, moedas, recordes e estatísticas mantêm-se). Dados de uma versão mais nova nunca são reescritos. Aviso no ecrã inicial quando o browser não guarda.
 - PWA instalável (manifest, ícones, service worker) a funcionar sem rede; build em `docs/` para o GitHub Pages.
 - Publicada em <https://joaommmelo.github.io/faisca-project/> (repositório público; GitHub Pages a servir a pasta `/docs` da branch `main`). Instala-se no ecrã principal: no iPhone e no iPad, Safari → Partilhar → «Adicionar ao ecrã principal»; no Android, Chrome → menu → «Instalar aplicação».
 - Pedidos de 21 de Outubro, depois da v2: ecrã inicial com as operações logo no topo e a Multiplicação por defeito; moedas no canto (abrem o mealheiro); «Quem vai jogar?» no fundo; ajuda em todos os formatos (na escolha múltipla tira 2 das 4 opções); «Escrever sempre a resposta» na multiplicação e na divisão; relógio por operação, para a frente ou para trás, contra 3 minutos ou contra o recorde; recordes por categoria nas sessões perfeitas; a moeda ganha voa para o saldo. Dados na versão 3, com migração da v2 e da v1.
@@ -26,8 +28,9 @@ A v2 foi juntada à `main` a 22 de Outubro de 2026, e o GitHub Pages passou a pu
 - **Favicon igual ao ícone da app:** o Faísca plano no quadrado amarelo, o mesmo do ecrã principal.
 - **Metadados:** o nome é «Faísca · Contas», feita por João Melo, com a mesma descrição no HTML, no manifest, no `package.json` e no GitHub, e uma imagem para quando se partilha o link (ver «PWA e deploy»).
 - **Descobre a conta** (ver «Descobre a conta (mini-jogo)»): um cartão na secção «Jogos» do ecrã inicial, ao lado do Misturado. Aparece um número (24) e a criança toca em dois números de 2 a 12 que, multiplicados, o dão; qualquer conta certa serve (4 × 6, 3 × 8 ou 2 × 12), e no fim o Faísca mostra as outras. 10 números das tabuadas da multiplicação, duas tentativas. Como na prática: moedas, um nível próprio, as caixas do mapa das tabuadas, jogos e dias de prática, ajuda (1 moeda: um dos números da resposta) e relógio com recordes por tabuadas. Dados na versão 8.
-- 309 testes unitários (Vitest) a passar; `tsc` e `oxlint` limpos.
-- Testado num Chrome headless a 360, 390 e 820 px, sem erros na consola nem scroll horizontal: todas as operações, a vertical com ajuda e empréstimo através do zero, os marcos, o convite de desbloqueio, a rede de segurança, a migração da v1 e o arranque sem rede. No desafio: até ao nível 7, a subida de nível, o tempo parado com «Sair», o fim por erro e por tempo e o recorde; a conta mais larga (7 + 7 algarismos) cabe também a 320 px. A folha do resultado (certo, errado e com moeda) em escolha múltipla, teclado e vertical, e os cartões bloqueados a 360 e 390 px. A folha do «Sair» a 360, 390 e 820 px, com toques e teclas reais: tocar fora e Escape são «Não», as teclas não chegam à resposta enquanto está aberta, e no desafio o tempo pára. As seis línguas a 360 px: início, preparação (+ e ×, com «Mais opções»), sessão, as duas folhas, progresso, desafio e resumo, sem texto a sair das caixas nem scroll horizontal; e a língua de partida com o fuso e a língua do dispositivo emulados (Lisboa com o dispositivo em inglês → português; Zurique → a do dispositivo; guardada numa viagem). No Descobre a conta: o jogo inteiro nas seis línguas a 360 px, em português a 390 e 820 px e em alemão a 320 px (a primeira escolha e o apagar, o «tenta outra vez», certo à segunda, errado duas vezes, o fim, «Sair» com «Não» e «Sim», avançar sozinho e o Jogar desligado só com a tabuada do 1), sem erros na consola nem scroll horizontal. Com moedas e progresso, nas seis línguas (de 320 a 820 px): a migração de um perfil v7 dentro da app, a ajuda (a moeda gasta e o número na primeira caixa), a moeda ganha a meio do jogo, o relógio, o primeiro recorde num jogo perfeito, o nível e o recorde no progresso, e a ajuda desligada sem moedas.
+- **Sete jogos novos** (ver «Jogos novos (22 de Outubro de 2026)»), na secção «Jogos» do início: **Quantos são?** (contar ossos), **Amigos do 10** (quanto falta para 10, 20 ou 100), **Salta com o Faísca** (o número que falta numa sequência de saltos iguais), **Qual é o sinal?** (o sinal que falta em `6 ? 3 = 18`) e **Qual pesa mais?** (uma balança com uma conta em cada prato) partilham um motor de 10 rondas com duas tentativas, ajuda, moedas, relógio e um nível próprio que abre o tipo de ronda seguinte. A **Memória** vira cartas aos pares (ossos e o seu número, somas até 10 ou tabuadas). O **Mahjong das contas**, para adultos, liga-se em «Avançado» como o desafio. Dados na versão 9.
+- 360 testes unitários (Vitest) a passar; `tsc` e `oxlint` limpos.
+- Testado num Chrome headless a 360, 390 e 820 px, sem erros na consola nem scroll horizontal: todas as operações, a vertical com ajuda e empréstimo através do zero, os marcos, o convite de desbloqueio, a rede de segurança, a migração da v1 e o arranque sem rede. No desafio: até ao nível 7, a subida de nível, o tempo parado com «Sair», o fim por erro e por tempo e o recorde; a conta mais larga (7 + 7 algarismos) cabe também a 320 px. A folha do resultado (certo, errado e com moeda) em escolha múltipla, teclado e vertical, e os cartões bloqueados a 360 e 390 px. A folha do «Sair» a 360, 390 e 820 px, com toques e teclas reais: tocar fora e Escape são «Não», as teclas não chegam à resposta enquanto está aberta, e no desafio o tempo pára. As seis línguas a 360 px: início, preparação (+ e ×, com «Mais opções»), sessão, as duas folhas, progresso, desafio e resumo, sem texto a sair das caixas nem scroll horizontal; e a língua de partida com o fuso e a língua do dispositivo emulados (Lisboa com o dispositivo em inglês → português; Zurique → a do dispositivo; guardada numa viagem). No Descobre a conta: o jogo inteiro nas seis línguas a 360 px, em português a 390 e 820 px e em alemão a 320 px (a primeira escolha e o apagar, o «tenta outra vez», certo à segunda, errado duas vezes, o fim, «Sair» com «Não» e «Sim», avançar sozinho e o Jogar desligado só com a tabuada do 1), sem erros na consola nem scroll horizontal. Com moedas e progresso, nas seis línguas (de 320 a 820 px): a migração de um perfil v7 dentro da app, a ajuda (a moeda gasta e o número na primeira caixa), a moeda ganha a meio do jogo, o relógio, o primeiro recorde num jogo perfeito, o nível e o recorde no progresso, e a ajuda desligada sem moedas. Nos jogos novos, a 360 px (e o Quantos são? e o Qual pesa mais? a 820 px): cada jogo de rondas inteiro (regras, certo à primeira, errado duas vezes, a ajuda, o resultado); a Memória com ossos, somas e tabuadas, de 6 e 8 pares, a 320, 360 e 820 px (uma falha, a ajuda, o fim); o Mahjong a 360, 390 e 820 px (a dica, os pares até ao tabuleiro limpo, o resultado). E nas seis línguas a 320 px: o início, as regras e a primeira ronda de cada jogo (com a ajuda e a folha), a Memória, o Mahjong, as Definições e o progresso, sem erros na consola, sem texto a sair das caixas e sem scroll horizontal.
 
 **À espera de decisão do dono do projecto:**
 
@@ -38,6 +41,12 @@ A v2 foi juntada à `main` a 22 de Outubro de 2026, e o GitHub Pages passou a pu
 - Ortografia: os modos dizem «Só directas» e «Directas + inversas», como no briefing. A escola segue o Acordo Ortográfico («diretas»). Mudar é só em `Messages.getModeLabel` (`src/utils/messages.ts`).
 - Desafio sem fim: os valores (5 certas por nível, 2 s + 3 s por algarismo, metade do tempo no nível 12) são um ponto de partida, para afinar a jogar. Estão todos em `ChallengeUtils` (`src/utils/challenge/utils.ts`).
 - Descobre a conta: o «progresso» pedido ficou assim, a confirmar a jogar. O nível é do próprio jogo, e não o da Multiplicação, para as respostas daqui não abrirem o Médio da Multiplicação (o desbloqueio continua a vir da prática). A conta encontrada à primeira sobe a caixa desse facto; uma falha manda para a caixa 1 o facto mostrado, como numa falha da prática. A ajuda dá o maior dos dois números da resposta.
+- Jogos novos: feitos sem as regras serem vistas antes («faz isso tudo e eu testo»), por isso tudo o que está em «Jogos novos» é um ponto de partida. A confirmar a jogar:
+  - **Ritmo dos níveis:** nos jogos de rondas, uma resposta certa vale o mesmo que uma escrita (2 pontos), como no Descobre a conta, embora se escolha entre 3 ou 4 opções; a metade, o segundo tipo de ronda só abria ao fim de 6 jogos perfeitos. Está em `RoundGameUtils.getPointsForAnswer()`. Na Memória, cada par vale o mesmo que uma escolha múltipla (1 ponto), e o nível é só uma medida (não abre nada).
+  - **Caixas:** os jogos de rondas têm as suas competências (os tipos de ronda), com caixas e o reforço dos mais fracos, como na prática; não tocam nas caixas das tabuadas nem das operações. A Memória com tabuadas escolhe primeiro os factos mais fracos, mas não muda as caixas: encontrar um par também é memória do sítio, não só saber a conta.
+  - **O que ficou de fora:** o Quantos são? não mostra os ossos «só por um instante», como estava na sugestão: seria um relógio escondido para crianças de 4 anos. O Mahjong não tem desfazer.
+  - **Relógio:** ligado por defeito em todos os jogos da criança, como os outros (também no Quantos são?, para os mais novos). O Mahjong conta sempre o tempo; o recorde é o tempo mais curto de um tabuleiro limpo sem dicas.
+  - **Nomes noutras línguas** escolhidos pelos tradutores: «How many?», «Make 10», «Jump with Faísca», «Which sign?», «Which is heavier?», «Memory», «Number mahjong»; em alemão e italiano a Memória chama-se «Memory» (em alemão «memory®» é marca registada da Ravensburger; a alternativa é «Paare finden»).
 - Mascote: é um cão castanho genérico. Se chegar uma fotografia do cão real, ajustar `src/components/Mascot.tsx`, `public/favicon.svg` e os ícones em `public/icons/` às características dele.
 - Autoria dos 8 primeiros commits: estão com o email da conta de trabalho (`jmelo-catappult`). Passá-los para a conta pessoal implica reescrever o histórico já publicado (force push). Só com autorização explícita.
 
@@ -281,6 +290,13 @@ O pedido original da v2 está resumido aqui; as respostas do dono do projecto (2
 
 ---
 
+### Jogos novos (22 de Outubro de 2026)
+
+- **Pedido:** «Que mais jogos sugeres?» Sugeri seis (Quantos são?, Salta com o Faísca, Memória, Amigos do 10, Qual é o sinal?, Qual pesa mais?), e o dono pediu «faz isso tudo e eu testo», mais um modo Mahjong das cartas, para adultos.
+- **Para quem ainda não lê:** o Quantos são? e o Amigos do 10 (com a caixa de 10) são para os 4 anos: ossos para contar e três números grandes. Cada jogo tem um símbolo no cartão (o osso, a balança, as cartas, os saltos) e as regras mostram uma ronda já respondida, em vez de a explicar por palavras.
+- **Um motor para cinco jogos:** os cinco jogos de rondas são o mesmo jogo com tabuleiros diferentes: 10 rondas, as duas tentativas da prática, a ajuda (1 moeda, no máximo 3 por jogo), as moedas, o relógio com recordes, o avançar sozinho e a folha do resultado. Cada um tem um nível próprio, e o nível N abre os N primeiros tipos de ronda, como nas dificuldades da prática.
+- **Mahjong das contas:** o solitário com peças: duas peças livres com o mesmo resultado saem (7×8 com 63−7). Fica desligado em todos os perfis e liga-se em «Avançado», nas Definições, ao lado do desafio sem fim, pela mesma excepção ao briefing (é para adultos).
+
 ## Como está implementado
 
 ### Estrutura
@@ -307,11 +323,19 @@ src/
     stats/                  StatsUtils: jogos, dias de prática, dias seguidos (moment)
     challenge/              ChallengeUtils: desafio sem fim (níveis, operações, algarismos, tempo por pergunta, contas, relógio com pausa, recorde)
     factorGame/             FactorGameUtils: Descobre a conta (números das tabuadas, as contas de cada número, duas tentativas, ajuda, moedas, nível, caixas, fim do jogo)
+    roundGame/              RoundGameUtils: o motor dos jogos de rondas (rondas por nível e caixas, duas tentativas, ajuda, moedas, nível, relógio, fim)
+    countingGame/           CountingGameUtils: Quantos são? (ossos como num dado, em filas, espalhados, dois grupos)
+    numberBondsGame/        NumberBondsGameUtils: Amigos do 10 (para 10 com a caixa, 20, 100)
+    skipCountingGame/       SkipCountingGameUtils: Salta com o Faísca (sequências de saltos iguais)
+    missingSignGame/        MissingSignGameUtils: Qual é o sinal? (o sinal que falta; todos os que dão o resultado servem)
+    balanceGame/            BalanceGameUtils: Qual pesa mais? (os dois pratos, o lado que pesa mais)
+    memoryGame/             MemoryGameUtils: Memória (pares, virar, falhas, ajuda, moedas, nível, fim)
+    mahjong/                MahjongUtils: Mahjong das contas (o tabuleiro, peças livres, tirar pares, dica, baralhar, recorde)
     numbers/                NumbersUtils: números com espaço nos milhares a partir de 5 algarismos (pt-PT)
     progress/               ProgressUtils: domínio 0–5 de factos e competências, contas dominadas
     profiles/               ProfilesUtils: AppData, perfis, definições por operação, validação do nome
     storage/                StorageUtils: load/save no localStorage, disponibilidade, persistência
-    migrations/             MigrationsUtils: formas antigas congeladas e migrações v1 → v2 → v3 → v4 → v5 → v6 → v7 → v8
+    migrations/             MigrationsUtils: formas antigas congeladas e migrações v1 → v2 → v3 → v4 → v5 → v6 → v7 → v8 → v9
     keypad/                 KeypadUtils: regras do valor escrito no teclado (até 4 algarismos; 7 no desafio)
     time/                   TimeUtils: formatar o tempo do cronómetro (moment)
     install/                InstallUtils: como este dispositivo põe a app no ecrã principal
@@ -324,10 +348,14 @@ src/
                             CoinStatus, SessionClock, Equation, ChoiceOptions, NumericKeypad, KeypadAnswer,
                             VerticalAnswer, VerticalProblem, HelpButton, HintBubble, TryAgainNote,
                             FeedbackPanel, Sheet, ExitSheet, UnlockSheet, ProfileForm, ProgressMap, InstallCard, LanguagePicker,
-                            FactorEquation, FactorPad, ClockResultCard, RewardsCard (também no resumo), sparkPath.ts
+                            FactorEquation, FactorPad, ClockResultCard, RewardsCard (também no resumo), sparkPath.ts,
+                            GameSymbol, RoundBoard (o tabuleiro de cada jogo de rondas), RoundChoices, BonesPicture,
+                            MemoryCardFace
   screens/                  WelcomeScreen, HomeScreen, SettingsScreen, SetupScreen, SessionScreen, SummaryScreen, ProgressScreen,
                             ChallengeScreen (regras e resultado do desafio), ChallengeSessionScreen,
-                            FactorGameScreen (regras, tabuadas e resultado do Descobre a conta), FactorGameSessionScreen
+                            FactorGameScreen (regras, tabuadas e resultado do Descobre a conta), FactorGameSessionScreen,
+                            RoundGameScreen e RoundGameSessionScreen (os cinco jogos de rondas), MemoryGameScreen,
+                            MemoryGameSessionScreen, MahjongScreen, MahjongSessionScreen
   hooks/useFocusOnMount.ts  foco no título ao abrir um ecrã (leitores de ecrã)
   hooks/useInstallPrompt.ts guarda o convite de instalação do browser e diz como instalar neste dispositivo
   test/                     random.ts (PRNG com semente, mulberry32) e profiles.ts (perfil de teste)
@@ -338,7 +366,7 @@ public/                     favicon, manifest.webmanifest, icons/ (any, maskable
 docs/                       o build, publicado pelo GitHub Pages (não editar à mão)
 ```
 
-`App.tsx` guarda o `AppData` e grava-o no `localStorage` sempre que muda, se o armazenamento estiver disponível e os dados não forem de uma versão mais nova. A navegação é um `useState<View>` (`home`, `settings`, `setup`, `session`, `summary`, `progress`, `challenge`, `challenge-session`, `factor-game`, `factor-game-session`), sem router, por isso o build funciona em qualquer subcaminho (`base: "./"` no Vite). Sem perfis aparece o `WelcomeScreen`; o primeiro perfil começa sempre no início (também depois de se apagar o último nas Definições).
+`App.tsx` guarda o `AppData` e grava-o no `localStorage` sempre que muda, se o armazenamento estiver disponível e os dados não forem de uma versão mais nova. A navegação é um `useState<View>` (`home`, `settings`, `setup`, `session`, `summary`, `progress`, `challenge`, `challenge-session`, `factor-game`, `factor-game-session`, `round-game`, `round-game-session`, `memory-game`, `memory-game-session`, `mahjong`, `mahjong-session`), sem router, por isso o build funciona em qualquer subcaminho (`base: "./"` no Vite). Sem perfis aparece o `WelcomeScreen`; o primeiro perfil começa sempre no início (também depois de se apagar o último nas Definições).
 
 Cada pergunta tem a forma `left (operador) right = result`, com `kind` a dizer qual dos termos se pede, `boxType` e `boxKey` (o facto das tabuadas, `"7x8"`, ou a competência, `"multiplication:medium:carry"`, que treina) e `trackId` (onde contam os níveis: `"addition:easy"`, `"multiplication:easy"`). O que se joga é `settings.practice`: uma operação ou `"mix"`.
 
@@ -423,6 +451,45 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 | Ritmo | certo: 1 s, ou 2 s com outras contas para ler ou com marcos (moeda, nível); errado: 2,5 s; tocar no ecrã ou «Seguinte» avança logo | `FactorGameSessionScreen.tsx` |
 | Fim | certas à primeira de 10 (e quantas com ajuda), o tempo, as conquistas e, para treinar mais, cada número não acertado sozinho à primeira com todas as suas contas («24 = 2 × 12 = 3 × 8 = 4 × 6») | `getSummary`, `Messages.getFactorRoundText` |
 
+**Jogos de rondas** (o motor em `RoundGameUtils`; cada jogo no seu `utils.ts`):
+
+| Regra | Valor | Onde |
+| --- | --- | --- |
+| Rondas | 10 por jogo; nunca a mesma ronda seguida, e sem repetir enquanto houver outras | `getRoundsPerGame()`, `create` |
+| Tipos de ronda | o nível N abre os N primeiros; cada ronda sorteia um tipo aberto com peso `1 / caixa` (`skillBoxes`, `"counting:to-five"`) | `getOpenSkills`, `create` |
+| Tentativas | as 2 da prática; a primeira falha risca a opção e diz «tenta outra vez» | `submit` |
+| O que conta | a primeira tentativa, sem ajuda: certa sobe a caixa do tipo e dá 2 pontos (moedas e nível); errada desce a caixa uma | `applyResult`, `getPointsForAnswer()` |
+| Ajuda | 1 moeda por ronda, no máximo 3 por jogo; tira opções erradas até ficarem 2; na balança com contas, faz uma das contas («Pista: 7 × 8 = 56») | `registerHelp`, `getHelp` |
+| Relógio e recordes | `settings.roundGames[jogo].clock`, ligado por defeito; recorde por jogo e nível, só em jogos perfeitos | `finish`, `RecordsUtils.getRoundGameCategory` |
+| Quantos são? | até 5 como num dado; 6 a 10 em filas de 5; 3 a 10 espalhados numa grelha de 5 × 4; dois grupos de 1 a 5; 11 a 20 em filas de 10. 3 opções em ordem, ±1 (ou um dos grupos) | `CountingGameUtils` |
+| Amigos do 10 | para 10 com a caixa de 10; para 10; para 20 (sem o 10); para 100 com dezenas; para 100 com qualquer número. 3 opções: ±1, ±10, e no 100 a falha de cada algarismo para 10 (63 + 47) | `NumberBondsGameUtils` |
+| Salta com o Faísca | 5 números; saltos de 1 (até 20), de 2, de 5 ou 10, de 3 ou 4, de 6 a 9 (dentro de 12 saltos); falta um que não é o primeiro; 3 opções: ±1 ou o salto de 1 por hábito (3, 6, 7) | `SkipCountingGameUtils` |
+| Qual é o sinal? | + ou − até 20; ×; ÷ (tabuadas até 10); os quatro com números maiores (até 100, 12 × 12). Sem × 1 nem ÷ 1; todos os sinais que dão o resultado servem (2 ? 2 = 4) | `MissingSignGameUtils` |
+| Qual pesa mais? | dois números; uma soma e um número; somas ou subtrações; multiplicações; contas misturadas. Um em cinco pesa o mesmo; diferença de no máximo 4 (10 nas multiplicações), para não se adivinhar pelo tamanho | `BalanceGameUtils` |
+
+**Memória** (tudo em `MemoryGameUtils`):
+
+| Regra | Valor | Onde |
+| --- | --- | --- |
+| Cartas | 4, 6 ou 8 pares (6 por defeito), em filas de 4; cada par com um valor só dele | `getValidPairCounts()`, `create` |
+| Que pares | ossos com o seu número (1 a 10); somas até 10 com o resultado (por defeito); factos das tabuadas da multiplicação com o produto, os mais fracos primeiro | `getValidContents()`, `drawPairs` |
+| Jogadas | duas cartas viradas; se fazem par ficam para cima; senão ficam à vista 1,4 s (tocar noutra vira-as logo) | `flip`, `hideMiss`, `MemoryGameSessionScreen.tsx` |
+| Ajuda | só com uma carta virada: o par dela brilha. 1 moeda por carta, no máximo 3 por jogo | `registerHelp` |
+| Moedas e nível | um par encontrado sem ajuda vale 1 ponto (uma escolha múltipla); as falhas não tiram nada | `applyMatch` |
+| Recordes | por cartas (o que fazem par, quantos pares e as tabuadas); só em jogos sem ajuda | `finish`, `RecordsUtils.getMemoryGameCategory` |
+
+**Mahjong das contas** (tudo em `MahjongUtils`):
+
+| Regra | Valor | Onde |
+| --- | --- | --- |
+| Tabuleiro | uma pirâmide de 36 peças em meias peças: 4 filas de 6, uma peça de cada lado das filas do meio, 2 filas de 4 por cima e 2 no topo | `getLayout` |
+| Peças | 18 valores de 10 a 99, cada um com duas contas de no máximo 4 caracteres (de sinais diferentes quando há) | `drawPairs`, `getFaces` |
+| Livre | nada por cima e um dos lados livre | `isFree` |
+| Sempre resolúvel | as peças são postas a partir de uma solução (desmonta-se o tabuleiro dois a dois, como um jogador) | `deal` |
+| Sem pares livres | «Baralhar» volta a pôr as peças que ficam, também a partir de uma solução; se não houver nenhuma, o jogo acaba | `shuffle` |
+| Dica | mostra um par livre | `hint` |
+| Recorde | o tempo mais curto de um tabuleiro limpo sem dicas (`profile.mahjongRecord`); não conta como jogo nem dá moedas | `finishRun` |
+
 ### Decisões tomadas onde o briefing e o pedido não diziam nada
 
 - Nas tabuadas, a caixa 3 (duas certas seguidas) é o limiar para a resposta escrita. Nas competências não serve: uma competência junta muitas perguntas, enche a caixa numa sessão e a escolha múltipla desaparecia depois do primeiro jogo. Por isso o formato de uma competência segue as últimas 10 respostas dela (8 certas → teclado). Pedido do dono do projecto, a 21 de Outubro de 2026, «para ver no que dá».
@@ -458,10 +525,11 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 - **Níveis de domínio** (`--level-0` a `--level-5`), no mapa e nas competências: cinzento → pêssego → amarelo → amarelo-esverdeado → verde-claro → verde. Legendas: Por praticar, A começar, A aprender, A melhorar, Quase lá, Dominado.
 - **Tipografia:** Nunito (variável), alojada no próprio site através de `@fontsource-variable/nunito`, sem pedidos à Google (privacidade das crianças).
 - **Mascote** (`Mascot.tsx`): cão castanho de orelhas caídas escuras, mancha creme na testa e no focinho, coleira azul com uma chapa em forma de faísca. Expressões: `happy` (início), `cheer` (certo, convite de desbloqueio), `encourage` (tenta outra vez, errado, rede de segurança, sair), `proud` (resumo e progresso). É sempre decorativa (`aria-hidden`); a mensagem está no balão.
-- **Ecrã inicial** (só escolhe o que praticar): em cima, o logótipo, a roda dentada das Definições e as moedas no canto (botão que abre o mealheiro); o Faísca; as quatro operações em cartões grandes (2 × 2, com «Fácil · nível 2»); a secção «Jogos», com o Misturado e o Descobre a conta lado a lado, nos mesmos cartões em pé das operações (o Descobre a conta com o nível), e o desafio por baixo, a toda a largura, se estiver ligado; Ver progresso. Os cartões da mesma fila têm sempre a mesma altura, também quando um nome ocupa duas linhas.
-- **Definições** (`SettingsScreen`, para o adulto): «‹ Início», o título e três cartões: «Quem vai jogar?» (escolher, criar e apagar perfis), «Língua» (cada língua escrita na própria língua, com `lang` para os leitores de ecrã) e «Avançado» (o desafio sem fim do perfil escolhido). Mudar de perfil remonta o ecrã, que fecha o formulário e a confirmação de apagar.
+- **Ecrã inicial** (só escolhe o que praticar): em cima, o logótipo, a roda dentada das Definições e as moedas no canto (botão que abre o mealheiro); o Faísca; as quatro operações em cartões grandes (2 × 2, com «Fácil · nível 2»); a secção «Jogos», com o Misturado e o Descobre a conta lado a lado, nos mesmos cartões em pé das operações (o Descobre a conta com o nível), depois os jogos novos, dois a dois (Quantos são?, Amigos do 10, Salta com o Faísca, Qual é o sinal?, Qual pesa mais?, Memória), cada um com o seu símbolo e o nível, e por baixo, a toda a largura, o desafio e o Mahjong, se estiverem ligados; Ver progresso. Os cartões da mesma fila têm sempre a mesma altura, também quando um nome ocupa duas linhas.
+- **Definições** (`SettingsScreen`, para o adulto): «‹ Início», o título e três cartões: «Quem vai jogar?» (escolher, criar e apagar perfis), «Língua» (cada língua escrita na própria língua, com `lang` para os leitores de ecrã) e «Avançado» (o desafio sem fim e o Mahjong do perfil escolhido). Mudar de perfil remonta o ecrã, que fecha o formulário e a confirmação de apagar.
 - **Descobre a conta:** a cor da multiplicação e o símbolo «?×?». Antes de jogar: «‹ Início» e as moedas; o Faísca explica, um exemplo (4 × 6 = 24, a verde), a frase «qualquer uma serve», as tabuadas (as da multiplicação) e, em «Mais opções», o relógio; o Jogar fica fixo em baixo. Na sessão, como na prática: «✕ Sair», «Pergunta n de 10» e as moedas; a barra de progresso; o relógio; `? × ? = 24` com a caixa seguinte em azul cheio; o «Tenta outra vez»; a ajuda (ou o balão dela); o teclado de 2 a 12; depois de responder, a folha do resultado em baixo, com os marcos. No fim, como no resumo: festa, «7 de 10 certas à primeira» e as com ajuda, o tempo, as conquistas, os números para treinar, «Ver progresso» e «Início» / «Jogar outra vez» fixos em baixo. No progresso, um cartão com o nível do jogo, por baixo das operações; os recordes entram na lista dos outros («Descobre a conta · tabuadas 2, 5, 10»).
 - **Desafio sem fim:** cor própria, um ardósia sóbrio (`--op-challenge`), e o símbolo ∞. Antes de jogar, as regras e o recorde. Na sessão: «✕ Sair», «Nível n» e as certas numa pastilha verde; uma barra com o tempo que falta e os segundos, que fica em tom quente (nunca vermelho) no último quarto; a conta; a mensagem da subida de nível; o teclado. No fim: como acabou, a última conta com a resposta certa a verde (e o que se escreveu, se foi um erro), as certas, o nível e o recorde.
+- **Jogos novos:** cada jogo de rondas usa a cor da operação mais próxima (Quantos são? a da soma, Amigos do 10 a da subtração, Salta com o Faísca a da multiplicação, Qual é o sinal? a do Misturado, Qual pesa mais? a da divisão); a Memória tem um rosa só dela (`--op-memory`) e o Mahjong o ardósia do desafio. As regras mostram uma ronda já respondida (ou um par já encontrado) e «Mais opções» com o relógio. Na sessão, como na prática: a ronda em cima, o «tenta outra vez» e a ajuda, as opções em baixo, e a folha do resultado. No Qual é o sinal? cada sinal tem a cor da sua operação; no Qual pesa mais? os pratos são os botões, com o «=» no meio, e a trave inclina-se para o lado que pesa mais. Na Memória as cartas viradas para baixo mostram a faísca; a carta com o par da ajuda brilha em amarelo. No Mahjong as peças presas ficam mais apagadas e as camadas desviam-se um pouco, para as pilhas se lerem.
 - **Ecrã de preparação** (`SetupScreen`): «‹ Início» e as moedas; o nome da operação com a sua cor; a dificuldade com cadeados (no × e ÷ com o exemplo: «tabuadas», «como 23 × 4»; nos bloqueados, o cadeado num distintivo sobre o canto do cartão, e «Por desbloquear» em letra que encolhe com o cartão, porque «desbloquear» não cabe num terço de um telemóvel; tocar num bloqueado abre a folha do que falta); as tabuadas no Fácil do × e ÷, ou o formato no + e −; no Misturado, as quatro operações para ligar e desligar, cada uma com a sua dificuldade. «Mais opções» fechado: modo das tabuadas, «Escrever sempre a resposta», relógio. O Jogar (com o ▶) fica fixo em baixo e diz porque está desligado.
 - **Sessão:** no topo, «✕ Sair», «Pergunta n de 10» e as moedas com cinco pontos até à próxima (meio ponto na escolha múltipla). Com o relógio ligado, uma pastilha com o tempo e a referência («de 3:00», «recorde 1:32»); no tempo extra fica em tom quente suave, sem alarme.
 - **Certo e errado não dependem só da cor:** certo tem visto, salto do Faísca e destaque verde; a opção escolhida errada fica riscada e tracejada (no Descobre a conta, a conta errada nas caixas); a vertical realça as colunas erradas.
@@ -478,15 +546,15 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 
 ### Dados guardados
 
-- Chave do `localStorage`: `faisca:data`. Forma (versão 8): `{ version: 8, profiles: Profile[], activeProfileId, locale }`, com `locale` a língua do dispositivo (`null` só até à primeira detecção), com `Profile = { id, name, settings, boxes, skillBoxes, recentSkillAnswers, tracks, unlockedDifficulties, wallet, records, stats, challengeRecord }`:
-  - `settings = { practice, addition: { difficulty, layout, clock }, subtraction: { difficulty, layout, clock }, multiplication: { difficulty, tables, mode, isAlwaysTyped, clock }, division: { difficulty, tables, isAlwaysTyped, clock }, mix: { operations, clock }, factorGame: { clock }, isChallengeEnabled }`, com `practice` uma operação ou `"mix"` e `clock = { isEnabled, direction, reference }`;
-  - `records = { "<categoria>": { category, milliseconds } }`, com `category` de uma operação (`kind: "operation"`), de uma mistura (`kind: "mix"`, `parts`) ou do Descobre a conta (`kind: "factor-game"`, `tables`);
-  - `boxes = { "3x7": 1..5 }` (tabuadas, no Fácil da multiplicação e da divisão), `skillBoxes = { "addition:easy:carry": 1..5, "division:hard:remainder": 1..5 }`;
+- Chave do `localStorage`: `faisca:data`. Forma (versão 9): `{ version: 9, profiles: Profile[], activeProfileId, locale }`, com `locale` a língua do dispositivo (`null` só até à primeira detecção), com `Profile = { id, name, settings, boxes, skillBoxes, recentSkillAnswers, tracks, unlockedDifficulties, wallet, records, stats, challengeRecord, mahjongRecord }`:
+  - `settings = { practice, addition: { difficulty, layout, clock }, subtraction: { difficulty, layout, clock }, multiplication: { difficulty, tables, mode, isAlwaysTyped, clock }, division: { difficulty, tables, isAlwaysTyped, clock }, mix: { operations, clock }, factorGame: { clock }, roundGames: { counting, "number-bonds", "skip-counting", "missing-sign", balance: { clock } }, memoryGame: { content, pairCount, clock }, isChallengeEnabled, isMahjongEnabled }`, com `practice` uma operação ou `"mix"` e `clock = { isEnabled, direction, reference }`;
+  - `records = { "<categoria>": { category, milliseconds } }`, com `category` de uma operação (`kind: "operation"`), de uma mistura (`kind: "mix"`, `parts`) do Descobre a conta (`kind: "factor-game"`, `tables`), de um jogo de rondas (`kind: "round-game"`, `game`, `level`) ou da Memória (`kind: "memory-game"`, `content`, `pairCount`, `tables`);
+  - `boxes = { "3x7": 1..5 }` (tabuadas, no Fácil da multiplicação e da divisão), `skillBoxes = { "addition:easy:carry": 1..5, "division:hard:remainder": 1..5, "counting:to-five": 1..5 }` (também os tipos de ronda dos jogos de rondas);
   - `recentSkillAnswers = { "addition:easy:carry": [true, false, …] }`: a primeira tentativa das últimas 10 respostas que contaram em cada competência, da mais antiga para a mais recente (decide escolha múltipla ou teclado);
-  - `tracks = { "addition:easy": …, "multiplication:medium": { level, points, recentAnswers (últimas 40), answersSinceSafetyNet } }`, mais `"factor-game"` (o nível do Descobre a conta, criado na primeira resposta que conta);
+  - `tracks = { "addition:easy": …, "multiplication:medium": { level, points, recentAnswers (últimas 40), answersSinceSafetyNet } }`, mais `"factor-game"` (o nível do Descobre a conta, criado na primeira resposta que conta), `"counting-game"`, `"number-bonds-game"`, `"skip-counting-game"`, `"missing-sign-game"`, `"balance-game"` e `"memory-game"`;
   - `unlockedDifficulties = { addition, subtraction, multiplication, division }` (a mais alta aberta), `wallet = { coins, points }`, `stats` como na v1;
-  - `challengeRecord`: o maior número de certas numa corrida do desafio sem fim, ou `null`.
-- **Migração:** `MigrationsUtils` guarda as formas antigas congeladas e migra passo a passo: v1 → v2 (caixas, tabuadas, modo, cronómetro e estatísticas mantêm-se; a operação fica Multiplicação; começa com 3 moedas) → v3 (cada operação herda o cronómetro antigo como relógio para a frente; «escrever sempre» desligado; recordes vazios) → v4 (as tabuadas passam a Fácil da multiplicação e da divisão, com o nível em `"multiplication:easy"`/`"division:easy"` e os recordes com dificuldade; desbloqueios para as quatro operações; `operation` passa a `practice`; Misturado com as quatro; relógio ligado onde estava como vinha de origem) → v5 (as últimas respostas de cada competência reconstroem-se a partir das respostas recentes de cada pista, cujo id diz que conta era; as tabuadas não têm competências) → v6 (desafio sem fim desligado e sem recorde) → v7 (`locale: null`: a língua detecta-se no arranque seguinte) → v8 (o Descobre a conta ganha o seu relógio, ligado como todos começam). Antes de mudar outra vez a forma dos dados é preciso subir `ProfilesUtils.getDataVersion()` **e** acrescentar um passo em `MigrationsUtils`, senão as crianças perdem o progresso.
+  - `challengeRecord`: o maior número de certas numa corrida do desafio sem fim, ou `null`; `mahjongRecord`: o melhor tempo de um tabuleiro de Mahjong limpo sem dicas, ou `null`.
+- **Migração:** `MigrationsUtils` guarda as formas antigas congeladas e migra passo a passo: v1 → v2 (caixas, tabuadas, modo, cronómetro e estatísticas mantêm-se; a operação fica Multiplicação; começa com 3 moedas) → v3 (cada operação herda o cronómetro antigo como relógio para a frente; «escrever sempre» desligado; recordes vazios) → v4 (as tabuadas passam a Fácil da multiplicação e da divisão, com o nível em `"multiplication:easy"`/`"division:easy"` e os recordes com dificuldade; desbloqueios para as quatro operações; `operation` passa a `practice`; Misturado com as quatro; relógio ligado onde estava como vinha de origem) → v5 (as últimas respostas de cada competência reconstroem-se a partir das respostas recentes de cada pista, cujo id diz que conta era; as tabuadas não têm competências) → v6 (desafio sem fim desligado e sem recorde) → v7 (`locale: null`: a língua detecta-se no arranque seguinte) → v8 (o Descobre a conta ganha o seu relógio, ligado como todos começam) → v9 (os jogos de rondas e a Memória ganham as suas definições, com o relógio ligado como todos começam; o Mahjong desligado e sem recorde). Antes de mudar outra vez a forma dos dados é preciso subir `ProfilesUtils.getDataVersion()` **e** acrescentar um passo em `MigrationsUtils`, senão as crianças perdem o progresso.
 - Dados ilegíveis recomeçam do zero. Dados de uma versão **mais nova** não são lidos nem reescritos: a app corre em memória e avisa no ecrã inicial (protege o progresso de uma versão antiga em cache).
 - Se o browser bloquear o armazenamento, a app funciona só em memória e avisa no ecrã inicial.
 

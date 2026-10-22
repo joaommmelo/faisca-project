@@ -17,11 +17,12 @@ interface SettingsScreenProps {
     onDeleteProfile: (profileId: string) => void;
     onLocaleChange: (locale: Locale) => void;
     onChallengeSwitch: (isChallengeEnabled: boolean) => void;
+    onMahjongSwitch: (isMahjongEnabled: boolean) => void;
     onBack: () => void;
 }
 
-// What an adult changes once in a while, out of the way of playing: who is playing, the language, and the challenge
-// for adults.
+// What an adult changes once in a while, out of the way of playing: who is playing, the language, and the games for
+// adults.
 export function SettingsScreen({
     data,
     profile,
@@ -31,6 +32,7 @@ export function SettingsScreen({
     onDeleteProfile,
     onLocaleChange,
     onChallengeSwitch,
+    onMahjongSwitch,
     onBack
 }: SettingsScreenProps) {
     const headingRef = useFocusOnMount<HTMLHeadingElement>();
@@ -66,6 +68,12 @@ export function SettingsScreen({
                     description={Messages.getChallengeAbout()}
                     isOn={profile.settings.isChallengeEnabled}
                     onChange={onChallengeSwitch}
+                />
+                <SwitchField
+                    label={Messages.getMahjongName()}
+                    description={Messages.getMahjongAbout()}
+                    isOn={profile.settings.isMahjongEnabled}
+                    onChange={onMahjongSwitch}
                 />
             </section>
         </main>

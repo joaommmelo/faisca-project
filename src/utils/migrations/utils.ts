@@ -5,7 +5,7 @@ import type { LeitnerBoxes } from "../leitner/utils.ts";
 import type { Tracks } from "../levels/utils.ts";
 import type { Locale } from "../locales/utils.ts";
 import { OperationsUtils, type Operation } from "../operations/utils.ts";
-import type { AppData, Profile, ProfileSettings } from "../profiles/utils.ts";
+import { ProfilesUtils, type AppData, type Profile, type ProfileSettings } from "../profiles/utils.ts";
 import { QuestionsUtils, type AnswerLayout, type PracticeMode, type RecentSkillAnswers } from "../questions/utils.ts";
 import { RecordsUtils, type BestTime, type RecordCategory, type Records } from "../records/utils.ts";
 import type { PracticeStats } from "../stats/utils.ts";
@@ -94,10 +94,17 @@ interface VersionThreeData {
     activeProfileId: string | null;
 }
 
-// v7 and older had no Descobre a conta, nor its clock.
-type VersionSevenSettings = Omit<ProfileSettings, "factorGame">;
+// v8 and older had no games of rounds, no Memória and no Mahjong.
+type VersionEightSettings = Omit<ProfileSettings, "roundGames" | "memoryGame" | "isMahjongEnabled">;
 
-interface VersionSevenProfile extends Omit<Profile, "settings"> {
+interface VersionEightProfile extends Omit<Profile, "settings" | "mahjongRecord"> {
+    settings: VersionEightSettings;
+}
+
+// v7 and older had no Descobre a conta, nor its clock.
+type VersionSevenSettings = Omit<VersionEightSettings, "factorGame">;
+
+interface VersionSevenProfile extends Omit<VersionEightProfile, "settings"> {
     settings: VersionSevenSettings;
 }
 
@@ -149,6 +156,13 @@ interface VersionSevenData {
     locale: Locale | null;
 }
 
+interface VersionEightData {
+    version: 8;
+    profiles: VersionEightProfile[];
+    activeProfileId: string | null;
+    locale: Locale | null;
+}
+
 export class MigrationsUtils {
     public static getOldestMigratableVersion(): number {
         return 1;
@@ -186,8 +200,14 @@ export class MigrationsUtils {
             }
             return data.version === 6 ? (data as VersionSixData) : null;
         })();
-        const versionSeven: VersionSevenData = versionSix === null ? (data as VersionSevenData) : this.fromVersionSix(versionSix);
-        return this.fromVersionSeven(versionSeven);
+        const versionSeven: VersionSevenData | null = (() => {
+            if (versionSix !== null) {
+                return this.fromVersionSix(versionSix);
+            }
+            return data.version === 7 ? (data as VersionSevenData) : null;
+        })();
+        const versionEight: VersionEightData = versionSeven === null ? (data as VersionEightData) : this.fromVersionSeven(versionSeven);
+        return this.fromVersionEight(versionEight);
     }
 
     // v1 only knew multiplication: its boxes, tables, mode, timer and stats carry over unchanged.
@@ -315,13 +335,32 @@ export class MigrationsUtils {
     }
 
     // v8 adds Descobre a conta's own clock, on like every other clock starts.
-    private static fromVersionSeven(data: VersionSevenData): AppData {
+    private static fromVersionSeven(data: VersionSevenData): VersionEightData {
         return {
             ...data,
             version: 8,
-            profiles: data.profiles.map((profile): Profile => ({
+            profiles: data.profiles.map((profile): VersionEightProfile => ({
                 ...profile,
                 settings: { ...profile.settings, factorGame: { clock: ClockUtils.createDefault() } }
+            }))
+        };
+    }
+
+    // v9 adds the games of rounds and Memória, each with its clock on like every clock starts, and Mahjong for
+    // adults: switched off, and without a record.
+    private static fromVersionEight(data: VersionEightData): AppData {
+        return {
+            ...data,
+            version: 9,
+            profiles: data.profiles.map((profile): Profile => ({
+                ...profile,
+                settings: {
+                    ...profile.settings,
+                    roundGames: ProfilesUtils.createDefaultRoundGameSettings(),
+                    memoryGame: ProfilesUtils.createDefaultMemoryGameSettings(),
+                    isMahjongEnabled: false
+                },
+                mahjongRecord: null
             }))
         };
     }

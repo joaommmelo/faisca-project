@@ -147,6 +147,7 @@ export const fr: Copy = {
     clockBehindDefault: (extraTime, minutes) => `${extraTime} de plus que les ${minutes} minutes. Ce sera pour la prochaine fois !`,
     clockYourRecord: (time) => `Ton record : ${time}.`,
     clockRecordsNeedPerfect: "Les records comptent quand tu trouves tout du premier coup.",
+    clockRecordsNeedNoHelp: "Les records comptent dans les parties sans aide.",
     recordVertical: "en colonnes",
     recordResult: "juste le résultat",
     recordTable: (table) => `table de ${table}`,
@@ -184,6 +185,102 @@ export const fr: Copy = {
     factorGameHint: (factor) => `Commence par ${factor}. Quel est l’autre nombre ?`,
     factorGameAlso: (multiplications) => `Ça marche aussi avec ${multiplications}.`,
     factorGameAnswers: (multiplications) => `Ça pouvait être ${multiplications}.`,
+
+    roundGameNames: {
+        counting: "Combien d’os ?",
+        "number-bonds": "Les amis de 10",
+        "skip-counting": "Saute avec Faísca",
+        "missing-sign": "Quel est le signe ?",
+        balance: "Qui pèse le plus ?"
+    },
+    roundGameGreetings: {
+        counting: "Compte les os et touche le bon nombre !",
+        "number-bonds": "Combien manque-t-il pour arriver au grand nombre ? Touche la réponse !",
+        "skip-counting": "Je saute toujours pareil. Trouve le nombre qui manque !",
+        "missing-sign": "Il manque le signe dans le calcul. Lequel est-ce ?",
+        balance: "Touche le côté le plus lourd. S’ils pèsent pareil, touche le =."
+    },
+    countingSkillNames: {
+        "to-five": "Jusqu’à 5, comme sur un dé",
+        "to-ten": "Jusqu’à 10, en rangées",
+        scattered: "Jusqu’à 10, en désordre",
+        "two-groups": "Réunir deux groupes",
+        "to-twenty": "Jusqu’à 20"
+    },
+    numberBondsSkillNames: {
+        "ten-frame": "Pour 10, avec la boîte",
+        ten: "Pour 10",
+        twenty: "Pour 20",
+        "hundred-tens": "Pour 100, avec des dizaines",
+        hundred: "Pour 100"
+    },
+    skipCountingSkillNames: {
+        ones: "De 1 en 1",
+        twos: "De 2 en 2",
+        "fives-tens": "De 5 en 5 et de 10 en 10",
+        "threes-fours": "De 3 en 3 et de 4 en 4",
+        "bigger-steps": "Sauts de 6 à 9"
+    },
+    missingSignSkillNames: {
+        "add-subtract": "Plus ou moins",
+        multiply: "Fois",
+        divide: "Divisé par",
+        "bigger-numbers": "Les quatre, avec de grands nombres"
+    },
+    balanceSkillNames: {
+        numbers: "Deux nombres",
+        "sum-and-number": "Une somme et un nombre",
+        sums: "Additions et soustractions",
+        products: "Multiplications",
+        mixed: "Calculs mélangés"
+    },
+    operationWords: { addition: "plus", subtraction: "moins", multiplication: "fois", division: "divisé par" },
+    roundChoiceHint: (removedCount) =>
+        removedCount === 1 ? "J’ai enlevé une réponse. C’est l’une de celles-ci !" : "J’ai enlevé deux réponses. C’est l’une de celles-ci !",
+    bones: (count) => `${count} os`,
+    spokenCounting: (isTwoGroups) => (isTwoGroups ? "Combien d’os en tout ?" : "Combien y a-t-il d’os ?"),
+    spokenNumberBonds: (part, whole) => `${part} plus combien font ${whole} ?`,
+    spokenSkipCounting: (sequence) => `Quel nombre manque ? ${sequence}.`,
+    skipCountingGap: "un nombre caché",
+    skipCountingStep: (step) => `Je saute de ${step} en ${step}.`,
+    spokenMissingSign: (left, right, result) => `Quel signe va entre ${left} et ${right} pour faire ${result} ?`,
+    missingSignAnswer: (calculation) => `Le calcul, c’est ${calculation}.`,
+    spokenBalance: (leftPan, rightPan) => `Qui pèse le plus : ${leftPan} ou ${rightPan} ? Ou ils pèsent pareil ?`,
+    balanceHeavier: (pan) => `${pan} pèse plus`,
+    balanceEqual: "Même poids",
+    balanceWeights: (heavierValue, lighterValue) => `${heavierValue} pèse plus que ${lighterValue}.`,
+    balanceSameWeight: (value) => `Les deux font ${value}.`,
+
+    memoryGameName: "Memory",
+    memoryGameGreeting: "Retourne deux cartes à la fois et trouve les paires !",
+    memoryContentNames: { quantities: "Os", additions: "Additions jusqu’à 10", tables: "Tables" },
+    memoryMiss: "Ce n’est pas une paire. Retiens où elles sont !",
+    memoryHint: "La paire de cette carte brille !",
+    memoryHelpNeedsCard: "Retourne d’abord une carte.",
+    memoryCardDown: (position) => `Carte ${position}, face cachée`,
+    memoryCardUp: (position, content) => `Carte ${position} : ${content}`,
+    memoryTurns: (turns) => (turns < 2 ? `${turns} coup` : `${turns} coups`),
+    memoryDone: "Bravo ! Tu as trouvé toutes les paires !",
+    memoryPairsTitle: "Les paires de cette partie",
+
+    mahjongName: "Mahjong des calculs",
+    mahjongAbout: "Pour les adultes : retire du plateau des paires de tuiles qui ont le même résultat.",
+    mahjongGreeting: "Trouve des paires qui ont le même résultat !",
+    mahjongRules: [
+        "Touche deux tuiles libres qui ont le même résultat, comme 7×8 et 63−7, et elles quittent le plateau.",
+        "Une tuile est libre quand rien n’est posé dessus et qu’un de ses côtés est libre.",
+        "S’il n’y a plus de paires libres, mélange les tuiles qui restent."
+    ],
+    mahjongTilesLeft: (count) => (count < 2 ? `${count} tuile` : `${count} tuiles`),
+    mahjongStuck: "Plus de paires libres. Mélange les tuiles !",
+    mahjongCleared: "Plateau vidé !",
+    mahjongStopped: "Partie terminée.",
+    mahjongNoMoves: "Il n’y a plus de coups possibles.",
+    mahjongRecordSummary: (time) => `Record : ${time}`,
+    mahjongNoRecord: "Pas encore de record.",
+    mahjongYourRecord: (time) => `Ton record : ${time}.`,
+    mahjongRecordsNeedNoHints: "Les records ne comptent que sans indices.",
+    mahjongTile: (calculation, isFree) => (isFree ? calculation : `${calculation}, bloquée`),
 
     coinsCount: (coins) => (coins < 2 ? `${coins} pièce` : `${coins} pièces`),
     coinProgress: (answers, answersPerCoin) => `${answers} sur ${answersPerCoin}`,
@@ -279,6 +376,16 @@ export const fr: Copy = {
         yourAnswer: (answer) => `Ta réponse : ${answer}`,
         chooseAnswer: "Choisis la réponse",
         chooseTwoNumbers: "Choisis deux nombres",
+        chooseSign: "Choisis le signe",
+        balance: "Balance",
+        cards: "Cartes",
+        board: "Plateau",
+        hint: "Indice",
+        shuffle: "Mélanger",
+        contentQuestion: "Quelles cartes ?",
+        pairCountQuestion: "Combien de paires ?",
+        pairCount: (count) => (count < 2 ? `${count} paire` : `${count} paires`),
+        turns: (count) => (count < 2 ? "coup" : "coups"),
 
         correctAtFirstTry: "justes du premier coup",
         time: "Temps",

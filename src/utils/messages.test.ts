@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { LocalesUtils } from "./locales/utils.ts";
 import type { FactorRound } from "./factorGame/utils.ts";
+import type { MemoryCard } from "./memoryGame/utils.ts";
+import { RoundGameUtils, type GameRound, type RoundResult } from "./roundGame/utils.ts";
 import { Messages } from "./messages.ts";
 import { RecordsUtils } from "./records/utils.ts";
 import type { Question } from "./questions/utils.ts";
@@ -197,6 +199,78 @@ describe("Messages for Descobre a conta", () => {
     });
 });
 
+const twoTwo: GameRound = {
+    game: "missing-sign",
+    id: "missing-sign:2?2=4",
+    skill: "add-subtract",
+    left: 2,
+    right: 2,
+    result: 4,
+    options: ["addition", "subtraction", "multiplication", "division"],
+    answers: ["addition", "multiplication"],
+    answer: "addition"
+};
+
+const balance: GameRound = {
+    game: "balance",
+    id: "balance:7×8|6×9",
+    skill: "products",
+    leftPan: { operation: "multiplication", left: 7, right: 8 },
+    rightPan: { operation: "multiplication", left: 6, right: 9 },
+    options: ["left", "equal", "right"],
+    answers: ["left"],
+    answer: "left"
+};
+
+const answer = (round: GameRound, givenOptions: RoundResult["givenOptions"], isCorrect: boolean): RoundResult => ({
+    round,
+    givenOptions,
+    isCorrect,
+    isHelped: false
+});
+
+const memoryPair: MemoryCard[] = [
+    { id: 0, pairId: 0, value: 7, face: { kind: "calculation", operation: "addition", left: 3, right: 4 } },
+    { id: 1, pairId: 0, value: 7, face: { kind: "number", value: 7 } }
+];
+
+describe("Messages for the games of rounds, Memória and Mahjong", () => {
+    it("says the other sign that also works, or both after two misses", () => {
+        expect(Messages.getRoundFeedback(answer(twoTwo, ["multiplication"], true), 0).lines).toEqual(["Também podia ser 2 + 2 = 4."]);
+        expect(Messages.getRoundFeedback(answer(twoTwo, ["division", "subtraction"], false), 0)).toEqual({
+            title: "Quase!",
+            lines: ["Podia ser 2 + 2 = 4 ou 2 × 2 = 4."]
+        });
+    });
+
+    it("tells what each pan weighs, and works one out as the help", () => {
+        expect(Messages.getRoundFeedback(answer(balance, ["left"], true), 0).lines).toEqual(["56 pesa mais do que 54."]);
+        expect(Messages.getBalanceHint(balance as Extract<GameRound, { game: "balance" }>)).toBe("Pista: 7 × 8 = 56");
+        expect(Messages.getSpokenRound(balance)).toBe("Qual pesa mais: 7 vezes 8 ou 6 vezes 9? Ou pesam o mesmo?");
+        expect(Messages.getRoundText(balance)).toBe("7 × 8 > 6 × 9");
+    });
+
+    it("reads every round out, and writes it to train again", () => {
+        for (const game of RoundGameUtils.getValidGames()) {
+            const example: GameRound = RoundGameUtils.getExampleRound(game);
+            expect(Messages.getSpokenRound(example)).not.toMatch(/undefined|NaN/);
+            expect(Messages.getRoundText(example)).not.toMatch(/undefined|NaN/);
+        }
+        expect(Messages.getSpokenRound(RoundGameUtils.getExampleRound("skip-counting"))).toBe("Que número falta? 3, 6, um número escondido, 12, 15.");
+        expect(Messages.getRoundText(RoundGameUtils.getExampleRound("number-bonds"))).toBe("7 + 3 = 10");
+        expect(Messages.getRoundOptionLabel(twoTwo, "division")).toBe("a dividir por");
+    });
+
+    it("names the cards, the pairs and the records", () => {
+        expect(Messages.getMemoryCardLabel(3, null)).toBe("Carta 3, virada para baixo");
+        expect(Messages.getMemoryCardLabel(3, memoryPair[0])).toBe("Carta 3: 3 mais 4");
+        expect(Messages.getMemoryPairText(memoryPair)).toBe("3 + 4 = 7");
+        expect(Messages.getRecordCategoryName(RecordsUtils.getRoundGameCategory("counting", 2))).toBe("Quantos são? · Nível 2");
+        expect(Messages.getRecordCategoryName(RecordsUtils.getMemoryGameCategory("tables", 6, [7]))).toBe("Memória · Tabuadas · 6 pares · tabuada do 7");
+        expect(Messages.getMahjongTileLabel({ operation: "subtraction", left: 63, right: 7 }, false)).toBe("63 menos 7, presa");
+    });
+});
+
 describe("Messages in every language", () => {
     afterEach(() => Messages.setLocale("pt"));
 
@@ -223,7 +297,36 @@ describe("Messages in every language", () => {
         Messages.getFactorGameHint(round24),
         Messages.getRecordCategoryName(RecordsUtils.getFactorGameCategory([2, 5])),
         ...Messages.getFactorGameFeedback({ round: round24, givenPairs: [{ first: 4, second: 6 }], isCorrect: true, isHelped: false }, 0).lines,
-        ...Messages.getFactorGameFeedback({ round: round24, givenPairs: [], isCorrect: false, isHelped: false }, 0).lines
+        ...Messages.getFactorGameFeedback({ round: round24, givenPairs: [], isCorrect: false, isHelped: false }, 0).lines,
+        ...RoundGameUtils.getValidGames().flatMap((game) => {
+            const example: GameRound = RoundGameUtils.getExampleRound(game);
+            return [
+                Messages.getRoundGameName(game),
+                Messages.getRoundGameGreeting(game),
+                Messages.getSpokenRound(example),
+                Messages.getRoundText(example),
+                ...RoundGameUtils.getSkills(game).map((skill) => Messages.getRoundSkillName(game, skill)),
+                ...example.options.map((option) => Messages.getRoundOptionLabel(example, option)),
+                ...Messages.getRoundFeedback(answer(example, [example.answer], true), 0).lines,
+                ...Messages.getRoundFeedback(answer(example, [], false), 0).lines
+            ];
+        }),
+        ...Messages.getRoundFeedback(answer(twoTwo, ["division", "subtraction"], false), 0).lines,
+        Messages.getRoundChoiceHint(1),
+        Messages.getRoundChoiceHint(2),
+        Messages.getMemoryCardLabel(1, memoryPair[0]),
+        Messages.getMemoryCardLabel(1, null),
+        Messages.getMemoryTurns(1),
+        Messages.getMemoryTurns(12),
+        Messages.getBones(1),
+        Messages.getBones(7),
+        Messages.getRecordCategoryName(RecordsUtils.getMemoryGameCategory("tables", 8, [2, 5])),
+        ...Messages.getMahjongRules(),
+        Messages.getMahjongSummary(95000),
+        Messages.getMahjongRecord(null),
+        Messages.getMahjongTileLabel({ operation: "division", left: 72, right: 8 }, false),
+        Messages.getMahjongTilesLeft(1),
+        Messages.getMahjongTilesLeft(36)
     ];
 
     it("words every message, with nothing missing", () => {

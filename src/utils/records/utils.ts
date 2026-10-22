@@ -1,7 +1,9 @@
 import type { Difficulty } from "../difficulties/utils.ts";
+import type { MemoryContent } from "../memoryGame/utils.ts";
 import { OperationsUtils, type Operation } from "../operations/utils.ts";
 import type { ProfileSettings } from "../profiles/utils.ts";
 import type { AnswerLayout, PracticeMode } from "../questions/utils.ts";
+import type { RoundGameId } from "../roundGame/utils.ts";
 import type { SessionSummary } from "../session/utils.ts";
 
 // Sessions only compare with sessions played the same way: same operation and difficulty, plus the same layout,
@@ -28,7 +30,22 @@ export interface FactorGameCategory {
     tables: number[];
 }
 
-export type RecordCategory = OperationCategory | MixCategory | FactorGameCategory;
+// A game of rounds compares with games at the same level, which ask the same kinds of round.
+export interface RoundGameCategory {
+    kind: "round-game";
+    game: RoundGameId;
+    level: number;
+}
+
+// Memória compares with games of the same cards: what they match, how many, and the tables when they are facts.
+export interface MemoryGameCategory {
+    kind: "memory-game";
+    content: MemoryContent;
+    pairCount: number;
+    tables: number[] | null;
+}
+
+export type RecordCategory = OperationCategory | MixCategory | FactorGameCategory | RoundGameCategory | MemoryGameCategory;
 
 export interface BestTime {
     category: RecordCategory;
@@ -70,12 +87,26 @@ export class RecordsUtils {
         return { kind: "factor-game", tables: [...tables].sort((first, second) => first - second) };
     }
 
+    public static getRoundGameCategory(game: RoundGameId, level: number): RoundGameCategory {
+        return { kind: "round-game", game, level };
+    }
+
+    public static getMemoryGameCategory(content: MemoryContent, pairCount: number, tables: number[]): MemoryGameCategory {
+        return { kind: "memory-game", content, pairCount, tables: content === "tables" ? [...tables].sort((first, second) => first - second) : null };
+    }
+
     public static getCategoryId(category: RecordCategory): string {
         if (category.kind === "mix") {
             return ["mix", ...category.parts.map((part) => this.getCategoryId(part))].join("|");
         }
         if (category.kind === "factor-game") {
             return ["factor-game", category.tables.join("-")].join(":");
+        }
+        if (category.kind === "round-game") {
+            return ["round-game", category.game, category.level].join(":");
+        }
+        if (category.kind === "memory-game") {
+            return ["memory-game", category.content, category.pairCount, category.tables === null ? "" : category.tables.join("-")].join(":");
         }
         return [
             category.operation,

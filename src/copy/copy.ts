@@ -1,8 +1,15 @@
 import type { Skill } from "../utils/arithmetic/utils.ts";
+import type { BalanceSkill } from "../utils/balanceGame/utils.ts";
 import type { ClockDirection } from "../utils/clock/utils.ts";
+import type { CountingSkill } from "../utils/countingGame/utils.ts";
 import type { Difficulty } from "../utils/difficulties/utils.ts";
+import type { MemoryContent } from "../utils/memoryGame/utils.ts";
+import type { MissingSignSkill } from "../utils/missingSignGame/utils.ts";
+import type { NumberBondsSkill } from "../utils/numberBondsGame/utils.ts";
 import type { Operation } from "../utils/operations/utils.ts";
 import type { AnswerLayout, PracticeMode } from "../utils/questions/utils.ts";
+import type { RoundGameId } from "../utils/roundGame/utils.ts";
+import type { SkipCountingSkill } from "../utils/skipCountingGame/utils.ts";
 
 // Everything the app says, in one language. Messages decides what to say and when; a copy only words it.
 // Numbers that reach a copy are already formatted where they arrive as strings. Counts arrive as numbers, so each
@@ -114,6 +121,7 @@ export interface Copy {
     clockBehindDefault: (extraTime: string, minutes: number) => string;
     clockYourRecord: (time: string) => string;
     clockRecordsNeedPerfect: string;
+    clockRecordsNeedNoHelp: string;
     // The parts of a record's name: "Soma · Fácil · na vertical", "Multiplicação · Fácil · tabuadas 2, 5 · com inversas".
     recordVertical: string;
     recordResult: string;
@@ -152,6 +160,62 @@ export interface Copy {
     factorGameHint: (factor: number) => string;
     factorGameAlso: (multiplications: string) => string;
     factorGameAnswers: (multiplications: string) => string;
+
+    // The games of rounds. Calculations arrive written out ("7 × 8"); spoken ones arrive in words ("7 vezes 8").
+    roundGameNames: Record<RoundGameId, string>;
+    roundGameGreetings: Record<RoundGameId, string>;
+    countingSkillNames: Record<CountingSkill, string>;
+    numberBondsSkillNames: Record<NumberBondsSkill, string>;
+    skipCountingSkillNames: Record<SkipCountingSkill, string>;
+    missingSignSkillNames: Record<MissingSignSkill, string>;
+    balanceSkillNames: Record<BalanceSkill, string>;
+    // The words between two numbers when a calculation is read out: "mais", "menos", "vezes", "a dividir por".
+    operationWords: Record<Operation, string>;
+    // The help took options away: how many, out of the options of the round.
+    roundChoiceHint: (removedCount: number) => string;
+    bones: (count: number) => string;
+    spokenCounting: (isTwoGroups: boolean) => string;
+    spokenNumberBonds: (part: number, whole: number) => string;
+    // The five numbers with the hidden one in words: "3, 6, um número escondido, 12, 15".
+    spokenSkipCounting: (sequence: string) => string;
+    skipCountingGap: string;
+    skipCountingStep: (step: number) => string;
+    spokenMissingSign: (left: number, right: number, result: number) => string;
+    missingSignAnswer: (calculation: string) => string;
+    spokenBalance: (leftPan: string, rightPan: string) => string;
+    balanceHeavier: (pan: string) => string;
+    balanceEqual: string;
+    balanceWeights: (heavierValue: number, lighterValue: number) => string;
+    balanceSameWeight: (value: number) => string;
+
+    // Memória
+    memoryGameName: string;
+    memoryGameGreeting: string;
+    memoryContentNames: Record<MemoryContent, string>;
+    memoryMiss: string;
+    memoryHint: string;
+    memoryHelpNeedsCard: string;
+    memoryCardDown: (position: number) => string;
+    memoryCardUp: (position: number, content: string) => string;
+    memoryTurns: (turns: number) => string;
+    memoryDone: string;
+    memoryPairsTitle: string;
+
+    // Mahjong, for adults
+    mahjongName: string;
+    mahjongAbout: string;
+    mahjongGreeting: string;
+    mahjongRules: string[];
+    mahjongTilesLeft: (count: number) => string;
+    mahjongStuck: string;
+    mahjongCleared: string;
+    mahjongStopped: string;
+    mahjongNoMoves: string;
+    mahjongRecordSummary: (time: string) => string;
+    mahjongNoRecord: string;
+    mahjongYourRecord: (time: string) => string;
+    mahjongRecordsNeedNoHints: string;
+    mahjongTile: (calculation: string, isFree: boolean) => string;
 
     // Coins, storage, progress and profiles
     coinsCount: (coins: number) => string;
@@ -251,6 +315,16 @@ export interface Labels {
     yourAnswer: (answer: string) => string;
     chooseAnswer: string;
     chooseTwoNumbers: string;
+    chooseSign: string;
+    balance: string;
+    cards: string;
+    board: string;
+    hint: string;
+    shuffle: string;
+    contentQuestion: string;
+    pairCountQuestion: string;
+    pairCount: (count: number) => string;
+    turns: (count: number) => string;
 
     correctAtFirstTry: string;
     time: string;

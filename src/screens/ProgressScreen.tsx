@@ -9,11 +9,13 @@ import { ArithmeticUtils } from "../utils/arithmetic/utils.ts";
 import { DifficultiesUtils } from "../utils/difficulties/utils.ts";
 import { FactorGameUtils } from "../utils/factorGame/utils.ts";
 import { LevelsUtils } from "../utils/levels/utils.ts";
+import { MemoryGameUtils } from "../utils/memoryGame/utils.ts";
 import { Messages } from "../utils/messages.ts";
 import { OperationsUtils, type Operation } from "../utils/operations/utils.ts";
 import type { Profile } from "../utils/profiles/utils.ts";
 import { ProgressUtils } from "../utils/progress/utils.ts";
 import type { BestTime } from "../utils/records/utils.ts";
+import { RoundGameUtils, type RoundGameId } from "../utils/roundGame/utils.ts";
 import { StatsUtils } from "../utils/stats/utils.ts";
 import { TimeUtils } from "../utils/time/utils.ts";
 
@@ -77,7 +79,54 @@ export function ProgressScreen({ profile, onBack }: ProgressScreenProps) {
                 <h2 className="section-title">{Messages.getFactorGameName()}</h2>
                 <LevelMeter track={LevelsUtils.getTrack(profile.tracks, FactorGameUtils.getTrackId())} />
             </section>
+
+            {RoundGameUtils.getValidGames().map((game) => (
+                <RoundGameProgress key={game} profile={profile} game={game} />
+            ))}
+
+            <section className="card card--memory">
+                <h2 className="section-title">{Messages.getMemoryGameName()}</h2>
+                <LevelMeter track={LevelsUtils.getTrack(profile.tracks, MemoryGameUtils.getTrackId())} />
+            </section>
         </main>
+    );
+}
+
+interface RoundGameProgressProps {
+    profile: Profile;
+    game: RoundGameId;
+}
+
+// The game's level, and how each kind of round is going; the kinds the level has not opened yet show what is ahead.
+function RoundGameProgress({ profile, game }: RoundGameProgressProps) {
+    const level: number = RoundGameUtils.getLevel(profile, game);
+    const openSkills: string[] = RoundGameUtils.getOpenSkills(game, level);
+
+    return (
+        <section className={`card card--${game}`}>
+            <h2 className="section-title">{Messages.getRoundGameName(game)}</h2>
+            <LevelMeter track={LevelsUtils.getTrack(profile.tracks, RoundGameUtils.getTrackId(game))} />
+            <ul className="skills">
+                {RoundGameUtils.getSkills(game).map((skill) => {
+                    const isOpen: boolean = openSkills.includes(skill);
+                    const mastery: number = ProgressUtils.getMastery(profile.skillBoxes, RoundGameUtils.getSkillId(game, skill));
+                    return (
+                        <li key={skill} className="skill">
+                            <span className={`skill__swatch level-${mastery}`} aria-hidden="true" />
+                            <span className="skill__name">{Messages.getRoundSkillName(game, skill)}</span>
+                            {isOpen ? (
+                                <span className="skill__mastery">{Messages.getMasteryLabel(mastery)}</span>
+                            ) : (
+                                <span className="skill__mastery skill__mastery--locked">
+                                    <LockIcon />
+                                    {Messages.getLevelName(RoundGameUtils.getSkills(game).indexOf(skill) + 1)}
+                                </span>
+                            )}
+                        </li>
+                    );
+                })}
+            </ul>
+        </section>
     );
 }
 
