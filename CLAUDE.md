@@ -24,8 +24,9 @@ A v1 (só multiplicação) está na `main`. A v2 está na branch `v2`, ainda por
 - **Definições** (⚙ ao lado das moedas): «Quem vai jogar?», «Língua» e «Avançado» saíram do ecrã inicial, que fica só com o que se joga.
 - **Dificuldade bloqueada:** tocar nela abre uma folha com o que falta para a abrir: onde jogar e cada passo com um visto, uma barra e quanto falta.
 - **Ícone novo**, em estilo de jogo: o Faísca num quadrado amarelo-laranja com contorno grosso, volume, brilho, raios de luz e faíscas; o favicon é a mesma figura mais de perto.
-- 286 testes unitários (Vitest) a passar; `tsc` e `oxlint` limpos.
-- Testado num Chrome headless a 360, 390 e 820 px, sem erros na consola nem scroll horizontal: todas as operações, a vertical com ajuda e empréstimo através do zero, os marcos, o convite de desbloqueio, a rede de segurança, a migração da v1 e o arranque sem rede. No desafio: até ao nível 7, a subida de nível, o tempo parado com «Sair», o fim por erro e por tempo e o recorde; a conta mais larga (7 + 7 algarismos) cabe também a 320 px. A folha do resultado (certo, errado e com moeda) em escolha múltipla, teclado e vertical, e os cartões bloqueados a 360 e 390 px. A folha do «Sair» a 360, 390 e 820 px, com toques e teclas reais: tocar fora e Escape são «Não», as teclas não chegam à resposta enquanto está aberta, e no desafio o tempo pára. As seis línguas a 360 px: início, preparação (+ e ×, com «Mais opções»), sessão, as duas folhas, progresso, desafio e resumo, sem texto a sair das caixas nem scroll horizontal; e a língua de partida com o fuso e a língua do dispositivo emulados (Lisboa com o dispositivo em inglês → português; Zurique → a do dispositivo; guardada numa viagem).
+- **Descobre a conta** (ver «Descobre a conta (mini-jogo)»): um cartão no ecrã inicial, por baixo do Misturado. Aparece um número (24) e a criança toca em dois números de 2 a 12 que, multiplicados, o dão; qualquer conta certa serve (4 × 6, 3 × 8 ou 2 × 12), e no fim o Faísca mostra as outras. 10 números das tabuadas da multiplicação, duas tentativas, sem mexer no progresso.
+- 298 testes unitários (Vitest) a passar; `tsc` e `oxlint` limpos.
+- Testado num Chrome headless a 360, 390 e 820 px, sem erros na consola nem scroll horizontal: todas as operações, a vertical com ajuda e empréstimo através do zero, os marcos, o convite de desbloqueio, a rede de segurança, a migração da v1 e o arranque sem rede. No desafio: até ao nível 7, a subida de nível, o tempo parado com «Sair», o fim por erro e por tempo e o recorde; a conta mais larga (7 + 7 algarismos) cabe também a 320 px. A folha do resultado (certo, errado e com moeda) em escolha múltipla, teclado e vertical, e os cartões bloqueados a 360 e 390 px. A folha do «Sair» a 360, 390 e 820 px, com toques e teclas reais: tocar fora e Escape são «Não», as teclas não chegam à resposta enquanto está aberta, e no desafio o tempo pára. As seis línguas a 360 px: início, preparação (+ e ×, com «Mais opções»), sessão, as duas folhas, progresso, desafio e resumo, sem texto a sair das caixas nem scroll horizontal; e a língua de partida com o fuso e a língua do dispositivo emulados (Lisboa com o dispositivo em inglês → português; Zurique → a do dispositivo; guardada numa viagem). No Descobre a conta: o jogo inteiro nas seis línguas a 360 px, em português a 390 e 820 px e em alemão a 320 px (a primeira escolha e o apagar, o «tenta outra vez», certo à segunda, errado duas vezes, o fim, «Sair» com «Não» e «Sim», avançar sozinho e o Jogar desligado só com a tabuada do 1), sem erros na consola nem scroll horizontal.
 
 **À espera de decisão do dono do projecto:**
 
@@ -36,6 +37,7 @@ A v1 (só multiplicação) está na `main`. A v2 está na branch `v2`, ainda por
 - Juntar a `v2` à `main`. Depois disso, mudar a fonte do GitHub Pages para a `main` (*Settings → Pages*, pasta `/docs`).
 - Ortografia: os modos dizem «Só directas» e «Directas + inversas», como no briefing. A escola segue o Acordo Ortográfico («diretas»). Mudar é só em `Messages.getModeLabel` (`src/utils/messages.ts`).
 - Desafio sem fim: os valores (5 certas por nível, 2 s + 3 s por algarismo, metade do tempo no nível 12) são um ponto de partida, para afinar a jogar. Estão todos em `ChallengeUtils` (`src/utils/challenge/utils.ts`).
+- Descobre a conta: escolhas feitas sem pedido, a confirmar. Não dá moedas nem conta para as caixas, os níveis ou os dias de prática (como o desafio): pode passar a dar, mas mexe na economia das moedas. Os números vêm das tabuadas da multiplicação, e escolhê-las no ecrã do jogo muda também as da Multiplicação. O × 1 fica de fora (dava todos os números). Não tem ajuda nem relógio. Os nomes noutras línguas («What times what?», «Descubre la cuenta», «Trouve la multiplication», «Finde die Malaufgabe», «Trova la moltiplicazione») também estão por rever.
 - Mascote: é um cão castanho genérico. Se chegar uma fotografia do cão real, ajustar `src/components/Mascot.tsx`, `public/favicon.svg` e os ícones em `public/icons/` às características dele.
 - Autoria dos 8 primeiros commits: estão com o email da conta de trabalho (`jmelo-catappult`). Passá-los para a conta pessoal implica reescrever o histórico já publicado (force push). Só com autorização explícita.
 
@@ -268,6 +270,12 @@ O pedido original da v2 está resumido aqui; as respostas do dono do projecto (2
 - **Decisões do dono do projecto:** é uma opção avançada, ligada num interruptor; as operações misturam-se mais à medida que se sobe de nível; os números vão até 7 algarismos.
 - **Excepção ao briefing, só aqui:** o briefing evita relógios obrigatórios e mecânicas que penalizem, e a v2 é «usada só pela criança». O desafio tem as duas coisas porque é para adultos; por isso fica desligado em todos os perfis e só aparece no início de quem o liga.
 
+### Descobre a conta (mini-jogo, 22 de Outubro de 2026)
+
+- **Pedido:** um mini-jogo onde aparece um número e a criança tem de dizer qual é a multiplicação que dá esse número.
+- **Como ficou:** a conta ao contrário, `? × ? = 24`. A criança toca em dois números num teclado de 2 a 12 (como o numérico, com o apagar no canto): o primeiro enche a caixa da esquerda, o segundo a da direita e responde. Muitos números têm várias contas, e qualquer uma certa serve, por qualquer ordem. Depois de acertar, o Faísca mostra as outras («Também podia ser 3 × 8 ou 2 × 12.»), o que ensina que um número tem várias famílias. Na primeira falha diz quanto dá a conta escolhida («Quase! 4 × 7 dá 28. Tenta outra vez.»), sem dar a resposta; na segunda mostra todas.
+- **Tocar em vez de escrever:** dois toques num teclado de números grandes é o que uma criança de 4 anos consegue fazer sem ler, e não abre o teclado do dispositivo.
+
 ---
 
 ## Como está implementado
@@ -295,6 +303,7 @@ src/
     vertical/               VerticalUtils: colunas da conta e o que a criança já escreveu
     stats/                  StatsUtils: jogos, dias de prática, dias seguidos (moment)
     challenge/              ChallengeUtils: desafio sem fim (níveis, operações, algarismos, tempo por pergunta, contas, relógio com pausa, recorde)
+    factorGame/             FactorGameUtils: Descobre a conta (números das tabuadas, as contas de cada número, duas tentativas, resultado)
     numbers/                NumbersUtils: números com espaço nos milhares a partir de 5 algarismos (pt-PT)
     progress/               ProgressUtils: domínio 0–5 de factos e competências, contas dominadas
     profiles/               ProfilesUtils: AppData, perfis, definições por operação, validação do nome
@@ -311,9 +320,11 @@ src/
                             SwitchField, ClockField, CoinButton, PiggyBank, ProfilesPanel, LevelMeter,
                             CoinStatus, SessionClock, Equation, ChoiceOptions, NumericKeypad, KeypadAnswer,
                             VerticalAnswer, VerticalProblem, HelpButton, HintBubble, TryAgainNote,
-                            FeedbackPanel, Sheet, ExitSheet, UnlockSheet, ProfileForm, ProgressMap, InstallCard, LanguagePicker, sparkPath.ts
+                            FeedbackPanel, Sheet, ExitSheet, UnlockSheet, ProfileForm, ProgressMap, InstallCard, LanguagePicker,
+                            FactorEquation, FactorPad, sparkPath.ts
   screens/                  WelcomeScreen, HomeScreen, SettingsScreen, SetupScreen, SessionScreen, SummaryScreen, ProgressScreen,
-                            ChallengeScreen (regras e resultado do desafio), ChallengeSessionScreen
+                            ChallengeScreen (regras e resultado do desafio), ChallengeSessionScreen,
+                            FactorGameScreen (regras, tabuadas e resultado do Descobre a conta), FactorGameSessionScreen
   hooks/useFocusOnMount.ts  foco no título ao abrir um ecrã (leitores de ecrã)
   hooks/useInstallPrompt.ts guarda o convite de instalação do browser e diz como instalar neste dispositivo
   test/                     random.ts (PRNG com semente, mulberry32) e profiles.ts (perfil de teste)
@@ -324,7 +335,7 @@ public/                     favicon, manifest.webmanifest, icons/ (any, maskable
 docs/                       o build, publicado pelo GitHub Pages (não editar à mão)
 ```
 
-`App.tsx` guarda o `AppData` e grava-o no `localStorage` sempre que muda, se o armazenamento estiver disponível e os dados não forem de uma versão mais nova. A navegação é um `useState<View>` (`home`, `settings`, `setup`, `session`, `summary`, `progress`, `challenge`, `challenge-session`), sem router, por isso o build funciona em qualquer subcaminho (`base: "./"` no Vite). Sem perfis aparece o `WelcomeScreen`; o primeiro perfil começa sempre no início (também depois de se apagar o último nas Definições).
+`App.tsx` guarda o `AppData` e grava-o no `localStorage` sempre que muda, se o armazenamento estiver disponível e os dados não forem de uma versão mais nova. A navegação é um `useState<View>` (`home`, `settings`, `setup`, `session`, `summary`, `progress`, `challenge`, `challenge-session`, `factor-game`, `factor-game-session`), sem router, por isso o build funciona em qualquer subcaminho (`base: "./"` no Vite). Sem perfis aparece o `WelcomeScreen`; o primeiro perfil começa sempre no início (também depois de se apagar o último nas Definições).
 
 Cada pergunta tem a forma `left (operador) right = result`, com `kind` a dizer qual dos termos se pede, `boxType` e `boxKey` (o facto das tabuadas, `"7x8"`, ou a competência, `"multiplication:medium:carry"`, que treina) e `trackId` (onde contam os níveis: `"addition:easy"`, `"multiplication:easy"`). O que se joga é `settings.practice`: uma operação ou `"mix"`.
 
@@ -389,6 +400,19 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 | Recorde | o maior número de certas numa corrida (pelo menos 1) | `isNewRecord`, `finishRun` |
 | Ritmo | certo: 0,5 s até à pergunta seguinte, 1,5 s numa subida de nível (com o que mudou); o tempo da pergunta não corre entretanto | `ChallengeSessionScreen.tsx` |
 
+**Descobre a conta** (tudo em `FactorGameUtils`, salvo onde se diz):
+
+| Regra | Valor | Onde |
+| --- | --- | --- |
+| Números por jogo | 10, todos diferentes, por ordem aleatória | `getRoundsPerGame()`, `create` |
+| Que números | os produtos dos factos das tabuadas escolhidas na multiplicação, sem os do × 1, cada um uma vez (2, 5 e 10: de 4 a 120). Qualquer tabuada de 2 a 12 dá 11 números, por isso há sempre 10 | `getTargets` |
+| Teclado | de 2 a 12: o × 1 dava todos os números. Sem tabuadas, ou só com a do 1, não se joga (o Jogar diz porquê) | `getMinFactor()`, `getFactors`, `canPlay` |
+| Respostas certas | qualquer par do teclado cujo produto é o número, por qualquer ordem | `submit`, `getPairs` |
+| Tentativas | as mesmas 2 da prática: a primeira falha diz quanto dá a conta escolhida; a segunda mostra todas as contas do número | `SessionUtils.getAttemptsPerQuestion()`, `Messages.getFactorGameTryAgain` |
+| Depois de responder | nas caixas, a conta da criança (se acertou) ou uma com uma tabuada escolhida; na folha, as outras contas do número | `getShownPair`, `getOtherPairs`, `Messages.getFactorGameFeedback` |
+| Ritmo | certo: 1 s, ou 2 s quando há outras contas para ler; errado: 2,5 s; tocar no ecrã ou «Seguinte» avança logo | `FactorGameSessionScreen.tsx` |
+| Fim | certas à primeira de 10 e, para treinar mais, cada número não acertado à primeira com todas as suas contas («24 = 2 × 12 = 3 × 8 = 4 × 6») | `getOutcome`, `Messages.getFactorRoundText` |
+
 ### Decisões tomadas onde o briefing e o pedido não diziam nada
 
 - Nas tabuadas, a caixa 3 (duas certas seguidas) é o limiar para a resposta escrita. Nas competências não serve: uma competência junta muitas perguntas, enche a caixa numa sessão e a escolha múltipla desaparecia depois do primeiro jogo. Por isso o formato de uma competência segue as últimas 10 respostas dela (8 certas → teclado). Pedido do dono do projecto, a 21 de Outubro de 2026, «para ver no que dá».
@@ -408,6 +432,7 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 - Apagar um perfil, com confirmação, nas Definições.
 - Nomes de perfil: até 20 caracteres, sem repetidos (ignora maiúsculas).
 - O desafio sem fim só muda o recorde: não conta como jogo nem como dia de prática, não dá moedas nem níveis e não tem ajudas.
+- O Descobre a conta não muda nada no perfil além das tabuadas da multiplicação, que se escolhem no ecrã dele: não conta como jogo nem como dia de prática, não dá moedas nem níveis, não mexe nas caixas e não tem ajudas, relógio nem recordes. Por isso não precisou de uma versão nova dos dados.
 - No desafio, o interruptor fica num cartão «Avançado» nas Definições, por perfil, desligado por defeito. Ligado, aparece um cartão «Desafio sem fim» por baixo do Misturado, com o recorde.
 - No desafio responde-se sempre no teclado: na escolha múltipla acertava-se 1 em 4 à sorte, e na vertical escreve-se devagar demais com o tempo a contar.
 - Números com 5 ou mais algarismos aparecem com espaço nos milhares (12 345, 1 234 567), como se escreve em pt-PT; até 4 algarismos ficam como estavam (1000). Nessas contas o resultado fica numa linha só dele, desde o início, para não saltar de linha enquanto se escreve.
@@ -423,8 +448,9 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 - **Níveis de domínio** (`--level-0` a `--level-5`), no mapa e nas competências: cinzento → pêssego → amarelo → amarelo-esverdeado → verde-claro → verde. Legendas: Por praticar, A começar, A aprender, A melhorar, Quase lá, Dominado.
 - **Tipografia:** Nunito (variável), alojada no próprio site através de `@fontsource-variable/nunito`, sem pedidos à Google (privacidade das crianças).
 - **Mascote** (`Mascot.tsx`): cão castanho de orelhas caídas escuras, mancha creme na testa e no focinho, coleira azul com uma chapa em forma de faísca. Expressões: `happy` (início), `cheer` (certo, convite de desbloqueio), `encourage` (tenta outra vez, errado, rede de segurança, sair), `proud` (resumo e progresso). É sempre decorativa (`aria-hidden`); a mensagem está no balão.
-- **Ecrã inicial** (só escolhe o que praticar): em cima, o logótipo, a roda dentada das Definições e as moedas no canto (botão que abre o mealheiro); o Faísca; cinco cartões grandes: as quatro operações (2 × 2, com «Fácil · nível 2») e o Misturado a toda a largura; o desafio, se estiver ligado; Ver progresso.
+- **Ecrã inicial** (só escolhe o que praticar): em cima, o logótipo, a roda dentada das Definições e as moedas no canto (botão que abre o mealheiro); o Faísca; cinco cartões grandes: as quatro operações (2 × 2, com «Fácil · nível 2») e o Misturado a toda a largura; o Descobre a conta, também a toda a largura; o desafio, se estiver ligado; Ver progresso.
 - **Definições** (`SettingsScreen`, para o adulto): «‹ Início», o título e três cartões: «Quem vai jogar?» (escolher, criar e apagar perfis), «Língua» (cada língua escrita na própria língua, com `lang` para os leitores de ecrã) e «Avançado» (o desafio sem fim do perfil escolhido). Mudar de perfil remonta o ecrã, que fecha o formulário e a confirmação de apagar.
+- **Descobre a conta:** a cor da multiplicação e o símbolo «?×?». Antes de jogar: o Faísca explica, um exemplo (4 × 6 = 24, a verde), a frase «qualquer uma serve» e as tabuadas (as da multiplicação); o Jogar fica fixo em baixo. Na sessão: «✕ Sair», «Pergunta n de 10» ao centro (sem moedas, que o jogo não dá), a barra de progresso, `? × ? = 24` com a caixa seguinte em azul cheio, o «Tenta outra vez» e o teclado de 2 a 12; depois de responder, a folha do resultado em baixo, como na prática. No fim, como no resumo: festa, «7 de 10 certas à primeira», os números para treinar e «Início» / «Jogar outra vez» fixos em baixo.
 - **Desafio sem fim:** cor própria, um ardósia sóbrio (`--op-challenge`), e o símbolo ∞. Antes de jogar, as regras e o recorde. Na sessão: «✕ Sair», «Nível n» e as certas numa pastilha verde; uma barra com o tempo que falta e os segundos, que fica em tom quente (nunca vermelho) no último quarto; a conta; a mensagem da subida de nível; o teclado. No fim: como acabou, a última conta com a resposta certa a verde (e o que se escreveu, se foi um erro), as certas, o nível e o recorde.
 - **Ecrã de preparação** (`SetupScreen`): «‹ Início» e as moedas; o nome da operação com a sua cor; a dificuldade com cadeados (no × e ÷ com o exemplo: «tabuadas», «como 23 × 4»; nos bloqueados, o cadeado num distintivo sobre o canto do cartão, e «Por desbloquear» em letra que encolhe com o cartão, porque «desbloquear» não cabe num terço de um telemóvel; tocar num bloqueado abre a folha do que falta); as tabuadas no Fácil do × e ÷, ou o formato no + e −; no Misturado, as quatro operações para ligar e desligar, cada uma com a sua dificuldade. «Mais opções» fechado: modo das tabuadas, «Escrever sempre a resposta», relógio. O Jogar fica fixo em baixo e diz porque está desligado.
 - **Sessão:** no topo, «✕ Sair», «Pergunta n de 10» e as moedas com cinco pontos até à próxima (meio ponto na escolha múltipla). Com o relógio ligado, uma pastilha com o tempo e a referência («de 3:00», «recorde 1:32»); no tempo extra fica em tom quente suave, sem alarme.
