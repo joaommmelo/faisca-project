@@ -1,5 +1,5 @@
 // Template for sw.js. The build replaces the two placeholders with a version and the exact list of built files.
-const CACHE_NAME = "faisca-379c78610f90";
+const CACHE_NAME = "faisca-02223bf05046";
 const PRECACHE_URLS = [
     "./",
     "./assets/index-Brqa97BE.js",
