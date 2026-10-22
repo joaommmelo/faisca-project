@@ -183,6 +183,7 @@ export const es: Copy = {
         cannotUndo: "No se puede deshacer.",
         confirmDelete: "Sí, borrar",
         language: "Idioma",
+        settings: "Ajustes",
 
         install: "Instalar",
         installTitle: "Pon a Faísca en la pantalla de inicio",

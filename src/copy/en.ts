@@ -178,6 +178,7 @@ export const en: Copy = {
         cannotUndo: "This can't be undone.",
         confirmDelete: "Yes, delete",
         language: "Language",
+        settings: "Settings",
 
         install: "Install",
         installTitle: "Put Faísca on your home screen",

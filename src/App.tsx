@@ -5,6 +5,7 @@ import { ChallengeSessionScreen } from "./screens/ChallengeSessionScreen.tsx";
 import { HomeScreen } from "./screens/HomeScreen.tsx";
 import { ProgressScreen } from "./screens/ProgressScreen.tsx";
 import { SessionScreen } from "./screens/SessionScreen.tsx";
+import { SettingsScreen } from "./screens/SettingsScreen.tsx";
 import { SetupScreen } from "./screens/SetupScreen.tsx";
 import { SummaryScreen } from "./screens/SummaryScreen.tsx";
 import { WelcomeScreen } from "./screens/WelcomeScreen.tsx";
@@ -22,6 +23,7 @@ type View =
     | { name: "session" }
     | { name: "summary"; outcome: SessionOutcome }
     | { name: "progress" }
+    | { name: "settings" }
     | { name: "challenge"; run: ChallengeRun | null }
     | { name: "challenge-session" };
 
@@ -64,7 +66,12 @@ export function App() {
 
     const activeProfile: Profile | null = ProfilesUtils.getActive(data);
     if (activeProfile === null) {
-        return <WelcomeScreen data={data} locale={locale} onCreateProfile={(name) => setData(ProfilesUtils.add(data, name))} onLocaleChange={changeLocale} />;
+        // The first profile starts at home, whatever screen was open when the last one was deleted.
+        const createFirstProfile = (name: string): void => {
+            setData(ProfilesUtils.add(data, name));
+            setView({ name: "home" });
+        };
+        return <WelcomeScreen data={data} locale={locale} onCreateProfile={createFirstProfile} onLocaleChange={changeLocale} />;
     }
 
     const updateActiveProfile = (change: (profile: Profile) => Profile): void => {
@@ -117,6 +124,23 @@ export function App() {
             );
         case "progress":
             return <ProgressScreen profile={activeProfile} onBack={() => setView({ name: "home" })} />;
+        case "settings":
+            return (
+                <SettingsScreen
+                    key={activeProfile.id}
+                    data={data}
+                    profile={activeProfile}
+                    locale={locale}
+                    onSelectProfile={(profileId) => setData(ProfilesUtils.select(data, profileId))}
+                    onCreateProfile={(name) => setData(ProfilesUtils.add(data, name))}
+                    onDeleteProfile={(profileId) => setData(ProfilesUtils.remove(data, profileId))}
+                    onLocaleChange={changeLocale}
+                    onChallengeSwitch={(isChallengeEnabled) =>
+                        updateActiveProfile((profile) => ({ ...profile, settings: { ...profile.settings, isChallengeEnabled } }))
+                    }
+                    onBack={() => setView({ name: "home" })}
+                />
+            );
         case "challenge-session":
             return <ChallengeSessionScreen onFinish={finishChallenge} />;
         case "challenge":
@@ -132,23 +156,15 @@ export function App() {
             return (
                 <HomeScreen
                     key={activeProfile.id}
-                    data={data}
                     profile={activeProfile}
                     storageStatus={stored.status}
-                    locale={locale}
-                    onSelectProfile={(profileId) => setData(ProfilesUtils.select(data, profileId))}
-                    onCreateProfile={(name) => setData(ProfilesUtils.add(data, name))}
-                    onDeleteProfile={(profileId) => setData(ProfilesUtils.remove(data, profileId))}
                     onChoosePractice={(practice) => {
                         updateActiveProfile((profile) => ({ ...profile, settings: { ...profile.settings, practice } }));
                         setView({ name: "setup" });
                     }}
                     onShowProgress={() => setView({ name: "progress" })}
                     onOpenChallenge={() => setView({ name: "challenge", run: null })}
-                    onChallengeSwitch={(isChallengeEnabled) =>
-                        updateActiveProfile((profile) => ({ ...profile, settings: { ...profile.settings, isChallengeEnabled } }))
-                    }
-                    onLocaleChange={changeLocale}
+                    onOpenSettings={() => setView({ name: "settings" })}
                 />
             );
     }

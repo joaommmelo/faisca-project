@@ -163,6 +163,7 @@ export interface Labels {
     cannotUndo: string;
     confirmDelete: string;
     language: string;
+    settings: string;
 
     install: string;
     installTitle: string;

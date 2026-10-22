@@ -183,6 +183,7 @@ export const pt: Copy = {
         cannotUndo: "Não dá para desfazer.",
         confirmDelete: "Sim, apagar",
         language: "Língua",
+        settings: "Definições",
 
         install: "Instalar",
         installTitle: "Põe o Faísca no ecrã principal",

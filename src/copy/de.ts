@@ -190,6 +190,7 @@ export const de: Copy = {
         cannotUndo: "Das lässt sich nicht rückgängig machen.",
         confirmDelete: "Ja, löschen",
         language: "Sprache",
+        settings: "Einstellungen",
 
         install: "Installieren",
         installTitle: "Hol Faísca auf den Startbildschirm",

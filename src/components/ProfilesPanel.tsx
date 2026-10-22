@@ -13,7 +13,7 @@ interface ProfilesPanelProps {
     onDeleteProfile: (profileId: string) => void;
 }
 
-// Who is playing: switch, add or remove profiles. Opened from the name at the top of the home screen.
+// Who is playing: switch, add or remove profiles. In the settings.
 export function ProfilesPanel({ data, profile, onSelectProfile, onCreateProfile, onDeleteProfile }: ProfilesPanelProps) {
     const deleteTitleId: string = useId();
     const labels: Labels = Messages.getLabels();

@@ -195,6 +195,7 @@ export const fr: Copy = {
         cannotUndo: "C’est définitif.",
         confirmDelete: "Oui, supprimer",
         language: "Langue",
+        settings: "Réglages",
 
         install: "Installer",
         installTitle: "Mets Faísca sur l’écran d’accueil",

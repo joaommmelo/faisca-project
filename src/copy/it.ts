@@ -206,6 +206,7 @@ export const it: Copy = {
         cannotUndo: "Non si può annullare.",
         confirmDelete: "Sì, elimina",
         language: "Lingua",
+        settings: "Impostazioni",
 
         install: "Installa",
         installTitle: "Metti Faísca nella schermata Home",

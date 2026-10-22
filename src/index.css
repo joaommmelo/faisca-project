@@ -275,7 +275,13 @@ fieldset {
     border: 2px solid var(--color-border);
     border-radius: 50%;
     background: var(--color-surface);
+    box-shadow: 0 3px 0 var(--color-border);
     color: var(--color-text-muted);
+}
+
+.icon-button .icon {
+    width: 26px;
+    height: 26px;
 }
 
 .icon {
@@ -1947,6 +1953,12 @@ fieldset {
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
+}
+
+.home-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
 }
 
 .coin-pill {

@@ -1,52 +1,30 @@
 import { CoinButton } from "../components/CoinButton.tsx";
-import { LanguagePicker } from "../components/LanguagePicker.tsx";
+import { SettingsIcon } from "../components/Icons.tsx";
 import { Logo } from "../components/Logo.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
 import { PracticeTiles } from "../components/PracticeTiles.tsx";
-import { ProfilesPanel } from "../components/ProfilesPanel.tsx";
-import { SwitchField } from "../components/SwitchField.tsx";
 import type { Labels } from "../copy/copy.ts";
 import { useInstallPrompt, type InstallPrompt } from "../hooks/useInstallPrompt.ts";
 import type { Difficulty } from "../utils/difficulties/utils.ts";
 import { LevelsUtils } from "../utils/levels/utils.ts";
-import type { Locale } from "../utils/locales/utils.ts";
 import { Messages } from "../utils/messages.ts";
 import { OperationsUtils, type Operation } from "../utils/operations/utils.ts";
-import { ProfilesUtils, type AppData, type Practice, type Profile } from "../utils/profiles/utils.ts";
+import { ProfilesUtils, type Practice, type Profile } from "../utils/profiles/utils.ts";
 import type { StorageStatus } from "../utils/storage/utils.ts";
 
 interface HomeScreenProps {
-    data: AppData;
     profile: Profile;
     storageStatus: StorageStatus;
-    locale: Locale;
-    onSelectProfile: (profileId: string) => void;
-    onCreateProfile: (name: string) => void;
-    onDeleteProfile: (profileId: string) => void;
     onChoosePractice: (practice: Practice) => void;
     onShowProgress: () => void;
     onOpenChallenge: () => void;
-    onChallengeSwitch: (isChallengeEnabled: boolean) => void;
-    onLocaleChange: (locale: Locale) => void;
+    onOpenSettings: () => void;
 }
 
 // Only the choice of what to practise; everything about how to play it waits on the next screen. The coins sit in
-// the corner and open the piggy bank; who is playing rarely changes, so it waits at the bottom, and the challenge for
-// adults is switched on below that, after the language.
-export function HomeScreen({
-    data,
-    profile,
-    storageStatus,
-    locale,
-    onSelectProfile,
-    onCreateProfile,
-    onDeleteProfile,
-    onChoosePractice,
-    onShowProgress,
-    onOpenChallenge,
-    onChallengeSwitch,
-    onLocaleChange
-}: HomeScreenProps) {
+// the corner and open the piggy bank. What an adult changes once in a while (who is playing, the language, the
+// challenge for adults) waits behind the gear next to them.
+export function HomeScreen({ profile, storageStatus, onChoosePractice, onShowProgress, onOpenChallenge, onOpenSettings }: HomeScreenProps) {
     const { settings } = profile;
     const installPrompt: InstallPrompt = useInstallPrompt();
     const labels: Labels = Messages.getLabels();
@@ -70,7 +48,13 @@ export function HomeScreen({
         <main className="screen screen--home">
             <header className="home-header">
                 <Logo />
-                <CoinButton wallet={profile.wallet} />
+                {/* The coins keep the corner, where the piggy bank opens under them. */}
+                <div className="home-header__actions">
+                    <button type="button" className="icon-button" aria-label={labels.settings} onClick={onOpenSettings}>
+                        <SettingsIcon />
+                    </button>
+                    <CoinButton wallet={profile.wallet} />
+                </div>
             </header>
 
             <MascotMessage mood="happy" size={80}>
@@ -108,26 +92,6 @@ export function HomeScreen({
                     {labels.addToHomeScreen}
                 </button>
             )}
-
-            <ProfilesPanel
-                data={data}
-                profile={profile}
-                onSelectProfile={onSelectProfile}
-                onCreateProfile={onCreateProfile}
-                onDeleteProfile={onDeleteProfile}
-            />
-
-            <LanguagePicker locale={locale} onChange={onLocaleChange} />
-
-            <section className="card" aria-label={labels.advanced}>
-                <h2 className="section-title">{labels.advanced}</h2>
-                <SwitchField
-                    label={Messages.getChallengeName()}
-                    description={Messages.getChallengeAbout()}
-                    isOn={settings.isChallengeEnabled}
-                    onChange={onChallengeSwitch}
-                />
-            </section>
         </main>
     );
 }
