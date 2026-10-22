@@ -206,6 +206,7 @@ export interface Labels {
     seeProgress: string;
     advanced: string;
     whatToPractise: string;
+    gamesTitle: string;
     seePiggyBank: string;
     piggyBank: string;
     outOf: (total: number) => string;

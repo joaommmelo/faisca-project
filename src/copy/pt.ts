@@ -222,6 +222,7 @@ export const pt: Copy = {
         seeProgress: "Ver progresso",
         advanced: "Avançado",
         whatToPractise: "O que vamos praticar?",
+        gamesTitle: "Jogos",
         seePiggyBank: "Ver o mealheiro",
         piggyBank: "Mealheiro",
         outOf: (total) => `de ${total}`,

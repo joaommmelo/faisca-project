@@ -245,6 +245,7 @@ export const it: Copy = {
         seeProgress: "Vedi i progressi",
         advanced: "Avanzate",
         whatToPractise: "Su cosa ci alleniamo?",
+        gamesTitle: "Giochi",
         seePiggyBank: "Vedi il salvadanaio",
         piggyBank: "Salvadanaio",
         outOf: (total) => `di ${total}`,

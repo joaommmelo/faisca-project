@@ -1,13 +1,12 @@
 import { Messages } from "../utils/messages.ts";
-import { OperationsUtils } from "../utils/operations/utils.ts";
-import type { Practice } from "../utils/profiles/utils.ts";
+import { OperationsUtils, type Operation } from "../utils/operations/utils.ts";
 
 interface PracticeTilesProps {
-    summaries: Record<Practice, string>;
-    onChoose: (practice: Practice) => void;
+    summaries: Record<Operation, string>;
+    onChoose: (operation: Operation) => void;
 }
 
-// The main menu: one big tile per operation, plus the mix. Each opens its own screen before playing.
+// The main menu: one big tile per operation. Each opens its own screen before playing.
 export function PracticeTiles({ summaries, onChoose }: PracticeTilesProps) {
     return (
         <nav aria-label={Messages.getLabels().whatToPractise}>
@@ -23,17 +22,6 @@ export function PracticeTiles({ summaries, onChoose }: PracticeTilesProps) {
                         </button>
                     </li>
                 ))}
-                <li className="practices__mix">
-                    <button type="button" className="practice practice--mix" onClick={() => onChoose("mix")}>
-                        <span className="practice__symbol practice__symbol--mix" aria-hidden="true">
-                            {OperationsUtils.getValidOperations().map((operation) => (
-                                <span key={operation}>{OperationsUtils.getSymbol(operation)}</span>
-                            ))}
-                        </span>
-                        <span className="practice__name">{Messages.getMixName()}</span>
-                        <span className="practice__summary">{summaries.mix}</span>
-                    </button>
-                </li>
             </ul>
         </nav>
     );

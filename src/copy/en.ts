@@ -217,6 +217,7 @@ export const en: Copy = {
         seeProgress: "See progress",
         advanced: "Advanced",
         whatToPractise: "What shall we work on?",
+        gamesTitle: "Games",
         seePiggyBank: "Open the piggy bank",
         piggyBank: "Piggy bank",
         outOf: (total) => `of ${total}`,
