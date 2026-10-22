@@ -19,9 +19,9 @@ A v1 (só multiplicação) está na `main`. A v2 está na branch `v2`, ainda por
 - Pedidos seguintes do mesmo dia (ver «Pedidos seguintes»): números maiores na multiplicação e na divisão; «Misturado» com 2, 3 ou 4 operações; início só com a escolha e um ecrã de preparação com «Mais opções»; resultado logo por baixo da conta e tudo a avançar sozinho; saída com «Sim, sair do jogo» / «Não, continuar a jogar»; relógio ligado por defeito (para a frente, meta de 3 minutos); caixas de escrever a azul; ajuda desactivada sem moedas; «Início» sempre à vista no resumo; sem as caixas do «e vai 1» na vertical. Dados na versão 4, com migração de todas as anteriores.
 - Escolha múltipla nas competências (soma, subtração e × ÷ com números maiores) enquanto a criança não acerta 8 das últimas 10 respostas dessa competência, e de volta quando começa a falhar. Antes seguia a caixa da competência, que enchia num jogo e tirava a escolha múltipla para sempre.
 - **Desafio sem fim**, para adultos (ver «Desafio sem fim (para adultos)»): liga-se por perfil em «Avançado», no fundo do ecrã inicial. Perguntas seguidas, sempre escritas, cada uma com o seu tempo; a cada 5 certas sobe-se de nível, entram as outras operações, os números crescem até 7 algarismos e o tempo encurta; do nível 12 em diante fica tudo no máximo. Um erro ou o tempo a acabar terminam o desafio, e fica o recorde de certas. Não mexe no progresso da criança. Dados na versão 6.
-- Pedidos de 22 de Outubro (ver «Pedidos de 22 de Outubro»): público a partir dos 4 anos; o resultado volta a uma folha fixa no fundo do ecrã, por cima do teclado ou das opções; «Seguinte ›» com seta; «Início» e «Jogar outra vez» com os mesmos cantos e com ícones (casa e ▶); o «Por desbloquear» cabe nos cartões bloqueados.
+- Pedidos de 22 de Outubro (ver «Pedidos de 22 de Outubro»): público a partir dos 4 anos; o resultado volta a uma folha fixa no fundo do ecrã, por cima do teclado ou das opções; «Seguinte ›» com seta; «Início» e «Jogar outra vez» com os mesmos cantos e com ícones (casa e ▶); o «Por desbloquear» cabe nos cartões bloqueados; «Sair» pergunta numa folha por cima do jogo escurecido, só com «Sim» e «Não» (também no desafio).
 - 271 testes unitários (Vitest) a passar; `tsc` e `oxlint` limpos.
-- Testado num Chrome headless a 360, 390 e 820 px, sem erros na consola nem scroll horizontal: todas as operações, a vertical com ajuda e empréstimo através do zero, os marcos, o convite de desbloqueio, a rede de segurança, a migração da v1 e o arranque sem rede. No desafio: até ao nível 7, a subida de nível, o tempo parado com «Sair», o fim por erro e por tempo e o recorde; a conta mais larga (7 + 7 algarismos) cabe também a 320 px. A folha do resultado (certo, errado e com moeda) em escolha múltipla, teclado e vertical, e os cartões bloqueados a 360 e 390 px.
+- Testado num Chrome headless a 360, 390 e 820 px, sem erros na consola nem scroll horizontal: todas as operações, a vertical com ajuda e empréstimo através do zero, os marcos, o convite de desbloqueio, a rede de segurança, a migração da v1 e o arranque sem rede. No desafio: até ao nível 7, a subida de nível, o tempo parado com «Sair», o fim por erro e por tempo e o recorde; a conta mais larga (7 + 7 algarismos) cabe também a 320 px. A folha do resultado (certo, errado e com moeda) em escolha múltipla, teclado e vertical, e os cartões bloqueados a 360 e 390 px. A folha do «Sair» a 360, 390 e 820 px, com toques e teclas reais: tocar fora e Escape são «Não», as teclas não chegam à resposta enquanto está aberta, e no desafio o tempo pára.
 
 **À espera de decisão do dono do projecto:**
 
@@ -231,7 +231,7 @@ O pedido original da v2 está resumido aqui; as respostas do dono do projecto (2
 - **Tudo avança sozinho:** também depois de um erro e dos marcos, ao fim de pouco tempo; tocar no ecrã avança logo.
 - **O resultado aparece logo por baixo da conta,** antes do teclado ou das opções, para estar sempre à vista. (Substituído a 22 de Outubro: o resultado voltou a uma folha em baixo.)
 - **Ajuda desactivada com 0 moedas,** e com ar claramente apagado.
-- **Sair claro:** a filha do dono do projecto não percebeu o «Sair». A pergunta «Queres sair do jogo?» passa a ter as respostas «Sim, sair do jogo» e «Não, continuar a jogar», lado a lado e com o mesmo destaque; o botão do topo diz «Sair».
+- **Sair claro:** a filha do dono do projecto não percebeu o «Sair». A pergunta «Queres sair do jogo?» passa a ter as respostas «Sim, sair do jogo» e «Não, continuar a jogar», lado a lado e com o mesmo destaque; o botão do topo diz «Sair». (Substituído a 22 de Outubro: só «Sim» e «Não», numa folha.)
 - **Início menos carregado:** também confundia por ter muita coisa. O início só escolhe o que praticar; as definições passam para o ecrã de cada operação, com o essencial à vista e o resto em «Mais opções».
 - **Relógio ligado por defeito,** a contar para a frente, com 3 minutos como meta.
 - **Misturado:** uma mistura de 2, 3 ou as 4 operações, escolhidas pela criança.
@@ -244,6 +244,7 @@ O pedido original da v2 está resumido aqui; as respostas do dono do projecto (2
 - **Resultado numa folha em baixo:** o «Seguinte» e a mensagem voltam a uma folha fixa no fundo do ecrã, por cima do teclado ou das opções (que já não servem depois de responder), em vez de ficarem entre a conta e as opções. A conta fica em cima, com a resposta. O «Tenta outra vez» continua logo por baixo da conta.
 - **Botões do resumo iguais:** o «Jogar outra vez» tinha cantos mais redondos do que o «Início»; ficam iguais.
 - **Cartões bloqueados:** o «Por desbloquear» quase saía do cartão; agora cabe.
+- **Sair só com «Sim» e «Não», numa folha:** tanto texto confundia, e a pergunta no lugar da conta parecia mais uma pergunta do jogo. Agora sobe uma folha por cima do jogo escurecido, com o Faísca a perguntar «Queres sair do jogo?» e só «Sim» (casa) e «Não» (▶). Tocar fora da folha ou Escape é «Não». O desafio usa a mesma folha («Queres terminar o desafio?», com a estrela no «Sim»), sem a nota do que fica e do tempo parado.
 
 ### Desafio sem fim (para adultos, 21 de Outubro de 2026)
 
@@ -291,7 +292,7 @@ src/
                             SwitchField, ClockField, CoinButton, PiggyBank, ProfilesPanel, LevelMeter,
                             CoinStatus, SessionClock, Equation, ChoiceOptions, NumericKeypad, KeypadAnswer,
                             VerticalAnswer, VerticalProblem, HelpButton, HintBubble, TryAgainNote,
-                            FeedbackPanel, ProfileForm, ProgressMap, InstallCard, sparkPath.ts
+                            FeedbackPanel, ExitSheet, ProfileForm, ProgressMap, InstallCard, sparkPath.ts
   screens/                  WelcomeScreen, HomeScreen, SetupScreen, SessionScreen, SummaryScreen, ProgressScreen,
                             ChallengeScreen (regras e resultado do desafio), ChallengeSessionScreen
   hooks/useFocusOnMount.ts  foco no título ao abrir um ecrã (leitores de ecrã)
@@ -384,7 +385,7 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 - Uma resposta certa avança sozinha ao fim de 1 s (`PRAISE_DISPLAY_MILLISECONDS` em `SessionScreen.tsx`), ou logo, tocando no ecrã. Uma errada e uma com marcos (moeda, nível) esperam pelo «Seguinte».
 - A vertical não tem onde a criança marque o «e vai 1»: as marcas são só da ajuda e aparecem numa linha por cima da conta, que não existe antes disso. Na soma, o «1» por cima da coluna que o recebe (também quando a ajuda escreve o dígito de uma coluna que leva 1); na subtração, o algarismo riscado e o novo valor por cima (3 → 13, 0 → 9).
 - O cronómetro conta para cima e mostra o tempo no fim; nunca conta para baixo.
-- Sair a meio pede confirmação («O que já fizeste fica guardado.»).
+- Sair a meio pede confirmação, numa folha só com «Sim» e «Não».
 - Apagar um perfil, com confirmação, no fundo do ecrã inicial.
 - Nomes de perfil: até 20 caracteres, sem repetidos (ignora maiúsculas).
 - O desafio sem fim só muda o recorde: não conta como jogo nem como dia de prática, não dá moedas nem níveis e não tem ajudas.
@@ -409,7 +410,7 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 - **Sessão:** no topo, «✕ Sair», «Pergunta n de 10» e as moedas com cinco pontos até à próxima (meio ponto na escolha múltipla). Com o relógio ligado, uma pastilha com o tempo e a referência («de 3:00», «recorde 1:32»); no tempo extra fica em tom quente suave, sem alarme.
 - **Certo e errado não dependem só da cor:** certo tem visto, salto do Faísca e destaque verde; a opção escolhida errada fica riscada e tracejada; a vertical realça as colunas erradas.
 - **Feedback:** primeiro «Tenta outra vez» num balão, logo por baixo da conta; depois o resultado numa folha fixa no fundo do ecrã, por cima do teclado ou das opções, com o Faísca, a mensagem, os marcos e o botão «Seguinte ›». Tudo avança sozinho (ver «Avançar sozinho»). A moeda ganha voa para o saldo por cima da folha.
-- **Sair:** «✕ Sair» abre «Queres sair do jogo?» com «Sim, sair do jogo» (casa) e «Não, continuar a jogar» (play), lado a lado e do mesmo tamanho; o foco começa em continuar.
+- **Sair:** «✕ Sair» abre uma folha (`ExitSheet`, um `<dialog>` modal) que sobe por cima do jogo escurecido: o Faísca pergunta «Queres sair do jogo?» e há só «Sim» (casa) e «Não» (▶), lado a lado e do mesmo tamanho. O foco começa no «Não»; tocar fora da folha ou Escape também é «Não». O jogo fica por trás, inerte, e o teclado numérico não recebe teclas enquanto a folha está aberta.
 - **Caixas de escrever:** a resposta, as células da vertical, o cursor e as marcas são sempre azuis («é a tua vez»); os tons quentes ficam para os erros. A cor de cada operação fica nos cartões, nos símbolos e nos títulos.
 - **Resumo:** «Início» (casa) e «Jogar outra vez» (▶) numa barra fixa em baixo, sempre à vista, com os mesmos cantos. O resultado do desafio usa a mesma barra.
 - **Teclado do dispositivo nunca abre na sessão:** o teclado numérico é próprio. Um teclado físico também funciona (dígitos, Backspace, Enter).
