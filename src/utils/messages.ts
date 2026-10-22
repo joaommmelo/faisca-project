@@ -453,10 +453,6 @@ export class Messages {
         return `Nível ${level}!`;
     }
 
-    public static getChallengeExitNote(correctCount: number): string {
-        return `Fica o que já fizeste: ${this.getChallengeScore(correctCount)}.`;
-    }
-
     // The last question shows next to it, with the right answer.
     public static getChallengeEnding(run: ChallengeRun): Feedback {
         switch (run.ending) {

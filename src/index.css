@@ -661,34 +661,62 @@ fieldset {
     font-weight: 900;
 }
 
-.exit-confirm__choices {
+/* "Sair" asks in a sheet over the dimmed game, so the question cannot be mistaken for the game's next one. */
+.exit-sheet {
+    inset: auto 0 0;
+    width: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+.exit-sheet::backdrop {
+    background: rgba(42, 31, 23, 0.55);
+}
+
+.exit-sheet__inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    max-width: 608px;
+    margin: 0 auto;
+    padding: var(--space-5) var(--space-4) calc(var(--space-5) + env(safe-area-inset-bottom));
+}
+
+/* Yes and no side by side and equally big, so neither looks like the wrong one. */
+.exit-sheet__choices {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-3);
 }
 
-.exit-confirm__choice {
+.exit-sheet__choice {
     flex-direction: column;
-    min-height: 112px;
+    min-height: 120px;
     padding: var(--space-3);
     border: 3px solid;
-    font-size: 1.15rem;
+    font-size: 1.6rem;
     text-align: center;
 }
 
-.exit-confirm__choice .icon {
-    width: 2em;
-    height: 2em;
+.exit-sheet__choice .icon {
+    width: 1.6em;
+    height: 1.6em;
 }
 
-.exit-confirm__choice--leave {
+.exit-sheet__choice--leave {
     --button-shadow: var(--color-fur-dark);
     border-color: var(--color-fur-dark);
     background: var(--color-accent-soft);
     color: var(--color-fur-dark);
 }
 
-.exit-confirm__choice--stay {
+.exit-sheet__choice--stay {
     --button-shadow: var(--color-primary-pressed);
     border-color: var(--color-primary-pressed);
     background: var(--color-primary);
@@ -2205,6 +2233,14 @@ fieldset {
         animation: slide-up 180ms ease-out;
     }
 
+    .exit-sheet[open] {
+        animation: slide-up 200ms ease-out;
+    }
+
+    .exit-sheet[open]::backdrop {
+        animation: fade-in 200ms ease-out;
+    }
+
     .feedback--correct .feedback__title {
         animation: pop 360ms ease-out;
     }
@@ -2279,6 +2315,8 @@ fieldset {
     }
 
     .feedback,
+    .exit-sheet[open],
+    .exit-sheet[open]::backdrop,
     .try-again,
     .hint-bubble,
     .milestone,

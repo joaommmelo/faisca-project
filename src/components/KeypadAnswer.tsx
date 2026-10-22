@@ -11,11 +11,13 @@ interface KeypadAnswerProps {
     // The second-chance note, shown right under the question.
     tryAgainNote: ReactNode;
     help: ReactNode;
+    // The exit sheet is open: keys typed meanwhile do not reach the answer.
+    isPaused: boolean;
     onSubmit: (givenAnswer: number) => AttemptOutcome;
 }
 
 // Typing the answer. Mount it with a key per question so every question starts empty.
-export function KeypadAnswer({ question, record, tryAgainNote, help, onSubmit }: KeypadAnswerProps) {
+export function KeypadAnswer({ question, record, tryAgainNote, help, isPaused, onSubmit }: KeypadAnswerProps) {
     const [typedAnswer, setTypedAnswer] = useState<string>("");
 
     const confirm = (): void => {
@@ -32,7 +34,7 @@ export function KeypadAnswer({ question, record, tryAgainNote, help, onSubmit }:
             <NumericKeypad
                 announcement={typedAnswer.length === 0 ? "Ainda sem resposta" : `A tua resposta: ${typedAnswer}`}
                 canConfirm={KeypadUtils.canConfirm(typedAnswer)}
-                isDisabled={record !== null}
+                isDisabled={record !== null || isPaused}
                 onDigit={(digit) => setTypedAnswer(KeypadUtils.appendDigit(typedAnswer, String(digit), KeypadUtils.getMaxDigits()))}
                 onErase={() => setTypedAnswer(KeypadUtils.eraseDigit(typedAnswer))}
                 onConfirm={confirm}

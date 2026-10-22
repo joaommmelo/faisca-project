@@ -15,6 +15,8 @@ interface VerticalAnswerProps {
     // The second-chance note, shown right under the sum.
     tryAgainNote: ReactNode;
     help: HelpControl;
+    // The exit sheet is open: keys typed meanwhile do not reach the cells.
+    isPaused: boolean;
     onSubmit: (givenAnswer: number) => AttemptOutcome;
 }
 
@@ -24,7 +26,7 @@ interface HelpProgress {
 }
 
 // Writing a sum in columns. Mount it with a key per question so every question starts with empty cells.
-export function VerticalAnswer({ question, record, tryAgainNote, help, onSubmit }: VerticalAnswerProps) {
+export function VerticalAnswer({ question, record, tryAgainNote, help, isPaused, onSubmit }: VerticalAnswerProps) {
     const columns: VerticalColumn[] = VerticalUtils.getColumns(question);
     const [entry, setEntry] = useState<VerticalEntry>(() => VerticalUtils.createEntry(columns.length));
     const [wrongColumns, setWrongColumns] = useState<number[]>([]);
@@ -98,7 +100,7 @@ export function VerticalAnswer({ question, record, tryAgainNote, help, onSubmit 
             <NumericKeypad
                 announcement={entry.digits.every((digit) => digit === null) ? "Ainda sem resposta" : `A tua resposta: ${value}`}
                 canConfirm={VerticalUtils.canConfirm(entry)}
-                isDisabled={isAnswered}
+                isDisabled={isAnswered || isPaused}
                 onDigit={(digit) => setEntry(VerticalUtils.typeDigit(entry, digit))}
                 onErase={() => setEntry(VerticalUtils.erase(entry))}
                 onConfirm={confirm}

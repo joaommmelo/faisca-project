@@ -1,14 +1,14 @@
 import moment from "moment";
-import { useEffect, useEffectEvent, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
 import { ChoiceOptions } from "../components/ChoiceOptions.tsx";
 import { CoinStatus } from "../components/CoinStatus.tsx";
 import { Equation } from "../components/Equation.tsx";
+import { ExitSheet } from "../components/ExitSheet.tsx";
 import { FeedbackPanel } from "../components/FeedbackPanel.tsx";
 import { HelpButton, type HelpControl } from "../components/HelpButton.tsx";
 import { HintBubble } from "../components/HintBubble.tsx";
-import { CloseIcon, HomeIcon, PlayIcon } from "../components/Icons.tsx";
+import { CloseIcon, HomeIcon } from "../components/Icons.tsx";
 import { KeypadAnswer } from "../components/KeypadAnswer.tsx";
-import { MascotMessage } from "../components/Mascot.tsx";
 import { SessionClock } from "../components/SessionClock.tsx";
 import { TryAgainNote } from "../components/TryAgainNote.tsx";
 import { VerticalAnswer } from "../components/VerticalAnswer.tsx";
@@ -37,7 +37,6 @@ interface SessionScreenProps {
 }
 
 export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: SessionScreenProps) {
-    const exitTitleId: string = useId();
     const questionHeadingRef = useRef<HTMLHeadingElement>(null);
     const [session, setSession] = useState<Session>(() => SessionUtils.create(profile));
     const [startedAt] = useState<number>(() => moment().valueOf());
@@ -199,82 +198,63 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
                 />
             )}
 
-            {isExitConfirmOpen ? (
-                <section className="card stack exit-confirm" role="alertdialog" aria-labelledby={exitTitleId}>
-                    <MascotMessage mood="encourage" size={72}>
-                        <span id={exitTitleId}>Queres sair do jogo?</span>
-                    </MascotMessage>
-                    <p className="hint">O que já fizeste fica guardado.</p>
-                    {/* Yes and no answer the question directly, side by side and equally big, so neither looks like the wrong one. */}
-                    <div className="exit-confirm__choices">
-                        <button type="button" className="button exit-confirm__choice exit-confirm__choice--leave" onClick={onExit}>
-                            <HomeIcon />
-                            Sim, sair do jogo
-                        </button>
-                        <button
-                            type="button"
-                            className="button exit-confirm__choice exit-confirm__choice--stay"
-                            autoFocus
-                            onClick={() => setIsExitConfirmOpen(false)}
-                        >
-                            <PlayIcon />
-                            Não, continuar a jogar
-                        </button>
-                    </div>
-                </section>
-            ) : (
-                <div className="session-body">
-                    <h1 className="visually-hidden" tabIndex={-1} ref={questionHeadingRef}>
-                        {Messages.getSpokenQuestion(question)}
-                    </h1>
-                    {question.format === "vertical" && (
-                        <VerticalAnswer
-                            key={session.currentIndex}
-                            question={question}
+            <div className="session-body">
+                <h1 className="visually-hidden" tabIndex={-1} ref={questionHeadingRef}>
+                    {Messages.getSpokenQuestion(question)}
+                </h1>
+                {question.format === "vertical" && (
+                    <VerticalAnswer
+                        key={session.currentIndex}
+                        question={question}
+                        record={record}
+                        tryAgainNote={tryAgainNote}
+                        help={helpControl}
+                        isPaused={isExitConfirmOpen}
+                        onSubmit={submitAnswer}
+                    />
+                )}
+                {question.format === "keypad" && (
+                    <KeypadAnswer
+                        key={session.currentIndex}
+                        question={question}
+                        record={record}
+                        tryAgainNote={tryAgainNote}
+                        help={oneStepHelp}
+                        isPaused={isExitConfirmOpen}
+                        onSubmit={submitAnswer}
+                    />
+                )}
+                {question.format === "choice" && (
+                    <>
+                        <Equation question={question} typedAnswer="" isAnswered={record !== null} />
+                        {tryAgainNote}
+                        <ChoiceOptions
+                            options={question.options}
+                            answer={question.answer}
+                            missedAttempts={session.missedAttempts}
+                            hiddenOptions={hiddenOptions}
                             record={record}
-                            tryAgainNote={tryAgainNote}
-                            help={helpControl}
-                            onSubmit={submitAnswer}
+                            onChoose={submitAnswer}
                         />
-                    )}
-                    {question.format === "keypad" && (
-                        <KeypadAnswer
+                        {record === null && !session.isCurrentHelped ? <HelpButton control={useChoiceHelp} /> : oneStepHelp}
+                    </>
+                )}
+                {record !== null && (
+                    <>
+                        <button type="button" className="tap-to-continue" tabIndex={-1} aria-hidden="true" onClick={goToNextQuestion} />
+                        <FeedbackPanel
                             key={session.currentIndex}
-                            question={question}
-                            record={record}
-                            tryAgainNote={tryAgainNote}
-                            help={oneStepHelp}
-                            onSubmit={submitAnswer}
+                            feedback={Messages.getFeedback(record, { variant: session.records.length, hasRetryAhead: SessionUtils.hasRetryAhead(session) })}
+                            isCorrect={record.isCorrect}
+                            milestones={answerMilestones}
+                            onContinue={goToNextQuestion}
                         />
-                    )}
-                    {question.format === "choice" && (
-                        <>
-                            <Equation question={question} typedAnswer="" isAnswered={record !== null} />
-                            {tryAgainNote}
-                            <ChoiceOptions
-                                options={question.options}
-                                answer={question.answer}
-                                missedAttempts={session.missedAttempts}
-                                hiddenOptions={hiddenOptions}
-                                record={record}
-                                onChoose={submitAnswer}
-                            />
-                            {record === null && !session.isCurrentHelped ? <HelpButton control={useChoiceHelp} /> : oneStepHelp}
-                        </>
-                    )}
-                    {record !== null && (
-                        <>
-                            <button type="button" className="tap-to-continue" tabIndex={-1} aria-hidden="true" onClick={goToNextQuestion} />
-                            <FeedbackPanel
-                                key={session.currentIndex}
-                                feedback={Messages.getFeedback(record, { variant: session.records.length, hasRetryAhead: SessionUtils.hasRetryAhead(session) })}
-                                isCorrect={record.isCorrect}
-                                milestones={answerMilestones}
-                                onContinue={goToNextQuestion}
-                            />
-                        </>
-                    )}
-                </div>
+                    </>
+                )}
+            </div>
+
+            {isExitConfirmOpen && (
+                <ExitSheet question="Queres sair do jogo?" leaveIcon={<HomeIcon />} onLeave={onExit} onStay={() => setIsExitConfirmOpen(false)} />
             )}
         </main>
     );

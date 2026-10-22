@@ -1,8 +1,8 @@
 import moment from "moment";
-import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Equation } from "../components/Equation.tsx";
-import { CheckIcon, CloseIcon, PlayIcon, StarIcon } from "../components/Icons.tsx";
-import { MascotMessage } from "../components/Mascot.tsx";
+import { ExitSheet } from "../components/ExitSheet.tsx";
+import { CheckIcon, CloseIcon, StarIcon } from "../components/Icons.tsx";
 import { NumericKeypad } from "../components/NumericKeypad.tsx";
 import { ChallengeUtils, type ChallengeClock, type ChallengeEnding, type ChallengeQuestion, type ChallengeRun } from "../utils/challenge/utils.ts";
 import { KeypadUtils } from "../utils/keypad/utils.ts";
@@ -24,7 +24,6 @@ interface ChallengeSessionScreenProps {
 
 // Questions one after another, each against its own time, until a wrong answer, the time running out, or Sair.
 export function ChallengeSessionScreen({ onFinish }: ChallengeSessionScreenProps) {
-    const exitTitleId: string = useId();
     const questionHeadingRef = useRef<HTMLHeadingElement>(null);
     const [correctCount, setCorrectCount] = useState<number>(0);
     const [question, setQuestion] = useState<ChallengeQuestion>(() => ChallengeUtils.createQuestion(0, null));
@@ -131,42 +130,27 @@ export function ChallengeSessionScreen({ onFinish }: ChallengeSessionScreenProps
                 <p className="challenge-timer__time" role="timer">{`${Math.ceil(remainingMilliseconds / 1000)} s`}</p>
             </div>
 
-            {isExitConfirmOpen ? (
-                <section className="card stack exit-confirm" role="alertdialog" aria-labelledby={exitTitleId}>
-                    <MascotMessage mood="encourage" size={72}>
-                        <span id={exitTitleId}>Queres terminar o desafio?</span>
-                    </MascotMessage>
-                    <p className="hint">{Messages.getChallengeExitNote(correctCount)} O tempo está parado.</p>
-                    <div className="exit-confirm__choices">
-                        <button type="button" className="button exit-confirm__choice exit-confirm__choice--leave" onClick={() => finish("stop", null)}>
-                            <StarIcon />
-                            Sim, terminar
-                        </button>
-                        <button type="button" className="button exit-confirm__choice exit-confirm__choice--stay" autoFocus onClick={closeExitConfirm}>
-                            <PlayIcon />
-                            Não, continuar
-                        </button>
-                    </div>
-                </section>
-            ) : (
-                <div className="session-body">
-                    <h1 className="visually-hidden" tabIndex={-1} ref={questionHeadingRef}>
-                        {Messages.getSpokenQuestion(question)}
-                    </h1>
-                    <Equation question={question} typedAnswer={typedAnswer} isAnswered={isAnswered} />
-                    <p className="challenge-status" role="status">
-                        {isLevelUp ? Messages.getChallengeLevelUp(ChallengeUtils.getLevel(correctCount)) : ""}
-                    </p>
-                    <NumericKeypad
-                        announcement={typedAnswer.length === 0 ? "Ainda sem resposta" : `A tua resposta: ${NumbersUtils.format(Number(typedAnswer))}`}
-                        canConfirm={KeypadUtils.canConfirm(typedAnswer)}
-                        isDisabled={isAnswered}
-                        onDigit={(digit) => setTypedAnswer(KeypadUtils.appendDigit(typedAnswer, String(digit), ChallengeUtils.getMaxDigits()))}
-                        onErase={() => setTypedAnswer(KeypadUtils.eraseDigit(typedAnswer))}
-                        onConfirm={confirm}
-                    />
-                    {isAnswered && <button type="button" className="tap-to-continue" tabIndex={-1} aria-hidden="true" onClick={goToNextQuestion} />}
-                </div>
+            <div className="session-body">
+                <h1 className="visually-hidden" tabIndex={-1} ref={questionHeadingRef}>
+                    {Messages.getSpokenQuestion(question)}
+                </h1>
+                <Equation question={question} typedAnswer={typedAnswer} isAnswered={isAnswered} />
+                <p className="challenge-status" role="status">
+                    {isLevelUp ? Messages.getChallengeLevelUp(ChallengeUtils.getLevel(correctCount)) : ""}
+                </p>
+                <NumericKeypad
+                    announcement={typedAnswer.length === 0 ? "Ainda sem resposta" : `A tua resposta: ${NumbersUtils.format(Number(typedAnswer))}`}
+                    canConfirm={KeypadUtils.canConfirm(typedAnswer)}
+                    isDisabled={isAnswered || isExitConfirmOpen}
+                    onDigit={(digit) => setTypedAnswer(KeypadUtils.appendDigit(typedAnswer, String(digit), ChallengeUtils.getMaxDigits()))}
+                    onErase={() => setTypedAnswer(KeypadUtils.eraseDigit(typedAnswer))}
+                    onConfirm={confirm}
+                />
+                {isAnswered && <button type="button" className="tap-to-continue" tabIndex={-1} aria-hidden="true" onClick={goToNextQuestion} />}
+            </div>
+
+            {isExitConfirmOpen && (
+                <ExitSheet question="Queres terminar o desafio?" leaveIcon={<StarIcon />} onLeave={() => finish("stop", null)} onStay={closeExitConfirm} />
             )}
         </main>
     );
