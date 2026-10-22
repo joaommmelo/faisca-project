@@ -4,12 +4,14 @@ import { ClockField } from "../components/ClockField.tsx";
 import { ClockResultCard } from "../components/ClockResultCard.tsx";
 import { CoinButton } from "../components/CoinButton.tsx";
 import { GameSymbol } from "../components/GameSymbol.tsx";
+import { LevelMeter } from "../components/LevelMeter.tsx";
 import { BackIcon, HomeIcon, PlayIcon } from "../components/Icons.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
 import { RewardsCard } from "../components/RewardsCard.tsx";
 import { RoundBoard } from "../components/RoundBoard.tsx";
 import type { Labels } from "../copy/copy.ts";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
+import { LevelsUtils } from "../utils/levels/utils.ts";
 import { Messages } from "../utils/messages.ts";
 import type { Profile, ProfileSettings } from "../utils/profiles/utils.ts";
 import { RecordsUtils } from "../utils/records/utils.ts";
@@ -107,6 +109,10 @@ function RoundGameRules({ game, profile, onSettingsChange, onPlay }: RoundGameRu
                 />
             </section>
             <section className={`card stack card--${game}`}>
+                <LevelMeter
+                    track={LevelsUtils.getTrack(profile.tracks, RoundGameUtils.getTrackId(game))}
+                    help={{ earning: "game", nextSkillName: Messages.getNextRoundSkillName(game, level) }}
+                />
                 <button
                     type="button"
                     className="more-options"

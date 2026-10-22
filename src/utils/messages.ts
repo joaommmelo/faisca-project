@@ -5,16 +5,17 @@ import { es } from "../copy/es.ts";
 import { fr } from "../copy/fr.ts";
 import { it } from "../copy/it.ts";
 import { pt } from "../copy/pt.ts";
-import type { Skill } from "./arithmetic/utils.ts";
+import { ArithmeticUtils, type Skill } from "./arithmetic/utils.ts";
 import { BalanceGameUtils, type BalancePan, type BalanceRound, type BalanceSide } from "./balanceGame/utils.ts";
 import { ChallengeUtils, type ChallengeRun } from "./challenge/utils.ts";
 import { ClockUtils, type ClockDirection, type ClockReference, type ClockSettings } from "./clock/utils.ts";
 import { DifficultiesUtils, type Difficulty } from "./difficulties/utils.ts";
 import { FactorGameUtils, type FactorPair, type FactorRound, type FactorRoundResult } from "./factorGame/utils.ts";
+import { LevelsUtils, type LevelEarning, type TrackProgress } from "./levels/utils.ts";
 import { HelpsUtils, type ArithmeticHint, type HelpUnavailableReason, type Calculation, type VerticalHelpStep } from "./helps/utils.ts";
 import { LocalesUtils, type Locale } from "./locales/utils.ts";
 import { MahjongUtils, type MahjongEnding, type MahjongFace } from "./mahjong/utils.ts";
-import type { MemoryCard, MemoryContent, MemoryFace } from "./memoryGame/utils.ts";
+import { MemoryGameUtils, type MemoryCard, type MemoryContent, type MemoryFace } from "./memoryGame/utils.ts";
 import { NumbersUtils } from "./numbers/utils.ts";
 import { OperationsUtils, type Operation } from "./operations/utils.ts";
 import type { ClockOutcome, Milestone, SessionOffer, UnlockRequirement, UnlockStep } from "./progression/utils.ts";
@@ -333,6 +334,44 @@ export class Messages {
             default:
                 return this.getCopy().unlockDistinctStep(step.needed);
         }
+    }
+
+    // The skill the next level opens in a difficulty of an operation, or null when every skill is open already (and in
+    // the times tables, which have none).
+    public static getNextSkillName(operation: Operation, difficulty: Difficulty, level: number): string | null {
+        const skills: Skill[] = ArithmeticUtils.getSkills(operation, difficulty);
+        return level < skills.length ? this.getSkillName(skills[level]) : null;
+    }
+
+    // The kind of round the next level of a game of rounds opens, or null when every one is open.
+    public static getNextRoundSkillName(game: RoundGameId, level: number): string | null {
+        const skills: string[] = RoundGameUtils.getSkills(game);
+        return level < skills.length ? this.getRoundSkillName(game, skills[level]) : null;
+    }
+
+    // Under the "?" of a level: what is left to the next one, what does not count, and what the next level opens.
+    public static getLevelHelp(track: TrackProgress, earning: LevelEarning, nextSkillName: string | null): Feedback {
+        const copy: Copy = this.getCopy();
+        const nextLevel: number = track.level + 1;
+        const pointsPerAnswer: number = (() => {
+            switch (earning) {
+                case "practice":
+                    return LevelsUtils.getPointsForAnswer("keypad");
+                case "game":
+                    return RoundGameUtils.getPointsForAnswer();
+                default:
+                    return MemoryGameUtils.getPointsForPair();
+            }
+        })();
+        const answersLeft: number = LevelsUtils.getAnswersToLevelUp(track, pointsPerAnswer);
+        return {
+            title: earning === "memory" ? copy.levelHelpPairs(answersLeft, nextLevel) : copy.levelHelpAnswers(answersLeft, nextLevel),
+            lines: [
+                ...(earning === "practice" ? [copy.levelHelpChoiceHalf] : []),
+                copy.levelHelpWithHelp,
+                ...(nextSkillName === null ? [] : [copy.levelHelpOpens(nextLevel, nextSkillName)])
+            ]
+        };
     }
 
     public static getUnlockLevelMissing(count: number): string {

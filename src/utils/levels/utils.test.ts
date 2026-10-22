@@ -48,3 +48,11 @@ describe("LevelsUtils.getPointsToReach", () => {
         expect(LevelsUtils.getPointsToReach(3)).toBe(LevelsUtils.getPointsToLevelUp(1) + LevelsUtils.getPointsToLevelUp(2));
     });
 });
+
+describe("LevelsUtils.getAnswersToLevelUp", () => {
+    it("counts the right answers left in the current level, rounding up", () => {
+        const track: TrackProgress = { ...LevelsUtils.createTrack(), points: 21 };
+        expect(LevelsUtils.getAnswersToLevelUp(track, 2)).toBe(20);
+        expect(LevelsUtils.getAnswersToLevelUp(track, 1)).toBe(39);
+    });
+});

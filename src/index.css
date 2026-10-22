@@ -2040,6 +2040,42 @@ fieldset {
     background: var(--op-ink, var(--color-primary));
 }
 
+/* The "?" next to the bar, in the colour of the bar: what is left to the next level. */
+.level-meter__help {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 3px solid var(--op-ink, var(--color-primary));
+    border-radius: 50%;
+    background: var(--color-surface);
+    color: var(--op-ink, var(--color-primary));
+    font-size: 1.3rem;
+    font-weight: 900;
+    line-height: 1;
+    position: relative;
+}
+
+/* A touch target of 48 px around the 40 px circle. */
+.level-meter__help::after {
+    content: "";
+    position: absolute;
+    inset: -7px;
+}
+
+.level-help {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding-left: 1.2em;
+    color: var(--color-text-muted);
+    font-weight: 700;
+}
+
 .level-badge {
     display: inline-flex;
     align-items: center;

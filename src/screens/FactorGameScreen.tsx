@@ -4,12 +4,14 @@ import { ClockField } from "../components/ClockField.tsx";
 import { ClockResultCard } from "../components/ClockResultCard.tsx";
 import { CoinButton } from "../components/CoinButton.tsx";
 import { FactorEquation } from "../components/FactorEquation.tsx";
+import { LevelMeter } from "../components/LevelMeter.tsx";
 import { BackIcon, HomeIcon, PlayIcon } from "../components/Icons.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
 import { RewardsCard } from "../components/RewardsCard.tsx";
 import { TablesPicker } from "../components/TablesPicker.tsx";
 import type { Labels } from "../copy/copy.ts";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
+import { LevelsUtils } from "../utils/levels/utils.ts";
 import { FactorGameUtils, type FactorGameOutcome } from "../utils/factorGame/utils.ts";
 import { Messages } from "../utils/messages.ts";
 import type { Profile, ProfileSettings } from "../utils/profiles/utils.ts";
@@ -102,6 +104,7 @@ function FactorGameRules({ profile, onSettingsChange, onPlay }: FactorGameRulesP
                 <p>{Messages.getFactorGameAnyAnswer()}</p>
             </section>
             <section className="card stack card--multiplication">
+                <LevelMeter track={LevelsUtils.getTrack(profile.tracks, FactorGameUtils.getTrackId())} help={{ earning: "game", nextSkillName: null }} />
                 <TablesPicker
                     selectedTables={tables}
                     onChange={(changedTables) => onSettingsChange({ ...settings, multiplication: { ...settings.multiplication, tables: changedTables } })}

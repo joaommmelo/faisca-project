@@ -8,7 +8,7 @@ import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
 import { ArithmeticUtils } from "../utils/arithmetic/utils.ts";
 import { DifficultiesUtils } from "../utils/difficulties/utils.ts";
 import { FactorGameUtils } from "../utils/factorGame/utils.ts";
-import { LevelsUtils } from "../utils/levels/utils.ts";
+import { LevelsUtils, type TrackProgress } from "../utils/levels/utils.ts";
 import { MemoryGameUtils } from "../utils/memoryGame/utils.ts";
 import { Messages } from "../utils/messages.ts";
 import { OperationsUtils, type Operation } from "../utils/operations/utils.ts";
@@ -77,7 +77,7 @@ export function ProgressScreen({ profile, onBack }: ProgressScreenProps) {
             {/* Its answers also light up the times-table map, with the multiplication. */}
             <section className="card stack card--multiplication">
                 <h2 className="section-title">{Messages.getFactorGameName()}</h2>
-                <LevelMeter track={LevelsUtils.getTrack(profile.tracks, FactorGameUtils.getTrackId())} />
+                <LevelMeter track={LevelsUtils.getTrack(profile.tracks, FactorGameUtils.getTrackId())} help={{ earning: "game", nextSkillName: null }} />
             </section>
 
             {RoundGameUtils.getValidGames().map((game) => (
@@ -86,7 +86,7 @@ export function ProgressScreen({ profile, onBack }: ProgressScreenProps) {
 
             <section className="card stack card--memory">
                 <h2 className="section-title">{Messages.getMemoryGameName()}</h2>
-                <LevelMeter track={LevelsUtils.getTrack(profile.tracks, MemoryGameUtils.getTrackId())} />
+                <LevelMeter track={LevelsUtils.getTrack(profile.tracks, MemoryGameUtils.getTrackId())} help={{ earning: "memory", nextSkillName: null }} />
             </section>
         </main>
     );
@@ -105,7 +105,10 @@ function RoundGameProgress({ profile, game }: RoundGameProgressProps) {
     return (
         <section className={`card stack card--${game}`}>
             <h2 className="section-title">{Messages.getRoundGameName(game)}</h2>
-            <LevelMeter track={LevelsUtils.getTrack(profile.tracks, RoundGameUtils.getTrackId(game))} />
+            <LevelMeter
+                track={LevelsUtils.getTrack(profile.tracks, RoundGameUtils.getTrackId(game))}
+                help={{ earning: "game", nextSkillName: Messages.getNextRoundSkillName(game, level) }}
+            />
             <ul className="skills">
                 {RoundGameUtils.getSkills(game).map((skill) => {
                     const isOpen: boolean = openSkills.includes(skill);
@@ -167,6 +170,7 @@ function OperationProgress({ profile, operation }: OperationProgressProps) {
             <ul className="difficulty-progress">
                 {DifficultiesUtils.getValidDifficulties().map((difficulty) => {
                     const isUnlocked: boolean = DifficultiesUtils.isUnlocked(difficulty, profile.unlockedDifficulties[operation]);
+                    const track: TrackProgress = LevelsUtils.getTrack(profile.tracks, LevelsUtils.getTrackId(operation, difficulty));
                     return (
                         <li key={difficulty} className="difficulty-progress__item">
                             <p className="difficulty-progress__name">
@@ -175,7 +179,10 @@ function OperationProgress({ profile, operation }: OperationProgressProps) {
                             </p>
                             {isUnlocked ? (
                                 <>
-                                    <LevelMeter track={LevelsUtils.getTrack(profile.tracks, LevelsUtils.getTrackId(operation, difficulty))} />
+                                    <LevelMeter
+                                        track={track}
+                                        help={{ earning: "practice", nextSkillName: Messages.getNextSkillName(operation, difficulty, track.level) }}
+                                    />
                                     {OperationsUtils.usesTables(operation, difficulty) && <TablesProgress profile={profile} operation={operation} />}
                                     <ul className="skills">
                                         {ArithmeticUtils.getSkills(operation, difficulty).map((skill) => {

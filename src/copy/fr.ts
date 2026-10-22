@@ -130,6 +130,12 @@ export const fr: Copy = {
     unlockLevelStep: (level) => `Atteins le niveau ${level}`,
     unlockLevelMissing: (count) =>
         `${count < 2 ? `Encore ${count} bonne réponse` : `Encore ${count} bonnes réponses`}. Celles à choix multiple comptent pour moitié.`,
+    levelHelpAnswers: (count, level) =>
+        count < 2 ? `Encore ${count} bonne réponse pour le niveau ${level}.` : `Encore ${count} bonnes réponses pour le niveau ${level}.`,
+    levelHelpPairs: (count, level) => (count < 2 ? `Encore ${count} paire pour le niveau ${level}.` : `Encore ${count} paires pour le niveau ${level}.`),
+    levelHelpChoiceHalf: "Celles à choix multiple comptent pour moitié.",
+    levelHelpWithHelp: "Ce que tu fais avec de l’aide ne compte pas.",
+    levelHelpOpens: (level, name) => `Au niveau ${level}, on commence : ${name}.`,
     unlockCorrectStep: (correct, outOf) => `Réussis ${correct} calculs écrits sur ${outOf}`,
     unlockMissingAnswers: (count) => (count < 2 ? `Encore ${count} calcul.` : `Encore ${count} calculs.`),
     unlockDistinctStep: (count) => `Fais ${count} calculs différents`,
@@ -409,6 +415,7 @@ export const fr: Copy = {
         mapCaption: "Grille des tables : chaque case montre où tu en es pour chaque calcul.",
         legend: "Légende",
         levelProgress: (level) => `Progression du niveau ${level}`,
+        levelHelp: (level) => `Ce qu’il reste pour le niveau ${level}`,
 
         lastQuestion: (equation) => `Le dernier calcul : ${equation}`,
         correctAnswers: (count) => (count < 2 ? "bonne réponse" : "bonnes réponses")

@@ -123,6 +123,11 @@ export const de: Copy = {
         `Fast geschafft! Spiel noch eine Runde auf ${difficultyNames[playDifficulty]}, dann ist ${difficultyNames[nextDifficulty]} frei.`,
     unlockLevelStep: (level) => `Erreiche Level ${level}`,
     unlockLevelMissing: (count) => `${count === 1 ? "Noch 1 richtige Aufgabe" : `Noch ${count} richtige Aufgaben`}. Aufgaben zum Auswählen zählen halb.`,
+    levelHelpAnswers: (count, level) => (count === 1 ? `Noch 1 richtige Aufgabe bis Level ${level}.` : `Noch ${count} richtige Aufgaben bis Level ${level}.`),
+    levelHelpPairs: (count, level) => (count === 1 ? `Noch 1 Paar bis Level ${level}.` : `Noch ${count} Paare bis Level ${level}.`),
+    levelHelpChoiceHalf: "Aufgaben zum Auswählen zählen halb.",
+    levelHelpWithHelp: "Was du mit Hilfe machst, zählt nicht.",
+    levelHelpOpens: (level, name) => `Ab Level ${level} neu: ${name}.`,
     unlockCorrectStep: (correct, outOf) => `Löse ${correct} von ${outOf} getippten Aufgaben richtig`,
     unlockMissingAnswers: (count) => (count === 1 ? "Noch 1 Aufgabe." : `Noch ${count} Aufgaben.`),
     unlockDistinctStep: (count) => `Rechne ${count} verschiedene Aufgaben`,
@@ -405,6 +410,7 @@ export const de: Copy = {
         mapCaption: "Einmaleins-Tafel: Jedes Kästchen zeigt, wie weit du bei dieser Aufgabe bist.",
         legend: "Legende",
         levelProgress: (level) => `Fortschritt auf Level ${level}`,
+        levelHelp: (level) => `Was bis Level ${level} noch fehlt`,
 
         lastQuestion: (equation) => `Die letzte Aufgabe: ${equation}`,
         correctAnswers: () => "Richtige"

@@ -142,6 +142,12 @@ export const it: Copy = {
         `Ci sei quasi! Finisci una partita in ${difficultyNames[playDifficulty]} e ${difficultyNames[nextDifficulty]} si sblocca.`,
     unlockLevelStep: (level) => `Raggiungi il livello ${level}`,
     unlockLevelMissing: (count) => `${count === 1 ? "Manca 1 calcolo giusto" : `Mancano ${count} calcoli giusti`}. Quelli a scelta multipla valgono la metà.`,
+    levelHelpAnswers: (count, level) =>
+        count === 1 ? `Manca 1 calcolo giusto per il livello ${level}.` : `Mancano ${count} calcoli giusti per il livello ${level}.`,
+    levelHelpPairs: (count, level) => (count === 1 ? `Manca 1 coppia per il livello ${level}.` : `Mancano ${count} coppie per il livello ${level}.`),
+    levelHelpChoiceHalf: "Quelli a scelta multipla valgono la metà.",
+    levelHelpWithHelp: "Quello che fai con l'aiuto non conta.",
+    levelHelpOpens: (level, name) => `Al livello ${level} si comincia con: ${name}.`,
     unlockCorrectStep: (correct, outOf) => `Risolvi ${correct} calcoli scritti su ${outOf}`,
     unlockMissingAnswers: (count) => (count === 1 ? "Manca 1 calcolo." : `Mancano ${count} calcoli.`),
     unlockDistinctStep: (count) => `Fai ${count} calcoli diversi`,
@@ -418,6 +424,7 @@ export const it: Copy = {
         mapCaption: "Mappa delle tabelline: ogni quadretto mostra come va ogni calcolo.",
         legend: "Legenda",
         levelProgress: (level) => `Avanzamento nel livello ${level}`,
+        levelHelp: (level) => `Cosa manca per il livello ${level}`,
 
         lastQuestion: (equation) => `L'ultimo calcolo: ${equation}`,
         correctAnswers: (count) => (count === 1 ? "giusta" : "giuste")

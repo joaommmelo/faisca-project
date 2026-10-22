@@ -103,6 +103,12 @@ export interface Copy {
     unlockLevelStep: (level: number) => string;
     // The typed right answers left to reach the level; multiple-choice answers count half.
     unlockLevelMissing: (count: number) => string;
+    // What is left to the next level: the right answers (or Memória's pairs), what does not count, and what opens.
+    levelHelpAnswers: (count: number, level: number) => string;
+    levelHelpPairs: (count: number, level: number) => string;
+    levelHelpChoiceHalf: string;
+    levelHelpWithHelp: string;
+    levelHelpOpens: (level: number, name: string) => string;
     unlockCorrectStep: (correct: number, outOf: number) => string;
     unlockMissingAnswers: (count: number) => string;
     unlockDistinctStep: (count: number) => string;
@@ -348,6 +354,7 @@ export interface Labels {
     mapCaption: string;
     legend: string;
     levelProgress: (level: number) => string;
+    levelHelp: (level: number) => string;
 
     lastQuestion: (equation: string) => string;
     correctAnswers: (count: number) => string;

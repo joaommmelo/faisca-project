@@ -4,6 +4,7 @@ import { ClockField } from "../components/ClockField.tsx";
 import { ClockResultCard } from "../components/ClockResultCard.tsx";
 import { CoinButton } from "../components/CoinButton.tsx";
 import { GameSymbol } from "../components/GameSymbol.tsx";
+import { LevelMeter } from "../components/LevelMeter.tsx";
 import { BackIcon, BoneIcon, HomeIcon, PlayIcon } from "../components/Icons.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
 import { MemoryCardFace } from "../components/MemoryCardFace.tsx";
@@ -12,6 +13,7 @@ import { SegmentedField } from "../components/SegmentedField.tsx";
 import { TablesPicker } from "../components/TablesPicker.tsx";
 import type { Labels } from "../copy/copy.ts";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
+import { LevelsUtils } from "../utils/levels/utils.ts";
 import { MemoryGameUtils, type MemoryContent, type MemoryFace, type MemoryGameOutcome } from "../utils/memoryGame/utils.ts";
 import { Messages } from "../utils/messages.ts";
 import type { Profile, ProfileSettings } from "../utils/profiles/utils.ts";
@@ -123,6 +125,7 @@ function MemoryGameRules({ profile, onSettingsChange, onPlay }: MemoryGameRulesP
                         </span>
                     ))}
                 </div>
+                <LevelMeter track={LevelsUtils.getTrack(profile.tracks, MemoryGameUtils.getTrackId())} help={{ earning: "memory", nextSkillName: null }} />
                 <SegmentedField<MemoryContent>
                     legend={labels.contentQuestion}
                     value={memoryGame.content}

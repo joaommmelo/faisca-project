@@ -11,7 +11,7 @@ import type { Labels } from "../copy/copy.ts";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
 import type { ClockSettings } from "../utils/clock/utils.ts";
 import { DifficultiesUtils, type Difficulty } from "../utils/difficulties/utils.ts";
-import { LevelsUtils } from "../utils/levels/utils.ts";
+import { LevelsUtils, type TrackProgress } from "../utils/levels/utils.ts";
 import { Messages } from "../utils/messages.ts";
 import { OperationsUtils, type AdditiveOperation, type MultiplicativeOperation, type Operation } from "../utils/operations/utils.ts";
 import { ProfilesUtils, type PlayProblem, type Profile, type ProfileSettings } from "../utils/profiles/utils.ts";
@@ -113,6 +113,7 @@ interface OperationFieldsProps {
 function OperationFields({ profile, operation, onSettingsChange }: OperationFieldsProps) {
     const { settings } = profile;
     const difficulty: Difficulty = ProfilesUtils.getDifficulty(settings, operation);
+    const track: TrackProgress = LevelsUtils.getTrack(profile.tracks, LevelsUtils.getTrackId(operation, difficulty));
     const [lockedDifficulty, setLockedDifficulty] = useState<Difficulty | null>(null);
     const unlockRequirement: UnlockRequirement | null = ProgressionUtils.getUnlockRequirement(profile, operation);
 
@@ -130,7 +131,7 @@ function OperationFields({ profile, operation, onSettingsChange }: OperationFiel
                 onChange={(difficulty) => onSettingsChange({ ...settings, [operation]: { ...settings[operation], difficulty } })}
                 onChooseLocked={setLockedDifficulty}
             />
-            <LevelMeter track={LevelsUtils.getTrack(profile.tracks, LevelsUtils.getTrackId(operation, difficulty))} />
+            <LevelMeter track={track} help={{ earning: "practice", nextSkillName: Messages.getNextSkillName(operation, difficulty, track.level) }} />
             {lockedDifficulty !== null && unlockRequirement !== null && (
                 <UnlockSheet lockedDifficulty={lockedDifficulty} requirement={unlockRequirement} onClose={() => setLockedDifficulty(null)} />
             )}

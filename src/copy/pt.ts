@@ -119,6 +119,11 @@ export const pt: Copy = {
         `Já está quase! Acaba um jogo no ${difficultyNames[playDifficulty]} e o ${difficultyNames[nextDifficulty]} abre.`,
     unlockLevelStep: (level) => `Chega ao nível ${level}`,
     unlockLevelMissing: (count) => `${count === 1 ? "Falta 1 conta certa" : `Faltam ${count} contas certas`}. As de escolha múltipla contam metade.`,
+    levelHelpAnswers: (count, level) => (count === 1 ? `Falta 1 conta certa para o nível ${level}.` : `Faltam ${count} contas certas para o nível ${level}.`),
+    levelHelpPairs: (count, level) => (count === 1 ? `Falta 1 par para o nível ${level}.` : `Faltam ${count} pares para o nível ${level}.`),
+    levelHelpChoiceHalf: "As de escolha múltipla contam metade.",
+    levelHelpWithHelp: "O que fizeres com ajuda não conta.",
+    levelHelpOpens: (level, name) => `No nível ${level} começa: ${name}.`,
     unlockCorrectStep: (correct, outOf) => `Acerta ${correct} de ${outOf} contas escritas`,
     unlockMissingAnswers: (count) => (count === 1 ? "Falta 1 conta." : `Faltam ${count} contas.`),
     unlockDistinctStep: (count) => `Faz ${count} contas diferentes`,
@@ -395,6 +400,7 @@ export const pt: Copy = {
         mapCaption: "Mapa das tabuadas: cada quadrado mostra como vai cada conta.",
         legend: "Legenda",
         levelProgress: (level) => `Progresso no nível ${level}`,
+        levelHelp: (level) => `O que falta para o nível ${level}`,
 
         lastQuestion: (equation) => `A última conta: ${equation}`,
         correctAnswers: (count) => (count === 1 ? "certa" : "certas")

@@ -119,6 +119,12 @@ export const es: Copy = {
         `¡Ya casi! Termina una partida en ${difficultyNames[playDifficulty]} y se desbloquea ${difficultyNames[nextDifficulty]}.`,
     unlockLevelStep: (level) => `Llega al nivel ${level}`,
     unlockLevelMissing: (count) => `${count === 1 ? "Falta 1 cuenta acertada" : `Faltan ${count} cuentas acertadas`}. Las de opción múltiple cuentan la mitad.`,
+    levelHelpAnswers: (count, level) =>
+        count === 1 ? `Falta 1 cuenta acertada para el nivel ${level}.` : `Faltan ${count} cuentas acertadas para el nivel ${level}.`,
+    levelHelpPairs: (count, level) => (count === 1 ? `Falta 1 pareja para el nivel ${level}.` : `Faltan ${count} parejas para el nivel ${level}.`),
+    levelHelpChoiceHalf: "Las de opción múltiple cuentan la mitad.",
+    levelHelpWithHelp: "Lo que hagas con ayuda no cuenta.",
+    levelHelpOpens: (level, name) => `En el nivel ${level} empieza: ${name}.`,
     unlockCorrectStep: (correct, outOf) => `Acierta ${correct} de ${outOf} cuentas escritas`,
     unlockMissingAnswers: (count) => (count === 1 ? "Falta 1 cuenta." : `Faltan ${count} cuentas.`),
     unlockDistinctStep: (count) => `Haz ${count} cuentas distintas`,
@@ -395,6 +401,7 @@ export const es: Copy = {
         mapCaption: "Mapa de las tablas: cada cuadrado muestra cómo va cada cuenta.",
         legend: "Leyenda",
         levelProgress: (level) => `Progreso en el nivel ${level}`,
+        levelHelp: (level) => `Lo que falta para el nivel ${level}`,
 
         lastQuestion: (equation) => `La última cuenta: ${equation}`,
         correctAnswers: (count) => (count === 1 ? "acierto" : "aciertos")

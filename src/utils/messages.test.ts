@@ -271,6 +271,20 @@ describe("Messages for the games of rounds, Memória and Mahjong", () => {
     });
 });
 
+describe("Messages.getLevelHelp", () => {
+    it("says the right answers left, what counts half, and what the next level opens", () => {
+        const track = { level: 1, points: 22, recentAnswers: [], answersSinceSafetyNet: 0 };
+        expect(Messages.getLevelHelp(track, "practice", Messages.getNextSkillName("addition", "easy", 1))).toEqual({
+            title: "Faltam 19 contas certas para o nível 2.",
+            lines: ["As de escolha múltipla contam metade.", "O que fizeres com ajuda não conta.", "No nível 2 começa: Transporte numa coluna."]
+        });
+        expect(Messages.getLevelHelp(track, "memory", null).title).toBe("Faltam 38 pares para o nível 2.");
+        expect(Messages.getNextSkillName("multiplication", "easy", 1)).toBeNull();
+        expect(Messages.getNextRoundSkillName("counting", 1)).toBe("Até 10, em filas");
+        expect(Messages.getNextRoundSkillName("counting", 5)).toBeNull();
+    });
+});
+
 describe("Messages in every language", () => {
     afterEach(() => Messages.setLocale("pt"));
 
@@ -326,7 +340,10 @@ describe("Messages in every language", () => {
         Messages.getMahjongRecord(null),
         Messages.getMahjongTileLabel({ operation: "division", left: 72, right: 8 }, false),
         Messages.getMahjongTilesLeft(1),
-        Messages.getMahjongTilesLeft(36)
+        Messages.getMahjongTilesLeft(36),
+        Messages.getLevelHelp({ level: 1, points: 58, recentAnswers: [], answersSinceSafetyNet: 0 }, "practice", "x").title,
+        ...Messages.getLevelHelp({ level: 2, points: 0, recentAnswers: [], answersSinceSafetyNet: 0 }, "memory", "x").lines,
+        Messages.getLabels().levelHelp(2)
     ];
 
     it("words every message, with nothing missing", () => {

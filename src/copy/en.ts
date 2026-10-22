@@ -114,6 +114,11 @@ export const en: Copy = {
         `Almost there! Finish a game on ${difficultyNames[playDifficulty]} and ${difficultyNames[nextDifficulty]} unlocks.`,
     unlockLevelStep: (level) => `Reach level ${level}`,
     unlockLevelMissing: (count) => `${count === 1 ? "1 more right answer to go" : `${count} more right answers to go`}. Multiple-choice answers count half.`,
+    levelHelpAnswers: (count, level) => (count === 1 ? `1 more right answer to reach level ${level}.` : `${count} more right answers to reach level ${level}.`),
+    levelHelpPairs: (count, level) => (count === 1 ? `1 more pair to reach level ${level}.` : `${count} more pairs to reach level ${level}.`),
+    levelHelpChoiceHalf: "Multiple-choice answers count half.",
+    levelHelpWithHelp: "Anything done with help doesn't count.",
+    levelHelpOpens: (level, name) => `Level ${level} brings: ${name}.`,
     unlockCorrectStep: (correct, outOf) => `Get ${correct} of ${outOf} typed answers right`,
     unlockMissingAnswers: (count) => (count === 1 ? "1 more answer to go." : `${count} more answers to go.`),
     unlockDistinctStep: (count) => `Answer ${count} different questions`,
@@ -390,6 +395,7 @@ export const en: Copy = {
         mapCaption: "Times tables map: each square shows how each fact is going.",
         legend: "Key",
         levelProgress: (level) => `Level ${level} progress`,
+        levelHelp: (level) => `What is left to reach level ${level}`,
 
         lastQuestion: (equation) => `The last question: ${equation}`,
         correctAnswers: (count) => (count === 1 ? "correct answer" : "correct answers")

@@ -18,6 +18,11 @@ export interface TrackProgress {
 
 export type Tracks = Record<string, TrackProgress>;
 
+// How a track earns its points, to say what is left to the next level: the practice (a typed answer is worth two
+// multiple-choice ones), a game where every right answer is worth a typed one, or Memória, where a pair is worth a
+// multiple-choice answer.
+export type LevelEarning = "practice" | "game" | "memory";
+
 export interface RecordTrackAnswerResult {
     track: TrackProgress;
     reachedLevels: number[];
@@ -85,6 +90,11 @@ export class LevelsUtils {
             },
             reachedLevels
         };
+    }
+
+    // Right answers still needed to leave the current level, each worth the given points.
+    public static getAnswersToLevelUp(track: TrackProgress, pointsPerAnswer: number): number {
+        return Math.ceil((this.getPointsToLevelUp(track.level) - track.points) / pointsPerAnswer);
     }
 
     // How far into the current level, from 0 to 1, for the progress bar.
