@@ -6,7 +6,7 @@ Este ficheiro é a fonte de verdade para quem trabalha neste repositório: o bri
 
 A v2 foi juntada à `main` a 22 de Outubro de 2026, e o GitHub Pages passou a publicar a pasta `/docs` da `main`. A branch `v2` ficou igual à `main`.
 
-Os sete jogos novos (ver «Jogos novos») estão na branch `jogos`, à espera de o dono os testar antes de irem para a `main`.
+Os sete jogos novos (ver «Jogos novos») foram juntados à `main` a 22 de Outubro de 2026, a pedido do dono, para os testar no telemóvel.
 
 **Feito e verificado na v2:**
 
