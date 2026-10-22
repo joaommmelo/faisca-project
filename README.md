@@ -1,4 +1,6 @@
-# Faísca
+# Faísca · Contas
+
+Feita por João Melo. Publicada em <https://joaommmelo.github.io/faisca-project/>.
 
 Web app para crianças praticarem somas, subtrações, multiplicações e divisões, das tabuadas a números maiores, sozinhas ou misturadas, com o Faísca, um cão castanho. React + TypeScript + Vite, sem backend: o progresso fica no `localStorage` do dispositivo. Instalável como app (PWA) e funciona sem rede.
 
