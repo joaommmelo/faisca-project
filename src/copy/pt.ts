@@ -215,7 +215,7 @@ export const pt: Copy = {
         "add-subtract": "Mais ou menos",
         multiply: "Vezes",
         divide: "A dividir",
-        "bigger-numbers": "Os quatro, com números maiores"
+        "bigger-numbers": "Os quatro, números maiores"
     },
     balanceSkillNames: {
         numbers: "Dois números",

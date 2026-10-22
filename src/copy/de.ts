@@ -220,11 +220,11 @@ export const de: Copy = {
         "add-subtract": "Plus oder Minus",
         multiply: "Mal",
         divide: "Geteilt",
-        "bigger-numbers": "Alle vier, mit größeren Zahlen"
+        "bigger-numbers": "Alle vier, große Zahlen"
     },
     balanceSkillNames: {
         numbers: "Zwei Zahlen",
-        "sum-and-number": "Eine Plusaufgabe und eine Zahl",
+        "sum-and-number": "Plusaufgabe und Zahl",
         sums: "Plus und Minus",
         products: "Malaufgaben",
         mixed: "Gemischte Aufgaben"

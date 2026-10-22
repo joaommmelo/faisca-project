@@ -210,7 +210,7 @@ export const en: Copy = {
         "add-subtract": "Plus or minus",
         multiply: "Times",
         divide: "Divided by",
-        "bigger-numbers": "All four, with bigger numbers"
+        "bigger-numbers": "All four, bigger numbers"
     },
     balanceSkillNames: {
         numbers: "Two numbers",

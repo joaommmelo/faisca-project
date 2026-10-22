@@ -75,7 +75,7 @@ export function ProgressScreen({ profile, onBack }: ProgressScreenProps) {
             ))}
 
             {/* Its answers also light up the times-table map, with the multiplication. */}
-            <section className="card card--multiplication">
+            <section className="card stack card--multiplication">
                 <h2 className="section-title">{Messages.getFactorGameName()}</h2>
                 <LevelMeter track={LevelsUtils.getTrack(profile.tracks, FactorGameUtils.getTrackId())} />
             </section>
@@ -84,7 +84,7 @@ export function ProgressScreen({ profile, onBack }: ProgressScreenProps) {
                 <RoundGameProgress key={game} profile={profile} game={game} />
             ))}
 
-            <section className="card card--memory">
+            <section className="card stack card--memory">
                 <h2 className="section-title">{Messages.getMemoryGameName()}</h2>
                 <LevelMeter track={LevelsUtils.getTrack(profile.tracks, MemoryGameUtils.getTrackId())} />
             </section>
@@ -103,7 +103,7 @@ function RoundGameProgress({ profile, game }: RoundGameProgressProps) {
     const openSkills: string[] = RoundGameUtils.getOpenSkills(game, level);
 
     return (
-        <section className={`card card--${game}`}>
+        <section className={`card stack card--${game}`}>
             <h2 className="section-title">{Messages.getRoundGameName(game)}</h2>
             <LevelMeter track={LevelsUtils.getTrack(profile.tracks, RoundGameUtils.getTrackId(game))} />
             <ul className="skills">

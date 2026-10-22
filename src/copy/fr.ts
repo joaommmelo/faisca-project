@@ -225,7 +225,7 @@ export const fr: Copy = {
         "add-subtract": "Plus ou moins",
         multiply: "Fois",
         divide: "Divisé par",
-        "bigger-numbers": "Les quatre, avec de grands nombres"
+        "bigger-numbers": "Les quatre, plus grands"
     },
     balanceSkillNames: {
         numbers: "Deux nombres",

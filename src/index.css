@@ -738,11 +738,12 @@ fieldset {
     height: 1.6em;
 }
 
+/* As full as "Não": leaving is what the child asked for by tapping "Sair", so it must not look like the lesser choice. */
 .exit-sheet__choice--leave {
-    --button-shadow: var(--color-fur-dark);
-    border-color: var(--color-fur-dark);
-    background: var(--color-accent-soft);
-    color: var(--color-fur-dark);
+    --button-shadow: #4a2914;
+    border-color: #4a2914;
+    background: var(--color-fur-dark);
+    color: #ffffff;
 }
 
 .exit-sheet__choice--stay {
@@ -2094,33 +2095,38 @@ fieldset {
 .skills {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 10px;
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
+/* How a skill is going sits under its name, so the name has the whole width and stays on one line. */
 .skill {
-    display: flex;
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    column-gap: var(--space-2);
     align-items: center;
-    gap: var(--space-2);
     font-weight: 800;
+    line-height: 1.25;
 }
 
 .skill__swatch {
-    flex: none;
+    grid-row: 1 / span 2;
     width: 18px;
     height: 18px;
     border-radius: 5px;
 }
 
+/* A little smaller on the narrowest phones, so the longer names still fit one line. */
 .skill__name {
-    flex: 1;
+    font-size: clamp(0.95rem, 4.7vw, 1.125rem);
 }
 
 .skill__mastery {
+    grid-column: 2;
     color: var(--color-text-muted);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 }
 
 .locked {
