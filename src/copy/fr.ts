@@ -128,6 +128,8 @@ export const fr: Copy = {
     unlockAlmost: (nextDifficulty, playDifficulty) =>
         `Presque ! Termine une partie en ${difficultyNames[playDifficulty]} et ${difficultyNames[nextDifficulty]} se débloque.`,
     unlockLevelStep: (level) => `Atteins le niveau ${level}`,
+    unlockLevelMissing: (count) =>
+        `${count < 2 ? `Encore ${count} bonne réponse` : `Encore ${count} bonnes réponses`}. Celles à choix multiple comptent pour moitié.`,
     unlockCorrectStep: (correct, outOf) => `Réussis ${correct} calculs écrits sur ${outOf}`,
     unlockMissingAnswers: (count) => (count < 2 ? `Encore ${count} calcul.` : `Encore ${count} calculs.`),
     unlockDistinctStep: (count) => `Fais ${count} calculs différents`,

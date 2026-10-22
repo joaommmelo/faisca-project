@@ -44,6 +44,15 @@ export class LevelsUtils {
         return 40;
     }
 
+    // Every point from the start of level 1 to the start of the given level.
+    public static getPointsToReach(level: number): number {
+        let points: number = 0;
+        for (let passedLevel = this.getFirstLevel(); passedLevel < level; passedLevel++) {
+            points += this.getPointsToLevelUp(passedLevel);
+        }
+        return points;
+    }
+
     public static getTrackId(operation: Operation, difficulty: Difficulty): string {
         return `${operation}:${difficulty}`;
     }

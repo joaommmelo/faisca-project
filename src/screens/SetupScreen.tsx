@@ -1,6 +1,7 @@
 import { useId, useState } from "react";
 import { ClockField } from "../components/ClockField.tsx";
 import { CoinButton } from "../components/CoinButton.tsx";
+import { LevelMeter } from "../components/LevelMeter.tsx";
 import { BackIcon, PlayIcon } from "../components/Icons.tsx";
 import { SegmentedField } from "../components/SegmentedField.tsx";
 import { SwitchField } from "../components/SwitchField.tsx";
@@ -10,6 +11,7 @@ import type { Labels } from "../copy/copy.ts";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
 import type { ClockSettings } from "../utils/clock/utils.ts";
 import { DifficultiesUtils, type Difficulty } from "../utils/difficulties/utils.ts";
+import { LevelsUtils } from "../utils/levels/utils.ts";
 import { Messages } from "../utils/messages.ts";
 import { OperationsUtils, type AdditiveOperation, type MultiplicativeOperation, type Operation } from "../utils/operations/utils.ts";
 import { ProfilesUtils, type PlayProblem, type Profile, type ProfileSettings } from "../utils/profiles/utils.ts";
@@ -106,10 +108,11 @@ interface OperationFieldsProps {
     onSettingsChange: (settings: ProfileSettings) => void;
 }
 
-// The difficulty, then what it needs: the tables in Fácil × and ÷, the layout in + and −. Touching a locked difficulty
-// opens a sheet with what opens it.
+// The difficulty and its level, then what it needs: the tables in Fácil × and ÷, the layout in + and −. Touching a
+// locked difficulty opens a sheet with what opens it.
 function OperationFields({ profile, operation, onSettingsChange }: OperationFieldsProps) {
     const { settings } = profile;
+    const difficulty: Difficulty = ProfilesUtils.getDifficulty(settings, operation);
     const [lockedDifficulty, setLockedDifficulty] = useState<Difficulty | null>(null);
     const unlockRequirement: UnlockRequirement | null = ProgressionUtils.getUnlockRequirement(profile, operation);
 
@@ -117,7 +120,7 @@ function OperationFields({ profile, operation, onSettingsChange }: OperationFiel
         <>
             <SegmentedField<Difficulty>
                 legend={Messages.getLabels().difficultyQuestion}
-                value={ProfilesUtils.getDifficulty(settings, operation)}
+                value={difficulty}
                 options={DifficultiesUtils.getValidDifficulties().map((difficulty) => ({
                     value: difficulty,
                     label: Messages.getDifficultyName(difficulty),
@@ -127,6 +130,7 @@ function OperationFields({ profile, operation, onSettingsChange }: OperationFiel
                 onChange={(difficulty) => onSettingsChange({ ...settings, [operation]: { ...settings[operation], difficulty } })}
                 onChooseLocked={setLockedDifficulty}
             />
+            <LevelMeter track={LevelsUtils.getTrack(profile.tracks, LevelsUtils.getTrackId(operation, difficulty))} />
             {lockedDifficulty !== null && unlockRequirement !== null && (
                 <UnlockSheet lockedDifficulty={lockedDifficulty} requirement={unlockRequirement} onClose={() => setLockedDifficulty(null)} />
             )}

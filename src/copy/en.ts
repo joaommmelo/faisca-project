@@ -113,6 +113,7 @@ export const en: Copy = {
     unlockAlmost: (nextDifficulty, playDifficulty) =>
         `Almost there! Finish a game on ${difficultyNames[playDifficulty]} and ${difficultyNames[nextDifficulty]} unlocks.`,
     unlockLevelStep: (level) => `Reach level ${level}`,
+    unlockLevelMissing: (count) => `${count === 1 ? "1 more right answer to go" : `${count} more right answers to go`}. Multiple-choice answers count half.`,
     unlockCorrectStep: (correct, outOf) => `Get ${correct} of ${outOf} typed answers right`,
     unlockMissingAnswers: (count) => (count === 1 ? "1 more answer to go." : `${count} more answers to go.`),
     unlockDistinctStep: (count) => `Answer ${count} different questions`,

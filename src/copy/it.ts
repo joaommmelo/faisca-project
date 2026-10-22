@@ -141,6 +141,7 @@ export const it: Copy = {
     unlockAlmost: (nextDifficulty, playDifficulty) =>
         `Ci sei quasi! Finisci una partita in ${difficultyNames[playDifficulty]} e ${difficultyNames[nextDifficulty]} si sblocca.`,
     unlockLevelStep: (level) => `Raggiungi il livello ${level}`,
+    unlockLevelMissing: (count) => `${count === 1 ? "Manca 1 calcolo giusto" : `Mancano ${count} calcoli giusti`}. Quelli a scelta multipla valgono la metà.`,
     unlockCorrectStep: (correct, outOf) => `Risolvi ${correct} calcoli scritti su ${outOf}`,
     unlockMissingAnswers: (count) => (count === 1 ? "Manca 1 calcolo." : `Mancano ${count} calcoli.`),
     unlockDistinctStep: (count) => `Fai ${count} calcoli diversi`,

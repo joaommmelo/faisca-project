@@ -2,7 +2,7 @@ import { useId, useRef } from "react";
 import type { Labels } from "../copy/copy.ts";
 import type { Difficulty } from "../utils/difficulties/utils.ts";
 import { Messages } from "../utils/messages.ts";
-import type { UnlockRequirement, UnlockStep } from "../utils/progression/utils.ts";
+import { ProgressionUtils, type UnlockRequirement, type UnlockStep } from "../utils/progression/utils.ts";
 import { CheckIcon } from "./Icons.tsx";
 import { MascotMessage } from "./Mascot.tsx";
 import { Sheet } from "./Sheet.tsx";
@@ -48,10 +48,11 @@ function UnlockStepItem({ step }: { step: UnlockStep }) {
                 <p className="unlock-step__text">{Messages.getUnlockStep(step)}</p>
                 <div className="unlock-step__progress">
                     <div className="meter" aria-hidden="true">
-                        <div className="meter__fill" style={{ transform: `scaleX(${step.current / step.needed})` }} />
+                        <div className="meter__fill" style={{ transform: `scaleX(${ProgressionUtils.getStepProgress(step)})` }} />
                     </div>
                     <p className="unlock-step__count">{`${step.current} ${Messages.getLabels().outOf(step.needed)}`}</p>
                 </div>
+                {step.kind === "level" && step.missingAnswers > 0 && <p className="unlock-step__note">{Messages.getUnlockLevelMissing(step.missingAnswers)}</p>}
                 {step.kind === "correct" && step.missingAnswers > 0 && (
                     <p className="unlock-step__note">{Messages.getUnlockMissingAnswers(step.missingAnswers)}</p>
                 )}

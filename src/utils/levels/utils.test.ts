@@ -40,3 +40,11 @@ describe("LevelsUtils.recordAnswer", () => {
         expect(track.answersSinceSafetyNet).toBe(50);
     });
 });
+
+describe("LevelsUtils.getPointsToReach", () => {
+    it("adds up every level passed on the way", () => {
+        expect(LevelsUtils.getPointsToReach(1)).toBe(0);
+        expect(LevelsUtils.getPointsToReach(2)).toBe(LevelsUtils.getPointsToLevelUp(1));
+        expect(LevelsUtils.getPointsToReach(3)).toBe(LevelsUtils.getPointsToLevelUp(1) + LevelsUtils.getPointsToLevelUp(2));
+    });
+});

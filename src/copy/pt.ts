@@ -118,6 +118,7 @@ export const pt: Copy = {
     unlockAlmost: (nextDifficulty, playDifficulty) =>
         `Já está quase! Acaba um jogo no ${difficultyNames[playDifficulty]} e o ${difficultyNames[nextDifficulty]} abre.`,
     unlockLevelStep: (level) => `Chega ao nível ${level}`,
+    unlockLevelMissing: (count) => `${count === 1 ? "Falta 1 conta certa" : `Faltam ${count} contas certas`}. As de escolha múltipla contam metade.`,
     unlockCorrectStep: (correct, outOf) => `Acerta ${correct} de ${outOf} contas escritas`,
     unlockMissingAnswers: (count) => (count === 1 ? "Falta 1 conta." : `Faltam ${count} contas.`),
     unlockDistinctStep: (count) => `Faz ${count} contas diferentes`,

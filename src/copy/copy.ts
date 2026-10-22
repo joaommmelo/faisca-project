@@ -101,6 +101,8 @@ export interface Copy {
     unlockIntroAfter: (lockedDifficulty: Difficulty, nextDifficulty: Difficulty, playDifficulty: Difficulty) => string;
     unlockAlmost: (nextDifficulty: Difficulty, playDifficulty: Difficulty) => string;
     unlockLevelStep: (level: number) => string;
+    // The typed right answers left to reach the level; multiple-choice answers count half.
+    unlockLevelMissing: (count: number) => string;
     unlockCorrectStep: (correct: number, outOf: number) => string;
     unlockMissingAnswers: (count: number) => string;
     unlockDistinctStep: (count: number) => string;

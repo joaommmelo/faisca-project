@@ -122,6 +122,7 @@ export const de: Copy = {
     unlockAlmost: (nextDifficulty, playDifficulty) =>
         `Fast geschafft! Spiel noch eine Runde auf ${difficultyNames[playDifficulty]}, dann ist ${difficultyNames[nextDifficulty]} frei.`,
     unlockLevelStep: (level) => `Erreiche Level ${level}`,
+    unlockLevelMissing: (count) => `${count === 1 ? "Noch 1 richtige Aufgabe" : `Noch ${count} richtige Aufgaben`}. Aufgaben zum Auswählen zählen halb.`,
     unlockCorrectStep: (correct, outOf) => `Löse ${correct} von ${outOf} getippten Aufgaben richtig`,
     unlockMissingAnswers: (count) => (count === 1 ? "Noch 1 Aufgabe." : `Noch ${count} Aufgaben.`),
     unlockDistinctStep: (count) => `Rechne ${count} verschiedene Aufgaben`,

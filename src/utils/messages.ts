@@ -335,6 +335,10 @@ export class Messages {
         }
     }
 
+    public static getUnlockLevelMissing(count: number): string {
+        return this.getCopy().unlockLevelMissing(count);
+    }
+
     public static getUnlockMissingAnswers(count: number): string {
         return this.getCopy().unlockMissingAnswers(count);
     }

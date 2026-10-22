@@ -59,10 +59,11 @@ export interface FinishSessionResult {
     clock: ClockOutcome | null;
 }
 
-// One thing still between a child and the next difficulty, with how far along it is. "correct" may also be waiting
-// for answers: 15 right but only 17 typed answers so far still needs 3 more.
+// One thing still between a child and the next difficulty, with how far along it is. "level" counts the levels and
+// says how many typed right answers are left to reach it, with the bar filling a little at each one. "correct" may
+// also be waiting for answers: 15 right but only 17 typed answers so far still needs 3 more.
 export type UnlockStep =
-    | { kind: "level"; current: number; needed: number; isDone: boolean }
+    | { kind: "level"; current: number; needed: number; missingAnswers: number; progress: number; isDone: boolean }
     | { kind: "correct"; current: number; needed: number; outOf: number; missingAnswers: number; isDone: boolean }
     | { kind: "distinct"; current: number; needed: number; isDone: boolean };
 
@@ -252,7 +253,7 @@ export class ProgressionUtils {
         const distinctCount: number = new Set(typedAnswers.map((answer) => answer.questionId)).size;
         const isWindowFull: boolean = typedAnswers.length === this.getUnlockWindow();
 
-        const levelStep: UnlockStep = { kind: "level", current: Math.min(track.level, levelNeeded), needed: levelNeeded, isDone: track.level >= levelNeeded };
+        const levelStep: UnlockStep = this.getLevelStep(track, levelNeeded);
         const correctStep: UnlockStep = {
             kind: "correct",
             current: Math.min(correctCount, this.getUnlockMinCorrect()),
@@ -270,6 +271,26 @@ export class ProgressionUtils {
         // Different questions only matter once there are enough answers: before that, few answers mean few questions.
         const steps: UnlockStep[] = [...(levelNeeded > 0 ? [levelStep] : []), correctStep, ...(isWindowFull && !distinctStep.isDone ? [distinctStep] : [])];
         return { playDifficulty, nextDifficulty, steps, isReady: levelStep.isDone && correctStep.isDone && distinctStep.isDone };
+    }
+
+    // How far the points go towards the level that opens every skill, and the typed right answers that are left.
+    private static getLevelStep(track: TrackProgress, levelNeeded: number): UnlockStep {
+        const pointsEarned: number = LevelsUtils.getPointsToReach(track.level) + track.points;
+        const pointsNeeded: number = LevelsUtils.getPointsToReach(levelNeeded);
+        const isDone: boolean = track.level >= levelNeeded;
+        return {
+            kind: "level",
+            current: Math.min(track.level, levelNeeded),
+            needed: levelNeeded,
+            missingAnswers: isDone ? 0 : Math.ceil((pointsNeeded - pointsEarned) / LevelsUtils.getPointsForAnswer("keypad")),
+            progress: isDone ? 1 : pointsEarned / pointsNeeded,
+            isDone
+        };
+    }
+
+    // How full a step's bar is, from 0 to 1.
+    public static getStepProgress(step: UnlockStep): number {
+        return step.kind === "level" ? step.progress : step.current / step.needed;
     }
 
     public static getSafetyNetDifficulty(profile: Profile, operation: Operation): Difficulty | null {

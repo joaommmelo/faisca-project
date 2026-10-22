@@ -139,11 +139,20 @@ describe("ProgressionUtils.getUnlockRequirement", () => {
             playDifficulty: "easy",
             nextDifficulty: "medium",
             steps: [
-                { kind: "level", current: 1, needed: 2, isDone: false },
+                { kind: "level", current: 1, needed: 2, missingAnswers: 30, progress: 0, isDone: false },
                 { kind: "correct", current: 4, needed: 15, outOf: 20, missingAnswers: 0, isDone: false }
             ],
             isReady: false
         });
+    });
+
+    it("says how many typed right answers are left to reach the level, and fills the bar at each one", () => {
+        const [level] = ProgressionUtils.getUnlockRequirement(profileAt("easy", { level: 1, points: 20 }), "addition")?.steps ?? [];
+        // Level 1 takes 60 points, 2 per typed right answer: 20 earned, 20 answers left.
+        expect(level).toEqual({ kind: "level", current: 1, needed: 2, missingAnswers: 20, progress: 20 / 60, isDone: false });
+        expect(ProgressionUtils.getStepProgress(level)).toBe(20 / 60);
+        const [done] = ProgressionUtils.getUnlockRequirement(profileAt("easy", { level: 2 }), "addition")?.steps ?? [];
+        expect(done).toMatchObject({ missingAnswers: 0, progress: 1, isDone: true });
     });
 
     it("has no level step in the times tables, which have no skills", () => {
