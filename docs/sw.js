@@ -1,5 +1,5 @@
 // Template for sw.js. The build replaces the two placeholders with a version and the exact list of built files.
-const CACHE_NAME = "faisca-f3c9e03515b1";
+const CACHE_NAME = "faisca-15cdd27a932c";
 const PRECACHE_URLS = [
     "./",
     "./assets/index-Jla_PGUK.css",
@@ -15,7 +15,8 @@ const PRECACHE_URLS = [
     "./icons/icon-192.png",
     "./icons/icon-512.png",
     "./icons/icon-maskable-512.png",
-    "./manifest.webmanifest"
+    "./manifest.webmanifest",
+    "./og-image.png"
 ];
 
 self.addEventListener("install", (event) => {
