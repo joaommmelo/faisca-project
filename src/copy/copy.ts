@@ -88,6 +88,15 @@ export interface Copy {
     safetyNetText: (operation: Operation, difficulty: Difficulty) => string;
     safetyNetAccept: (difficulty: Difficulty) => string;
     safetyNetDecline: string;
+    // A locked difficulty: where to play to open the next one (the locked one itself, or the one before it), and each
+    // step still missing.
+    unlockIntro: (nextDifficulty: Difficulty, playDifficulty: Difficulty) => string;
+    unlockIntroAfter: (lockedDifficulty: Difficulty, nextDifficulty: Difficulty, playDifficulty: Difficulty) => string;
+    unlockAlmost: (nextDifficulty: Difficulty, playDifficulty: Difficulty) => string;
+    unlockLevelStep: (level: number) => string;
+    unlockCorrectStep: (correct: number, outOf: number) => string;
+    unlockMissingAnswers: (count: number) => string;
+    unlockDistinctStep: (count: number) => string;
 
     // The clock. Times arrive written out ("3:00").
     clockDirectionNames: Record<ClockDirection, string>;
@@ -212,6 +221,7 @@ export interface Labels {
     challengeExitQuestion: string;
     yes: string;
     no: string;
+    gotIt: string;
     again: string;
     questionPosition: (position: number, total: number) => string;
     gameProgress: string;

@@ -112,6 +112,15 @@ export const es: Copy = {
         `¿Quieres practicar un poquito la ${operationNames[operation]} en ${difficultyNames[difficulty]}? No pierdes ni nivel ni monedas.`,
     safetyNetAccept: (difficulty) => `Practicar en ${difficultyNames[difficulty]}`,
     safetyNetDecline: "Seguir aquí",
+    unlockIntro: (nextDifficulty, playDifficulty) => `Para desbloquear ${difficultyNames[nextDifficulty]}, juega en ${difficultyNames[playDifficulty]}:`,
+    unlockIntroAfter: (lockedDifficulty, nextDifficulty, playDifficulty) =>
+        `${difficultyNames[lockedDifficulty]} llega después de ${difficultyNames[nextDifficulty]}. Para desbloquear ${difficultyNames[nextDifficulty]}, juega en ${difficultyNames[playDifficulty]}:`,
+    unlockAlmost: (nextDifficulty, playDifficulty) =>
+        `¡Ya casi! Termina una partida en ${difficultyNames[playDifficulty]} y se desbloquea ${difficultyNames[nextDifficulty]}.`,
+    unlockLevelStep: (level) => `Llega al nivel ${level}`,
+    unlockCorrectStep: (correct, outOf) => `Acierta ${correct} de ${outOf} cuentas escritas`,
+    unlockMissingAnswers: (count) => (count === 1 ? "Falta 1 cuenta." : `Faltan ${count} cuentas.`),
+    unlockDistinctStep: (count) => `Haz ${count} cuentas distintas`,
 
     clockDirectionNames: { up: "Hacia delante", down: "Hacia atrás" },
     clockReferenceDefault: (minutes) => `${minutes} minutos`,
@@ -231,6 +240,7 @@ export const es: Copy = {
         challengeExitQuestion: "¿Quieres terminar el desafío?",
         yes: "Sí",
         no: "No",
+        gotIt: "Entendido",
         again: "Otra vez",
         questionPosition: (position, total) => `Pregunta ${position} de ${total}`,
         gameProgress: "Progreso de la partida",

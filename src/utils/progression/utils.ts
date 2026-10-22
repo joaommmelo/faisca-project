@@ -59,6 +59,22 @@ export interface FinishSessionResult {
     clock: ClockOutcome | null;
 }
 
+// One thing still between a child and the next difficulty, with how far along it is. "correct" may also be waiting
+// for answers: 15 right but only 17 typed answers so far still needs 3 more.
+export type UnlockStep =
+    | { kind: "level"; current: number; needed: number; isDone: boolean }
+    | { kind: "correct"; current: number; needed: number; outOf: number; missingAnswers: number; isDone: boolean }
+    | { kind: "distinct"; current: number; needed: number; isDone: boolean };
+
+// What opens the next difficulty of an operation. The answers only count at the highest open difficulty, and the
+// difficulty opens at the end of a session there once every step is done.
+export interface UnlockRequirement {
+    playDifficulty: Difficulty;
+    nextDifficulty: Difficulty;
+    steps: UnlockStep[];
+    isReady: boolean;
+}
+
 export class ProgressionUtils {
     // Unlocking the next difficulty: 15 right in the last 20 typed answers, across at least 10 different questions.
     public static getUnlockWindow(): number {
@@ -201,28 +217,50 @@ export class ProgressionUtils {
         };
     }
 
-    // Only from the highest open difficulty, and only once all its skills are open, so no skill is skipped.
-    // The times tables have no skills: the answers alone decide.
+    // Only while playing the highest open difficulty, once its requirement is met.
     public static getUnlockableDifficulty(profile: Profile, operation: Operation): Difficulty | null {
-        const difficulty: Difficulty = ProfilesUtils.getDifficulty(profile.settings, operation);
-        const next: Difficulty | null = DifficultiesUtils.getNext(difficulty);
-        if (next === null || difficulty !== profile.unlockedDifficulties[operation]) {
+        if (ProfilesUtils.getDifficulty(profile.settings, operation) !== profile.unlockedDifficulties[operation]) {
+            return null;
+        }
+        const requirement: UnlockRequirement | null = this.getUnlockRequirement(profile, operation);
+        return requirement !== null && requirement.isReady ? requirement.nextDifficulty : null;
+    }
+
+    // Every skill of the highest open difficulty must be open first (its level reaches the number of skills), so no
+    // skill is skipped; the times tables have no skills. Then 15 right in the last 20 typed answers, across 10
+    // different questions. Null when every difficulty is open.
+    public static getUnlockRequirement(profile: Profile, operation: Operation): UnlockRequirement | null {
+        const playDifficulty: Difficulty = profile.unlockedDifficulties[operation];
+        const nextDifficulty: Difficulty | null = DifficultiesUtils.getNext(playDifficulty);
+        if (nextDifficulty === null) {
             return null;
         }
 
-        const track: TrackProgress = LevelsUtils.getTrack(profile.tracks, LevelsUtils.getTrackId(operation, difficulty));
-        if (track.level < ArithmeticUtils.getSkills(operation, difficulty).length) {
-            return null;
-        }
-
+        const track: TrackProgress = LevelsUtils.getTrack(profile.tracks, LevelsUtils.getTrackId(operation, playDifficulty));
+        const levelNeeded: number = ArithmeticUtils.getSkills(operation, playDifficulty).length;
         const typedAnswers: RecentAnswer[] = track.recentAnswers.filter((answer) => answer.format !== "choice").slice(-this.getUnlockWindow());
         const correctCount: number = typedAnswers.filter((answer) => answer.isCorrect).length;
         const distinctCount: number = new Set(typedAnswers.map((answer) => answer.questionId)).size;
-        const isReady: boolean =
-            typedAnswers.length === this.getUnlockWindow() &&
-            correctCount >= this.getUnlockMinCorrect() &&
-            distinctCount >= this.getUnlockMinDistinctQuestions();
-        return isReady ? next : null;
+        const isWindowFull: boolean = typedAnswers.length === this.getUnlockWindow();
+
+        const levelStep: UnlockStep = { kind: "level", current: Math.min(track.level, levelNeeded), needed: levelNeeded, isDone: track.level >= levelNeeded };
+        const correctStep: UnlockStep = {
+            kind: "correct",
+            current: Math.min(correctCount, this.getUnlockMinCorrect()),
+            needed: this.getUnlockMinCorrect(),
+            outOf: this.getUnlockWindow(),
+            missingAnswers: correctCount >= this.getUnlockMinCorrect() ? this.getUnlockWindow() - typedAnswers.length : 0,
+            isDone: isWindowFull && correctCount >= this.getUnlockMinCorrect()
+        };
+        const distinctStep: UnlockStep = {
+            kind: "distinct",
+            current: distinctCount,
+            needed: this.getUnlockMinDistinctQuestions(),
+            isDone: distinctCount >= this.getUnlockMinDistinctQuestions()
+        };
+        // Different questions only matter once there are enough answers: before that, few answers mean few questions.
+        const steps: UnlockStep[] = [...(levelNeeded > 0 ? [levelStep] : []), correctStep, ...(isWindowFull && !distinctStep.isDone ? [distinctStep] : [])];
+        return { playDifficulty, nextDifficulty, steps, isReady: levelStep.isDone && correctStep.isDone && distinctStep.isDone };
     }
 
     public static getSafetyNetDifficulty(profile: Profile, operation: Operation): Difficulty | null {

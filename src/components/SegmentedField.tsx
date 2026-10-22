@@ -14,36 +14,47 @@ interface SegmentedFieldProps<T extends string> {
     options: SegmentedOption<T>[];
     value: T;
     onChange: (value: T) => void;
+    onChooseLocked?: (value: T) => void;
 }
 
-// A row of big radio buttons. Locked options stay visible as a goal, but cannot be picked yet.
-export function SegmentedField<T extends string>({ legend, options, value, onChange }: SegmentedFieldProps<T>) {
+// A row of big radio buttons. Locked options stay visible as a goal: they cannot be picked yet, but touching one says
+// what opens it.
+export function SegmentedField<T extends string>({ legend, options, value, onChange, onChooseLocked }: SegmentedFieldProps<T>) {
     const groupName: string = useId();
 
     return (
         <fieldset>
             <legend className="section-title">{legend}</legend>
             <div className="segmented" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
-                {options.map((option) => (
-                    <label key={option.value} className={option.isLocked === true ? "segmented__option segmented__option--locked" : "segmented__option"}>
-                        <input
-                            className="visually-hidden"
-                            type="radio"
-                            name={groupName}
-                            value={option.value}
-                            checked={value === option.value}
-                            disabled={option.isLocked === true}
-                            onChange={() => onChange(option.value)}
-                        />
-                        {option.isLocked === true && (
+                {options.map((option) =>
+                    option.isLocked === true ? (
+                        <button
+                            key={option.value}
+                            type="button"
+                            className="segmented__option segmented__option--locked"
+                            onClick={() => onChooseLocked?.(option.value)}
+                        >
                             <span className="segmented__lock">
                                 <LockIcon />
                             </span>
-                        )}
-                        <span>{option.label}</span>
-                        <span className="segmented__detail">{option.isLocked === true ? Messages.getLabels().locked : option.detail}</span>
-                    </label>
-                ))}
+                            <span>{option.label}</span>
+                            <span className="segmented__detail">{Messages.getLabels().locked}</span>
+                        </button>
+                    ) : (
+                        <label key={option.value} className="segmented__option">
+                            <input
+                                className="visually-hidden"
+                                type="radio"
+                                name={groupName}
+                                value={option.value}
+                                checked={value === option.value}
+                                onChange={() => onChange(option.value)}
+                            />
+                            <span>{option.label}</span>
+                            <span className="segmented__detail">{option.detail}</span>
+                        </label>
+                    )
+                )}
             </div>
         </fieldset>
     );

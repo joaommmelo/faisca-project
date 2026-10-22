@@ -133,6 +133,53 @@ describe("ProgressionUtils.getUnlockableDifficulty", () => {
     });
 });
 
+describe("ProgressionUtils.getUnlockRequirement", () => {
+    it("starts with the level, then 15 right of 20 typed, at the highest open difficulty", () => {
+        expect(ProgressionUtils.getUnlockRequirement(profileAt("easy", { level: 1, recentAnswers: answers(6, 4) }), "addition")).toEqual({
+            playDifficulty: "easy",
+            nextDifficulty: "medium",
+            steps: [
+                { kind: "level", current: 1, needed: 2, isDone: false },
+                { kind: "correct", current: 4, needed: 15, outOf: 20, missingAnswers: 0, isDone: false }
+            ],
+            isReady: false
+        });
+    });
+
+    it("has no level step in the times tables, which have no skills", () => {
+        const kinds = ProgressionUtils.getUnlockRequirement(createTestProfile(), "multiplication")?.steps.map((step) => step.kind);
+        expect(kinds).toEqual(["correct"]);
+    });
+
+    it("counts the answers still missing once 15 are right", () => {
+        const [, correct] = ProgressionUtils.getUnlockRequirement(profileAt("easy", { recentAnswers: answers(17, 15) }), "addition")?.steps ?? [];
+        expect(correct).toEqual({ kind: "correct", current: 15, needed: 15, outOf: 20, missingAnswers: 3, isDone: false });
+    });
+
+    it("asks for different questions only when that is what is missing", () => {
+        const repeated = ProgressionUtils.getUnlockRequirement(profileAt("easy", { recentAnswers: answers(20, 20, "keypad", 8) }), "addition");
+        expect(repeated?.steps.at(-1)).toEqual({ kind: "distinct", current: 8, needed: 10, isDone: false });
+        expect(repeated?.isReady).toBe(false);
+    });
+
+    it("is ready when every step is done, and agrees with the unlock", () => {
+        const profile: Profile = profileAt("easy", { recentAnswers: answers(20, 15) });
+        const requirement = ProgressionUtils.getUnlockRequirement(profile, "addition");
+        expect(requirement?.steps.every((step) => step.isDone)).toBe(true);
+        expect(requirement?.isReady).toBe(true);
+        expect(ProgressionUtils.getUnlockableDifficulty(profile, "addition")).toBe(requirement?.nextDifficulty);
+    });
+
+    it("is about the highest open difficulty, whatever is chosen, and ends when all are open", () => {
+        expect(ProgressionUtils.getUnlockRequirement(profileAt("easy", { recentAnswers: answers(20, 20) }, "medium"), "addition")).toMatchObject({
+            playDifficulty: "medium",
+            nextDifficulty: "hard",
+            isReady: false
+        });
+        expect(ProgressionUtils.getUnlockRequirement(profileAt("hard", { level: 3 }), "addition")).toBeNull();
+    });
+});
+
 describe("ProgressionUtils.getSafetyNetDifficulty", () => {
     it("proposes the previous difficulty after fewer than 5 right in the last 10", () => {
         const profile: Profile = profileAt("medium", { recentAnswers: answers(10, 4), answersSinceSafetyNet: 10 });

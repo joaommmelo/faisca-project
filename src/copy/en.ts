@@ -107,6 +107,15 @@ export const en: Copy = {
         `Want to do a little ${operationNames[operation]} on ${difficultyNames[difficulty]}? You keep your level and your coins.`,
     safetyNetAccept: (difficulty) => `Play ${difficultyNames[difficulty]}`,
     safetyNetDecline: "Stay here",
+    unlockIntro: (nextDifficulty, playDifficulty) => `To unlock ${difficultyNames[nextDifficulty]}, play ${difficultyNames[playDifficulty]}:`,
+    unlockIntroAfter: (lockedDifficulty, nextDifficulty, playDifficulty) =>
+        `${difficultyNames[lockedDifficulty]} comes after ${difficultyNames[nextDifficulty]}. To unlock ${difficultyNames[nextDifficulty]}, play ${difficultyNames[playDifficulty]}:`,
+    unlockAlmost: (nextDifficulty, playDifficulty) =>
+        `Almost there! Finish a game on ${difficultyNames[playDifficulty]} and ${difficultyNames[nextDifficulty]} unlocks.`,
+    unlockLevelStep: (level) => `Reach level ${level}`,
+    unlockCorrectStep: (correct, outOf) => `Get ${correct} of ${outOf} typed answers right`,
+    unlockMissingAnswers: (count) => (count === 1 ? "1 more answer to go." : `${count} more answers to go.`),
+    unlockDistinctStep: (count) => `Answer ${count} different questions`,
 
     clockDirectionNames: { up: "Up", down: "Down" },
     clockReferenceDefault: (minutes) => `${minutes} minutes`,
@@ -226,6 +235,7 @@ export const en: Copy = {
         challengeExitQuestion: "Do you want to end the challenge?",
         yes: "Yes",
         no: "No",
+        gotIt: "Got it",
         again: "Again",
         questionPosition: (position, total) => `Question ${position} of ${total}`,
         gameProgress: "Game progress",

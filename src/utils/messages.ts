@@ -13,7 +13,7 @@ import { HelpsUtils, type ArithmeticHint, type HelpUnavailableReason, type Calcu
 import type { Locale } from "./locales/utils.ts";
 import { NumbersUtils } from "./numbers/utils.ts";
 import { OperationsUtils, type Operation } from "./operations/utils.ts";
-import type { ClockOutcome, Milestone, SessionOffer } from "./progression/utils.ts";
+import type { ClockOutcome, Milestone, SessionOffer, UnlockRequirement, UnlockStep } from "./progression/utils.ts";
 import { ProfilesUtils, type PlayProblem, type Practice, type ProfileNameProblem } from "./profiles/utils.ts";
 import type { AnswerLayout, DisplayedQuestion, PracticeMode, Question } from "./questions/utils.ts";
 import type { RecordCategory } from "./records/utils.ts";
@@ -296,6 +296,33 @@ export class Messages {
             acceptLabel: copy.safetyNetAccept(offer.difficulty),
             declineLabel: copy.safetyNetDecline
         };
+    }
+
+    // Where to play to open a locked difficulty; when it is not the next to open, which one comes first.
+    public static getUnlockIntro(lockedDifficulty: Difficulty, requirement: UnlockRequirement): string {
+        const copy: Copy = this.getCopy();
+        if (requirement.isReady) {
+            return copy.unlockAlmost(requirement.nextDifficulty, requirement.playDifficulty);
+        }
+        if (lockedDifficulty !== requirement.nextDifficulty) {
+            return copy.unlockIntroAfter(lockedDifficulty, requirement.nextDifficulty, requirement.playDifficulty);
+        }
+        return copy.unlockIntro(requirement.nextDifficulty, requirement.playDifficulty);
+    }
+
+    public static getUnlockStep(step: UnlockStep): string {
+        switch (step.kind) {
+            case "level":
+                return this.getCopy().unlockLevelStep(step.needed);
+            case "correct":
+                return this.getCopy().unlockCorrectStep(step.needed, step.outOf);
+            default:
+                return this.getCopy().unlockDistinctStep(step.needed);
+        }
+    }
+
+    public static getUnlockMissingAnswers(count: number): string {
+        return this.getCopy().unlockMissingAnswers(count);
     }
 
     public static getClockDirectionLabel(direction: ClockDirection): string {

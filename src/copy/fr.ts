@@ -122,6 +122,15 @@ export const fr: Copy = {
         `Tu veux t’entraîner un peu à ${operationNamesWithArticle[operation]} en ${difficultyNames[difficulty]} ? Tu ne perds ni niveau ni pièces.`,
     safetyNetAccept: (difficulty) => `S’entraîner en ${difficultyNames[difficulty]}`,
     safetyNetDecline: "Continuer ici",
+    unlockIntro: (nextDifficulty, playDifficulty) => `Pour débloquer ${difficultyNames[nextDifficulty]}, joue en ${difficultyNames[playDifficulty]} :`,
+    unlockIntroAfter: (lockedDifficulty, nextDifficulty, playDifficulty) =>
+        `${difficultyNames[lockedDifficulty]} vient après ${difficultyNames[nextDifficulty]}. Pour débloquer ${difficultyNames[nextDifficulty]}, joue en ${difficultyNames[playDifficulty]} :`,
+    unlockAlmost: (nextDifficulty, playDifficulty) =>
+        `Presque ! Termine une partie en ${difficultyNames[playDifficulty]} et ${difficultyNames[nextDifficulty]} se débloque.`,
+    unlockLevelStep: (level) => `Atteins le niveau ${level}`,
+    unlockCorrectStep: (correct, outOf) => `Réussis ${correct} calculs écrits sur ${outOf}`,
+    unlockMissingAnswers: (count) => (count < 2 ? `Encore ${count} calcul.` : `Encore ${count} calculs.`),
+    unlockDistinctStep: (count) => `Fais ${count} calculs différents`,
 
     clockDirectionNames: { up: "En avançant", down: "À rebours" },
     clockReferenceDefault: (minutes) => `${minutes} minutes`,
@@ -243,6 +252,7 @@ export const fr: Copy = {
         challengeExitQuestion: "Tu veux arrêter le défi ?",
         yes: "Oui",
         no: "Non",
+        gotIt: "Compris",
         again: "Encore une fois",
         questionPosition: (position, total) => `Question ${position} sur ${total}`,
         gameProgress: "Progression de la partie",

@@ -5,6 +5,7 @@ import { BackIcon } from "../components/Icons.tsx";
 import { SegmentedField } from "../components/SegmentedField.tsx";
 import { SwitchField } from "../components/SwitchField.tsx";
 import { TablesPicker } from "../components/TablesPicker.tsx";
+import { UnlockSheet } from "../components/UnlockSheet.tsx";
 import type { Labels } from "../copy/copy.ts";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
 import type { ClockSettings } from "../utils/clock/utils.ts";
@@ -12,6 +13,7 @@ import { DifficultiesUtils, type Difficulty } from "../utils/difficulties/utils.
 import { Messages } from "../utils/messages.ts";
 import { OperationsUtils, type AdditiveOperation, type MultiplicativeOperation, type Operation } from "../utils/operations/utils.ts";
 import { ProfilesUtils, type PlayProblem, type Profile, type ProfileSettings } from "../utils/profiles/utils.ts";
+import { ProgressionUtils, type UnlockRequirement } from "../utils/progression/utils.ts";
 import { QuestionsUtils, type AnswerLayout, type PracticeMode } from "../utils/questions/utils.ts";
 import { RecordsUtils } from "../utils/records/utils.ts";
 
@@ -103,9 +105,12 @@ interface OperationFieldsProps {
     onSettingsChange: (settings: ProfileSettings) => void;
 }
 
-// The difficulty, then what it needs: the tables in Fácil × and ÷, the layout in + and −.
+// The difficulty, then what it needs: the tables in Fácil × and ÷, the layout in + and −. Touching a locked difficulty
+// opens a sheet with what opens it.
 function OperationFields({ profile, operation, onSettingsChange }: OperationFieldsProps) {
     const { settings } = profile;
+    const [lockedDifficulty, setLockedDifficulty] = useState<Difficulty | null>(null);
+    const unlockRequirement: UnlockRequirement | null = ProgressionUtils.getUnlockRequirement(profile, operation);
 
     return (
         <>
@@ -119,7 +124,11 @@ function OperationFields({ profile, operation, onSettingsChange }: OperationFiel
                     isLocked: !DifficultiesUtils.isUnlocked(difficulty, profile.unlockedDifficulties[operation])
                 }))}
                 onChange={(difficulty) => onSettingsChange({ ...settings, [operation]: { ...settings[operation], difficulty } })}
+                onChooseLocked={setLockedDifficulty}
             />
+            {lockedDifficulty !== null && unlockRequirement !== null && (
+                <UnlockSheet lockedDifficulty={lockedDifficulty} requirement={unlockRequirement} onClose={() => setLockedDifficulty(null)} />
+            )}
             {OperationsUtils.isAdditive(operation) ? (
                 <LayoutField operation={operation} settings={settings} onSettingsChange={onSettingsChange} />
             ) : (

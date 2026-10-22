@@ -544,20 +544,26 @@ fieldset {
     border-style: dashed;
     background: var(--color-bg);
     color: var(--color-text-muted);
-    cursor: not-allowed;
 }
 
-/* The padlock sits in the corner, like the tick on a chosen times table, so the name keeps the card's whole width. */
+/* The padlock is a badge on the card's corner, so the name keeps the card's whole width and never touches it. */
 .segmented__lock {
     position: absolute;
-    top: 5px;
-    right: 6px;
+    top: -9px;
+    right: -9px;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: 2px solid var(--color-border);
+    border-radius: 50%;
+    background: var(--color-surface);
 }
 
 .segmented__lock .icon {
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
 }
 
 /* "desbloquear" cannot break and is wider than a third of a phone: the card gives it its side padding,
@@ -671,8 +677,9 @@ fieldset {
     font-weight: 900;
 }
 
-/* "Sair" asks in a sheet over the dimmed game, so the question cannot be mistaken for the game's next one. */
-.exit-sheet {
+/* A question that stops the screen (leaving a game, a locked difficulty) comes up in a sheet over it, dimmed behind,
+   so it cannot be mistaken for part of the screen. */
+.sheet {
     inset: auto 0 0;
     width: 100%;
     max-width: none;
@@ -685,11 +692,11 @@ fieldset {
     color: var(--color-text);
 }
 
-.exit-sheet::backdrop {
+.sheet::backdrop {
     background: rgba(42, 31, 23, 0.55);
 }
 
-.exit-sheet__inner {
+.sheet__inner {
     display: flex;
     flex-direction: column;
     gap: var(--space-5);
@@ -731,6 +738,79 @@ fieldset {
     border-color: var(--color-primary-pressed);
     background: var(--color-primary);
     color: #ffffff;
+}
+
+/* What opens a locked difficulty: a tick and a bar per step, readable without reading. */
+.unlock-steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.unlock-step {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+}
+
+.unlock-step__mark {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--color-border);
+    border-radius: 50%;
+    color: #ffffff;
+}
+
+.unlock-step--done .unlock-step__mark {
+    border-color: var(--color-success);
+    background: var(--color-success);
+}
+
+.unlock-step__mark .icon {
+    width: 20px;
+    height: 20px;
+}
+
+.unlock-step__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.unlock-step__text {
+    font-weight: 800;
+}
+
+.unlock-step__progress {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.unlock-step__progress .meter {
+    flex: 1;
+}
+
+.unlock-step__count {
+    flex: none;
+    color: var(--color-text-muted);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.unlock-step__note {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    font-weight: 700;
 }
 
 .retry-badge {
@@ -2258,11 +2338,11 @@ fieldset {
         animation: slide-up 180ms ease-out;
     }
 
-    .exit-sheet[open] {
+    .sheet[open] {
         animation: slide-up 200ms ease-out;
     }
 
-    .exit-sheet[open]::backdrop {
+    .sheet[open]::backdrop {
         animation: fade-in 200ms ease-out;
     }
 
@@ -2340,8 +2420,8 @@ fieldset {
     }
 
     .feedback,
-    .exit-sheet[open],
-    .exit-sheet[open]::backdrop,
+    .sheet[open],
+    .sheet[open]::backdrop,
     .try-again,
     .hint-bubble,
     .milestone,
