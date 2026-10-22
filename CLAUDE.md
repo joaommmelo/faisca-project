@@ -2,7 +2,7 @@
 
 Este ficheiro é a fonte de verdade para quem trabalha neste repositório: o briefing original de marca e de produto, o pedido da v2 e as decisões tomadas com o dono do projecto, o que está feito e as convenções de código. Lê-o todo antes de mexer no projecto e actualiza-o quando o estado mudar.
 
-## Estado actual (v2, 21 de Outubro de 2026)
+## Estado actual (v2, 22 de Outubro de 2026)
 
 A v1 (só multiplicação) está na `main`. A v2 está na branch `v2`, ainda por juntar à `main`.
 
@@ -19,10 +19,13 @@ A v1 (só multiplicação) está na `main`. A v2 está na branch `v2`, ainda por
 - Pedidos seguintes do mesmo dia (ver «Pedidos seguintes»): números maiores na multiplicação e na divisão; «Misturado» com 2, 3 ou 4 operações; início só com a escolha e um ecrã de preparação com «Mais opções»; resultado logo por baixo da conta e tudo a avançar sozinho; saída com «Sim, sair do jogo» / «Não, continuar a jogar»; relógio ligado por defeito (para a frente, meta de 3 minutos); caixas de escrever a azul; ajuda desactivada sem moedas; «Início» sempre à vista no resumo; sem as caixas do «e vai 1» na vertical. Dados na versão 4, com migração de todas as anteriores.
 - Escolha múltipla nas competências (soma, subtração e × ÷ com números maiores) enquanto a criança não acerta 8 das últimas 10 respostas dessa competência, e de volta quando começa a falhar. Antes seguia a caixa da competência, que enchia num jogo e tirava a escolha múltipla para sempre.
 - **Desafio sem fim**, para adultos (ver «Desafio sem fim (para adultos)»): liga-se por perfil em «Avançado», no fundo do ecrã inicial. Perguntas seguidas, sempre escritas, cada uma com o seu tempo; a cada 5 certas sobe-se de nível, entram as outras operações, os números crescem até 7 algarismos e o tempo encurta; do nível 12 em diante fica tudo no máximo. Um erro ou o tempo a acabar terminam o desafio, e fica o recorde de certas. Não mexe no progresso da criança. Dados na versão 6.
+- Pedidos de 22 de Outubro (ver «Pedidos de 22 de Outubro»): público a partir dos 4 anos; o resultado volta a uma folha fixa no fundo do ecrã, por cima do teclado ou das opções; «Seguinte ›» com seta; «Início» e «Jogar outra vez» com os mesmos cantos e com ícones (casa e ▶); o «Por desbloquear» cabe nos cartões bloqueados.
 - 271 testes unitários (Vitest) a passar; `tsc` e `oxlint` limpos.
-- Testado num Chrome headless a 360, 390 e 820 px, sem erros na consola nem scroll horizontal: todas as operações, a vertical com ajuda e empréstimo através do zero, os marcos, o convite de desbloqueio, a rede de segurança, a migração da v1 e o arranque sem rede. No desafio: até ao nível 7, a subida de nível, o tempo parado com «Sair», o fim por erro e por tempo e o recorde; a conta mais larga (7 + 7 algarismos) cabe também a 320 px.
+- Testado num Chrome headless a 360, 390 e 820 px, sem erros na consola nem scroll horizontal: todas as operações, a vertical com ajuda e empréstimo através do zero, os marcos, o convite de desbloqueio, a rede de segurança, a migração da v1 e o arranque sem rede. No desafio: até ao nível 7, a subida de nível, o tempo parado com «Sair», o fim por erro e por tempo e o recorde; a conta mais larga (7 + 7 algarismos) cabe também a 320 px. A folha do resultado (certo, errado e com moeda) em escolha múltipla, teclado e vertical, e os cartões bloqueados a 360 e 390 px.
 
 **À espera de decisão do dono do projecto:**
+
+- Público a partir dos 4 anos: rever o resto da app para quem ainda não lê. Há escolhas do dono: uma voz a ler as perguntas e as mensagens (o briefing exclui sons); ícones nas opções que hoje são só texto («Só o resultado», «Na vertical», os modos das tabuadas); o que acontece ao tocar num cartão bloqueado (hoje nada).
 
 - Juntar a `v2` à `main`. Depois disso, mudar a fonte do GitHub Pages para a `main` (*Settings → Pages*, pasta `/docs`).
 - Ortografia: os modos dizem «Só directas» e «Directas + inversas», como no briefing. A escola segue o Acordo Ortográfico («diretas»). Mudar é só em `Messages.getModeLabel` (`src/utils/messages.ts`).
@@ -226,7 +229,7 @@ O pedido original da v2 está resumido aqui; as respostas do dono do projecto (2
 - **Resumo:** o «Início» tem de estar sempre à vista: fica com o «Jogar outra vez» numa barra fixa em baixo.
 - **Dificuldade na multiplicação e na divisão = números maiores:** o Fácil continua a ser as tabuadas; o Médio e o Difícil passam a contas com números maiores (23 × 4, 84 ÷ 4; 157 × 6, 936 ÷ 4), com tipos de competência, níveis, desbloqueio e rede de segurança como na soma.
 - **Tudo avança sozinho:** também depois de um erro e dos marcos, ao fim de pouco tempo; tocar no ecrã avança logo.
-- **O resultado aparece logo por baixo da conta,** antes do teclado ou das opções, para estar sempre à vista.
+- **O resultado aparece logo por baixo da conta,** antes do teclado ou das opções, para estar sempre à vista. (Substituído a 22 de Outubro: o resultado voltou a uma folha em baixo.)
 - **Ajuda desactivada com 0 moedas,** e com ar claramente apagado.
 - **Sair claro:** a filha do dono do projecto não percebeu o «Sair». A pergunta «Queres sair do jogo?» passa a ter as respostas «Sim, sair do jogo» e «Não, continuar a jogar», lado a lado e com o mesmo destaque; o botão do topo diz «Sair».
 - **Início menos carregado:** também confundia por ter muita coisa. O início só escolhe o que praticar; as definições passam para o ecrã de cada operação, com o essencial à vista e o resto em «Mais opções».
@@ -234,6 +237,13 @@ O pedido original da v2 está resumido aqui; as respostas do dono do projecto (2
 - **Misturado:** uma mistura de 2, 3 ou as 4 operações, escolhidas pela criança.
 - **Caixas de escrever sem vermelho:** a cor da soma (laranja) fazia as caixas parecerem um erro antes de responder; tudo o que a criança preenche fica azul.
 - **Sem caixas do «e vai 1»:** a linha de caixas para a criança marcar o transporte e o empréstimo era confusa e não servia; saiu. A vertical começa logo nos números, e o 1 que vem de trás ou o empréstimo só aparecem por cima da conta, sem caixa, quando a ajuda os mostra.
+
+### Pedidos de 22 de Outubro de 2026
+
+- **Público a partir dos 4 anos:** a app tem de seguir as melhores práticas de UX e ser intuitiva para crianças a partir dos 4 anos, que ainda não sabem ler: um botão tem de se perceber pelo ícone, não só pelo texto. Substitui o «dos 6 aos 9 anos» do pedido da v2.
+- **Resultado numa folha em baixo:** o «Seguinte» e a mensagem voltam a uma folha fixa no fundo do ecrã, por cima do teclado ou das opções (que já não servem depois de responder), em vez de ficarem entre a conta e as opções. A conta fica em cima, com a resposta. O «Tenta outra vez» continua logo por baixo da conta.
+- **Botões do resumo iguais:** o «Jogar outra vez» tinha cantos mais redondos do que o «Início»; ficam iguais.
+- **Cartões bloqueados:** o «Por desbloquear» quase saía do cartão; agora cabe.
 
 ### Desafio sem fim (para adultos, 21 de Outubro de 2026)
 
@@ -395,13 +405,13 @@ O factor 0 do briefing («factos com 0, 1 e 10») não existe nas tabuadas de 1 
 - **Mascote** (`Mascot.tsx`): cão castanho de orelhas caídas escuras, mancha creme na testa e no focinho, coleira azul com uma chapa em forma de faísca. Expressões: `happy` (início), `cheer` (certo, convite de desbloqueio), `encourage` (tenta outra vez, errado, rede de segurança, sair), `proud` (resumo e progresso). É sempre decorativa (`aria-hidden`); a mensagem está no balão.
 - **Ecrã inicial** (só escolhe o que praticar): em cima, o logótipo e as moedas (botão que abre o mealheiro); o Faísca; cinco cartões grandes: as quatro operações (2 × 2, com «Fácil · nível 2») e o Misturado a toda a largura; Ver progresso; «Quem vai jogar?» no fundo; por baixo, «Avançado», com o interruptor do desafio sem fim.
 - **Desafio sem fim:** cor própria, um ardósia sóbrio (`--op-challenge`), e o símbolo ∞. Antes de jogar, as regras e o recorde. Na sessão: «✕ Sair», «Nível n» e as certas numa pastilha verde; uma barra com o tempo que falta e os segundos, que fica em tom quente (nunca vermelho) no último quarto; a conta; a mensagem da subida de nível; o teclado. No fim: como acabou, a última conta com a resposta certa a verde (e o que se escreveu, se foi um erro), as certas, o nível e o recorde.
-- **Ecrã de preparação** (`SetupScreen`): «‹ Início» e as moedas; o nome da operação com a sua cor; a dificuldade com cadeados (no × e ÷ com o exemplo: «tabuadas», «como 23 × 4»); as tabuadas no Fácil do × e ÷, ou o formato no + e −; no Misturado, as quatro operações para ligar e desligar, cada uma com a sua dificuldade. «Mais opções» fechado: modo das tabuadas, «Escrever sempre a resposta», relógio. O Jogar fica fixo em baixo e diz porque está desligado.
+- **Ecrã de preparação** (`SetupScreen`): «‹ Início» e as moedas; o nome da operação com a sua cor; a dificuldade com cadeados (no × e ÷ com o exemplo: «tabuadas», «como 23 × 4»; nos bloqueados, «Por desbloquear» em letra que encolhe com o cartão, porque «desbloquear» não cabe num terço de um telemóvel); as tabuadas no Fácil do × e ÷, ou o formato no + e −; no Misturado, as quatro operações para ligar e desligar, cada uma com a sua dificuldade. «Mais opções» fechado: modo das tabuadas, «Escrever sempre a resposta», relógio. O Jogar fica fixo em baixo e diz porque está desligado.
 - **Sessão:** no topo, «✕ Sair», «Pergunta n de 10» e as moedas com cinco pontos até à próxima (meio ponto na escolha múltipla). Com o relógio ligado, uma pastilha com o tempo e a referência («de 3:00», «recorde 1:32»); no tempo extra fica em tom quente suave, sem alarme.
 - **Certo e errado não dependem só da cor:** certo tem visto, salto do Faísca e destaque verde; a opção escolhida errada fica riscada e tracejada; a vertical realça as colunas erradas.
-- **Feedback:** logo por baixo da conta, antes do teclado ou das opções: primeiro «Tenta outra vez» num balão; depois o resultado num painel com o Faísca, a mensagem, os marcos e o botão «Seguinte». Tudo avança sozinho (ver «Avançar sozinho»).
+- **Feedback:** primeiro «Tenta outra vez» num balão, logo por baixo da conta; depois o resultado numa folha fixa no fundo do ecrã, por cima do teclado ou das opções, com o Faísca, a mensagem, os marcos e o botão «Seguinte ›». Tudo avança sozinho (ver «Avançar sozinho»). A moeda ganha voa para o saldo por cima da folha.
 - **Sair:** «✕ Sair» abre «Queres sair do jogo?» com «Sim, sair do jogo» (casa) e «Não, continuar a jogar» (play), lado a lado e do mesmo tamanho; o foco começa em continuar.
 - **Caixas de escrever:** a resposta, as células da vertical, o cursor e as marcas são sempre azuis («é a tua vez»); os tons quentes ficam para os erros. A cor de cada operação fica nos cartões, nos símbolos e nos títulos.
-- **Resumo:** «Início» e «Jogar outra vez» numa barra fixa em baixo, sempre à vista.
+- **Resumo:** «Início» (casa) e «Jogar outra vez» (▶) numa barra fixa em baixo, sempre à vista, com os mesmos cantos. O resultado do desafio usa a mesma barra.
 - **Teclado do dispositivo nunca abre na sessão:** o teclado numérico é próprio. Um teclado físico também funciona (dígitos, Backspace, Enter).
 - **Leitores de ecrã:** cada pergunta tem um título escondido lido como frase («Quanto é 52 menos 27?»), que recebe o foco a cada pergunta nova. As células da vertical dizem a casa («Casa das dezenas: 6»). O botão «Seguinte» é descrito pela mensagem. As ajudas e o «tenta outra vez» são anunciados (`role="status"`).
 - **Movimento:** só `transform` e `opacity`, nada enquanto a criança pensa. Certo: o resultado cresce um pouco e o Faísca salta (menos de 1 s). Erro: a opção afunda suavemente, sem abanar. Marcos (moeda, nível, desbloqueio, fim de sessão): faíscas a subir e a moeda a rodar. Com `prefers-reduced-motion: reduce` tudo passa a um esvanecer curto e as faíscas desaparecem. Não há sons.
