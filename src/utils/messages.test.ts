@@ -278,7 +278,7 @@ describe("Messages.getLevelHelp", () => {
             title: "Faltam 19 contas certas para o nível 2.",
             lines: ["As de escolha múltipla contam metade.", "O que fizeres com ajuda não conta.", "No nível 2 começa: Transporte numa coluna."]
         });
-        expect(Messages.getLevelHelp(track, "memory", null).title).toBe("Faltam 38 pares para o nível 2.");
+        expect(Messages.getLevelHelp(track, "memory", null).title).toBe("Faltam 19 pares para o nível 2.");
         expect(Messages.getNextSkillName("multiplication", "easy", 1)).toBeNull();
         expect(Messages.getNextRoundSkillName("counting", 1)).toBe("Até 10, em filas");
         expect(Messages.getNextRoundSkillName("counting", 5)).toBeNull();

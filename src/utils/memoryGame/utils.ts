@@ -4,6 +4,7 @@ import { LeitnerUtils } from "../leitner/utils.ts";
 import { LevelsUtils, type RecentAnswer, type RecordTrackAnswerResult } from "../levels/utils.ts";
 import type { Operation } from "../operations/utils.ts";
 import type { Profile } from "../profiles/utils.ts";
+import type { AnswerFormat } from "../questions/utils.ts";
 import { ProgressionUtils, type ApplyRecordResult, type ClockOutcome, type Milestone, type TimedProfile } from "../progression/utils.ts";
 import { RandomUtils, type RandomSource } from "../random/utils.ts";
 import { RecordsUtils } from "../records/utils.ts";
@@ -68,7 +69,7 @@ export interface MemoryGameOutcome extends FinishedMemoryGame {
 }
 
 // "Memória": the cards face down, two turned at a time, and a pair stays up when they match. A pair found alone
-// earns the points of a multiple-choice answer towards the coins and the game's own level; a miss is part of the
+// earns the points of a typed answer towards the coins and the game's own level; a miss is part of the
 // game (it is the memory, not the sum, that slipped), so it takes nothing away.
 export class MemoryGameUtils {
     public static getValidContents(): MemoryContent[] {
@@ -101,8 +102,13 @@ export class MemoryGameUtils {
         return "memory-game";
     }
 
+    // A pair counts as a typed answer: at half, leaving level 1 took some 60 pairs, eight games of 8 pairs.
+    public static getPairFormat(): AnswerFormat {
+        return "keypad";
+    }
+
     public static getPointsForPair(): number {
-        return LevelsUtils.getPointsForAnswer("choice");
+        return LevelsUtils.getPointsForAnswer(this.getPairFormat());
     }
 
     // Any table has 12 facts of different products, enough for the biggest board.
@@ -212,7 +218,7 @@ export class MemoryGameUtils {
         if (card === undefined) {
             throw new Error(`Unknown pair: ${pairId}.`);
         }
-        const recentAnswer: RecentAnswer = { questionId: `${this.getTrackId()}:${game.content}:${card.value}`, isCorrect: true, format: "choice" };
+        const recentAnswer: RecentAnswer = { questionId: `${this.getTrackId()}:${game.content}:${card.value}`, isCorrect: true, format: this.getPairFormat() };
         const trackResult: RecordTrackAnswerResult = LevelsUtils.recordAnswer(LevelsUtils.getTrack(profile.tracks, this.getTrackId()), recentAnswer);
         const walletResult: AddWalletPointsResult = WalletUtils.addPoints(profile.wallet, this.getPointsForPair());
         return {

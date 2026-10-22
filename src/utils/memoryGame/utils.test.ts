@@ -100,13 +100,13 @@ describe("MemoryGameUtils helps and progress", () => {
         expect(matched.hintedCardId).toBeNull();
     });
 
-    it("gives a pair found alone the points of a multiple-choice answer, and a helped pair nothing", () => {
-        const profile: Profile = createTestProfile({}, { wallet: { coins: 1, points: 9 } });
+    it("gives a pair found alone the points of a typed answer, and a helped pair nothing", () => {
+        const profile: Profile = createTestProfile({}, { wallet: { coins: 1, points: 8 } });
         const matched: MemoryGame = MemoryGameUtils.flip(MemoryGameUtils.flip(game, first.id).game, second.id).game;
         const applied = MemoryGameUtils.applyMatch(profile, matched, 0);
         expect(applied.profile.wallet).toEqual({ coins: 2, points: 0 });
         expect(applied.milestones).toEqual([{ kind: "coin" }]);
-        expect(applied.profile.tracks[MemoryGameUtils.getTrackId()].points).toBe(1);
+        expect(applied.profile.tracks[MemoryGameUtils.getTrackId()].points).toBe(2);
         expect(MemoryGameUtils.applyMatch(profile, { ...matched, helpedPairIds: [0] }, 0).profile).toBe(profile);
     });
 
