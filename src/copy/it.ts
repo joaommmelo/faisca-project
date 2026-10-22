@@ -198,6 +198,101 @@ export const it: Copy = {
     factorGameAlso: (multiplications) => `Va bene anche ${multiplications}.`,
     factorGameAnswers: (multiplications) => `Poteva essere ${multiplications}.`,
 
+    roundGameNames: {
+        counting: "Quanti sono?",
+        "number-bonds": "Amici del 10",
+        "skip-counting": "Salta con Faísca",
+        "missing-sign": "Qual è il segno?",
+        balance: "Quale pesa di più?"
+    },
+    roundGameGreetings: {
+        counting: "Conta gli ossi e tocca il numero giusto!",
+        "number-bonds": "Quanto manca per arrivare al numero grande? Tocca la risposta!",
+        "skip-counting": "Faccio sempre salti uguali. Trova il numero che manca!",
+        "missing-sign": "Nel calcolo manca il segno. Qual è?",
+        balance: "Tocca il lato che pesa di più. Se pesano uguale, tocca l'=."
+    },
+    countingSkillNames: {
+        "to-five": "Fino a 5, come su un dado",
+        "to-ten": "Fino a 10, in fila",
+        scattered: "Fino a 10, sparsi",
+        "two-groups": "Unire due gruppi",
+        "to-twenty": "Fino a 20"
+    },
+    numberBondsSkillNames: {
+        "ten-frame": "Fare 10, con la griglia",
+        ten: "Fare 10",
+        twenty: "Fare 20",
+        "hundred-tens": "Fare 100, con le decine",
+        hundred: "Fare 100"
+    },
+    skipCountingSkillNames: {
+        ones: "Di 1 in 1",
+        twos: "Di 2 in 2",
+        "fives-tens": "Di 5 in 5 e di 10 in 10",
+        "threes-fours": "Di 3 in 3 e di 4 in 4",
+        "bigger-steps": "Salti da 6 a 9"
+    },
+    missingSignSkillNames: {
+        "add-subtract": "Più o meno",
+        multiply: "Per",
+        divide: "Diviso",
+        "bigger-numbers": "Tutti e quattro, con numeri più grandi"
+    },
+    balanceSkillNames: {
+        numbers: "Due numeri",
+        "sum-and-number": "Un'addizione e un numero",
+        sums: "Addizioni e sottrazioni",
+        products: "Moltiplicazioni",
+        mixed: "Calcoli misti"
+    },
+    operationWords: { addition: "più", subtraction: "meno", multiplication: "per", division: "diviso" },
+    roundChoiceHint: (removedCount) => (removedCount === 1 ? "Ho tolto una risposta. È una di queste!" : "Ho tolto due risposte. È una di queste!"),
+    bones: (count) => (count === 1 ? "1 osso" : `${count} ossi`),
+    spokenCounting: (isTwoGroups) => (isTwoGroups ? "Quanti ossi ci sono in tutto?" : "Quanti ossi ci sono?"),
+    spokenNumberBonds: (part, whole) => `${part} più quanto fa ${whole}?`,
+    spokenSkipCounting: (sequence) => `Che numero manca? ${sequence}.`,
+    skipCountingGap: "un numero nascosto",
+    skipCountingStep: (step) => `Salto di ${step} in ${step}.`,
+    spokenMissingSign: (left, right, result) => `Quale segno va tra ${left} e ${right} per fare ${result}?`,
+    missingSignAnswer: (calculation) => `Il calcolo è ${calculation}.`,
+    spokenBalance: (leftPan, rightPan) => `Quale pesa di più: ${leftPan} o ${rightPan}? O pesano uguale?`,
+    balanceHeavier: (pan) => `${pan} pesa di più`,
+    balanceEqual: "Pesano uguale",
+    balanceWeights: (heavierValue, lighterValue) => `${heavierValue} pesa più di ${lighterValue}.`,
+    balanceSameWeight: (value) => `Tutti e due fanno ${value}.`,
+
+    memoryGameName: "Memory",
+    memoryGameGreeting: "Gira due carte alla volta e trova le coppie!",
+    memoryContentNames: { quantities: "Quantità", additions: "Addizioni fino a 10", tables: "Tabelline" },
+    memoryMiss: "Non sono una coppia. Ricorda dove sono!",
+    memoryHint: "La gemella di questa carta sta brillando!",
+    memoryHelpNeedsCard: "Prima gira una carta.",
+    memoryCardDown: (position) => `Carta ${position}, coperta`,
+    memoryCardUp: (position, content) => `Carta ${position}: ${content}`,
+    memoryTurns: (turns) => (turns === 1 ? "1 mossa" : `${turns} mosse`),
+    memoryDone: "Bene! Hai trovato tutte le coppie!",
+    memoryPairsTitle: "Le coppie di questa partita",
+
+    mahjongName: "Mahjong dei calcoli",
+    mahjongAbout: "Per adulti: togli dal tabellone coppie di tessere con lo stesso risultato.",
+    mahjongGreeting: "Trova le coppie con lo stesso risultato!",
+    mahjongRules: [
+        "Tocca due tessere libere con lo stesso risultato, come 7×8 e 63−7, e spariscono dal tabellone.",
+        "Una tessera è libera quando non ha niente sopra e ha almeno un lato libero.",
+        "Se non ci sono coppie libere, mescola le tessere rimaste."
+    ],
+    mahjongTilesLeft: (count) => (count === 1 ? "1 tessera" : `${count} tessere`),
+    mahjongStuck: "Non ci sono coppie libere. Mescola le tessere!",
+    mahjongCleared: "Tabellone ripulito!",
+    mahjongStopped: "Partita terminata.",
+    mahjongNoMoves: "Non ci sono più mosse possibili.",
+    mahjongRecordSummary: (time) => `Record: ${time}`,
+    mahjongNoRecord: "Ancora nessun record.",
+    mahjongYourRecord: (time) => `Il tuo record: ${time}.`,
+    mahjongRecordsNeedNoHints: "I record contano solo senza suggerimenti.",
+    mahjongTile: (calculation, isFree) => (isFree ? calculation : `${calculation}, bloccata`),
+
     coinsCount: (coins) => (coins === 1 ? "1 moneta" : `${coins} monete`),
     coinProgress: (answers, answersPerCoin) => `${answers} di ${answersPerCoin}`,
     piggyBankAbout: (answersPerCoin) => `Ogni aiuto costa 1 moneta. Ogni ${answersPerCoin} risposte giuste guadagni una moneta nuova.`,
@@ -290,6 +385,16 @@ export const it: Copy = {
         yourAnswer: (answer) => `La tua risposta: ${answer}`,
         chooseAnswer: "Scegli la risposta",
         chooseTwoNumbers: "Scegli due numeri",
+        chooseSign: "Scegli il segno",
+        balance: "Bilancia",
+        cards: "Carte",
+        board: "Tabellone",
+        hint: "Suggerimento",
+        shuffle: "Mescola",
+        contentQuestion: "Quali carte?",
+        pairCountQuestion: "Quante coppie?",
+        pairCount: (count) => `${count} coppie`,
+        turns: (count) => (count === 1 ? "mossa" : "mosse"),
 
         correctAtFirstTry: "giuste al primo colpo",
         time: "Tempo",

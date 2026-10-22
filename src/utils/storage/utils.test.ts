@@ -261,7 +261,7 @@ describe("StorageUtils.load", () => {
 
     it("migrates v7 progress: Descobre a conta gets its own clock, on like every clock starts, and nothing else changes", () => {
         const profile: Profile = ProfilesUtils.createProfile("Rui");
-        const { factorGame, ...versionSevenSettings } = profile.settings;
+        const { factorGame, roundGames, memoryGame, isMahjongEnabled, ...versionSevenSettings } = profile.settings;
         const versionSevenProfile = {
             ...profile,
             settings: { ...versionSevenSettings, multiplication: { ...versionSevenSettings.multiplication, tables: [3, 7] } },
@@ -276,8 +276,40 @@ describe("StorageUtils.load", () => {
             data: {
                 version: ProfilesUtils.getDataVersion(),
                 activeProfileId: profile.id,
-                profiles: [{ ...versionSevenProfile, settings: { ...versionSevenProfile.settings, factorGame } }],
+                profiles: [{ ...versionSevenProfile, settings: { ...versionSevenProfile.settings, factorGame, roundGames, memoryGame, isMahjongEnabled } }],
                 locale: "fr"
+            },
+            status: "saved"
+        });
+    });
+
+    it("migrates v8 progress: the new games get their clocks, on like every clock starts, Mahjong starts switched off, and nothing else changes", () => {
+        const { mahjongRecord: _, ...profile } = ProfilesUtils.createProfile("Rui");
+        const { roundGames, memoryGame, isMahjongEnabled: __, ...versionEightSettings } = profile.settings;
+        const versionEightProfile = {
+            ...profile,
+            settings: { ...versionEightSettings, practice: "division" },
+            tracks: { "factor-game": { level: 2, points: 6, recentAnswers: [], answersSinceSafetyNet: 3 } },
+            wallet: { coins: 4, points: 6 }
+        };
+        stubStorage({
+            [StorageUtils.getStorageKey()]: JSON.stringify({ version: 8, activeProfileId: profile.id, profiles: [versionEightProfile], locale: "de" })
+        });
+
+        expect(roundGames.counting).toEqual({ clock: { isEnabled: true, direction: "up", reference: "default" } });
+        expect(memoryGame).toEqual({ content: "additions", pairCount: 6, clock: { isEnabled: true, direction: "up", reference: "default" } });
+        expect(StorageUtils.load()).toEqual({
+            data: {
+                version: ProfilesUtils.getDataVersion(),
+                activeProfileId: profile.id,
+                profiles: [
+                    {
+                        ...versionEightProfile,
+                        settings: { ...versionEightProfile.settings, roundGames, memoryGame, isMahjongEnabled: false },
+                        mahjongRecord: null
+                    }
+                ],
+                locale: "de"
             },
             status: "saved"
         });

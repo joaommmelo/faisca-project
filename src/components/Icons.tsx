@@ -148,7 +148,74 @@ export function ShareIcon() {
     return (
         <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M12 14V3M8 6.5L12 2.5l4 4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M8.5 10H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-1.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+            <path
+                d="M8.5 10H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-1.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+            />
+        </svg>
+    );
+}
+
+// Faísca's bone: what the counting games count.
+export function BoneIcon() {
+    return (
+        <svg className="icon icon--bone" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+                d="M6.5 8.6A2.6 2.6 0 1 1 8.6 5l6.8 6.8a2.6 2.6 0 1 1 3.6 3.6 2.6 2.6 0 1 1-3.6 3.6L8.6 12.2A2.6 2.6 0 1 1 5 8.6a2.6 2.6 0 0 1 1.5 0z"
+                fill="currentColor"
+                strokeLinejoin="round"
+            />
+        </svg>
+    );
+}
+
+// Three jumps along a line, for Salta com o Faísca.
+export function JumpsIcon() {
+    return (
+        <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+                d="M2 18c1.2-6 5.8-6 7 0M9 18c1.2-6 5.8-6 7 0M16 18c1.2-6 5.8-6 6 0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+            />
+            <path d="M1.5 20.5h21" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+    );
+}
+
+// A balance with two pans, for Qual pesa mais?
+export function BalanceIcon() {
+    return (
+        <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 3.5v16M7.5 20.5h9M4 7l16-2" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+            <path d="M4 7l-2.5 6h5zM20 5l-2.5 6h5z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+            <path d="M1.5 13a2.5 2.5 0 0 0 5 0M17.5 11a2.5 2.5 0 0 0 5 0" fill="currentColor" />
+        </svg>
+    );
+}
+
+// Two cards, one face up with a spark: Memória.
+export function CardsIcon() {
+    return (
+        <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <rect x="2.5" y="5" width="10" height="14" rx="2" transform="rotate(-10 7.5 12)" fill="none" stroke="currentColor" strokeWidth="2" />
+            <rect x="11" y="4" width="10" height="14" rx="2" transform="rotate(8 16 11)" fill="currentColor" />
+            <path d={getSparkPath(16, 11, 3.2)} fill="#ffffff" transform="rotate(8 16 11)" />
+        </svg>
+    );
+}
+
+// Two stacked tiles: Mahjong.
+export function TilesIcon() {
+    return (
+        <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <rect x="3" y="7" width="11" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="2" />
+            <rect x="9" y="3" width="11" height="14" rx="2" fill="currentColor" />
         </svg>
     );
 }

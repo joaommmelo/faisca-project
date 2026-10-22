@@ -180,6 +180,104 @@ export const de: Copy = {
     factorGameAlso: (multiplications) => `Es geht auch mit ${multiplications}.`,
     factorGameAnswers: (multiplications) => `Richtig wäre ${multiplications}.`,
 
+    roundGameNames: {
+        counting: "Wie viele?",
+        "number-bonds": "Freunde der 10",
+        "skip-counting": "Spring mit Faísca",
+        "missing-sign": "Welches Zeichen?",
+        balance: "Was wiegt mehr?"
+    },
+    roundGameGreetings: {
+        counting: "Zähl die Knochen und tippe auf die richtige Zahl!",
+        "number-bonds": "Wie viel fehlt bis zur großen Zahl? Tippe auf die Antwort!",
+        "skip-counting": "Ich springe immer gleich weit. Finde die Zahl, die fehlt!",
+        "missing-sign": "In der Aufgabe fehlt das Zeichen. Welches ist es?",
+        balance: "Tippe auf die Seite, die mehr wiegt. Wiegen beide gleich viel, tippe auf das =."
+    },
+    countingSkillNames: {
+        "to-five": "Bis 5, wie beim Würfel",
+        "to-ten": "Bis 10, in Reihen",
+        scattered: "Bis 10, durcheinander",
+        "two-groups": "Zwei Gruppen zusammen",
+        "to-twenty": "Bis 20"
+    },
+    numberBondsSkillNames: {
+        "ten-frame": "Bis 10, mit Zehnerfeld",
+        ten: "Bis 10",
+        twenty: "Bis 20",
+        "hundred-tens": "Bis 100, mit Zehnern",
+        hundred: "Bis 100"
+    },
+    skipCountingSkillNames: {
+        ones: "In 1er-Schritten",
+        twos: "In 2er-Schritten",
+        "fives-tens": "In 5er- und 10er-Schritten",
+        "threes-fours": "In 3er- und 4er-Schritten",
+        "bigger-steps": "Schritte von 6 bis 9"
+    },
+    missingSignSkillNames: {
+        "add-subtract": "Plus oder Minus",
+        multiply: "Mal",
+        divide: "Geteilt",
+        "bigger-numbers": "Alle vier, mit größeren Zahlen"
+    },
+    balanceSkillNames: {
+        numbers: "Zwei Zahlen",
+        "sum-and-number": "Eine Plusaufgabe und eine Zahl",
+        sums: "Plus und Minus",
+        products: "Malaufgaben",
+        mixed: "Gemischte Aufgaben"
+    },
+    operationWords: { addition: "plus", subtraction: "minus", multiplication: "mal", division: "geteilt durch" },
+    roundChoiceHint: (removedCount) =>
+        removedCount === 1
+            ? "Ich habe eine Antwort weggenommen. Eine von diesen ist richtig!"
+            : "Ich habe zwei Antworten weggenommen. Eine von diesen ist richtig!",
+    bones: (count) => `${count} Knochen`,
+    spokenCounting: (isTwoGroups) => (isTwoGroups ? "Wie viele Knochen sind es zusammen?" : "Wie viele Knochen sind es?"),
+    spokenNumberBonds: (part, whole) => `${part} plus wie viel ergibt ${whole}?`,
+    spokenSkipCounting: (sequence) => `Welche Zahl fehlt? ${sequence}.`,
+    skipCountingGap: "eine versteckte Zahl",
+    skipCountingStep: (step) => `Ich springe immer ${step} weiter.`,
+    spokenMissingSign: (left, right, result) => `Welches Zeichen kommt zwischen ${left} und ${right}, damit ${result} herauskommt?`,
+    missingSignAnswer: (calculation) => `Die Aufgabe heißt ${calculation}.`,
+    spokenBalance: (leftPan, rightPan) => `Was wiegt mehr: ${leftPan} oder ${rightPan}? Oder wiegen beide gleich viel?`,
+    balanceHeavier: (pan) => `${pan} wiegt mehr`,
+    balanceEqual: "Beide wiegen gleich viel",
+    balanceWeights: (heavierValue, lighterValue) => `${heavierValue} wiegt mehr als ${lighterValue}.`,
+    balanceSameWeight: (value) => `Beide ergeben ${value}.`,
+
+    memoryGameName: "Memory",
+    memoryGameGreeting: "Dreh immer zwei Karten um und finde die Paare!",
+    memoryContentNames: { quantities: "Mengen", additions: "Plus bis 10", tables: "Einmaleins" },
+    memoryMiss: "Das ist kein Paar. Merk dir, wo sie liegen!",
+    memoryHint: "Das Paar zu dieser Karte leuchtet!",
+    memoryHelpNeedsCard: "Dreh zuerst eine Karte um.",
+    memoryCardDown: (position) => `Karte ${position}, verdeckt`,
+    memoryCardUp: (position, content) => `Karte ${position}: ${content}`,
+    memoryTurns: (turns) => (turns === 1 ? "1 Zug" : `${turns} Züge`),
+    memoryDone: "Super! Du hast alle Paare gefunden!",
+    memoryPairsTitle: "Die Paare in diesem Spiel",
+
+    mahjongName: "Rechen-Mahjong",
+    mahjongAbout: "Für Erwachsene: Nimm Paare von Steinen mit demselben Ergebnis vom Spielfeld.",
+    mahjongGreeting: "Finde Paare mit demselben Ergebnis!",
+    mahjongRules: [
+        "Tippe auf zwei freie Steine mit demselben Ergebnis, wie 7×8 und 63−7, dann verschwinden sie vom Spielfeld.",
+        "Ein Stein ist frei, wenn nichts auf ihm liegt und eine seiner Seiten frei ist.",
+        "Gibt es keine freien Paare, misch die übrigen Steine."
+    ],
+    mahjongTilesLeft: (count) => (count === 1 ? "1 Stein" : `${count} Steine`),
+    mahjongStuck: "Keine freien Paare. Misch die Steine!",
+    mahjongCleared: "Alles abgeräumt!",
+    mahjongStopped: "Spiel beendet.",
+    mahjongNoMoves: "Es gibt keine Züge mehr.",
+    mahjongRecordSummary: (time) => `Rekord: ${time}`,
+    mahjongNoRecord: "Noch kein Rekord.",
+    mahjongYourRecord: (time) => `Dein Rekord: ${time}.`,
+    mahjongRecordsNeedNoHints: "Rekorde zählen nur ohne Tipps.",
+    mahjongTile: (calculation, isFree) => (isFree ? calculation : `${calculation}, blockiert`),
+
     coinsCount: (coins) => (coins === 1 ? "1 Münze" : `${coins} Münzen`),
     coinProgress: (answers, answersPerCoin) => `${answers} von ${answersPerCoin}`,
     piggyBankAbout: (answersPerCoin) => `Jede Hilfe kostet 1 Münze. Für ${answersPerCoin} richtige Antworten gibt es eine neue Münze.`,
@@ -274,6 +372,16 @@ export const de: Copy = {
         yourAnswer: (answer) => `Deine Antwort: ${answer}`,
         chooseAnswer: "Wähle die Antwort",
         chooseTwoNumbers: "Wähle zwei Zahlen",
+        chooseSign: "Wähle das Zeichen",
+        balance: "Waage",
+        cards: "Karten",
+        board: "Spielfeld",
+        hint: "Tipp",
+        shuffle: "Mischen",
+        contentQuestion: "Welche Karten?",
+        pairCountQuestion: "Wie viele Paare?",
+        pairCount: (count) => `${count} Paare`,
+        turns: (count) => (count === 1 ? "Zug" : "Züge"),
 
         correctAtFirstTry: "beim ersten Versuch richtig",
         time: "Zeit",

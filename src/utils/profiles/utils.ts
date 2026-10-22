@@ -5,9 +5,11 @@ import { FactsUtils } from "../facts/utils.ts";
 import type { LeitnerBoxes } from "../leitner/utils.ts";
 import type { Tracks } from "../levels/utils.ts";
 import type { Locale } from "../locales/utils.ts";
+import { MemoryGameUtils, type MemoryContent } from "../memoryGame/utils.ts";
 import { OperationsUtils, type Operation } from "../operations/utils.ts";
 import { QuestionsUtils, type AnswerLayout, type PracticeMode, type RecentSkillAnswers } from "../questions/utils.ts";
 import type { Records } from "../records/utils.ts";
+import type { RoundGameId } from "../roundGame/utils.ts";
 import { StatsUtils, type PracticeStats } from "../stats/utils.ts";
 import { WalletUtils, type Wallet } from "../wallet/utils.ts";
 
@@ -45,6 +47,18 @@ export interface FactorGameSettings {
     clock: ClockSettings;
 }
 
+// The games of rounds choose their rounds by their own level; only the clock is up to the child.
+export interface RoundGameSettings {
+    clock: ClockSettings;
+}
+
+// Memória: what the pairs match and how many there are. The times tables are the multiplication's.
+export interface MemoryGameSettings {
+    content: MemoryContent;
+    pairCount: number;
+    clock: ClockSettings;
+}
+
 export interface ProfileSettings {
     practice: Practice;
     addition: AdditiveSettings;
@@ -53,8 +67,11 @@ export interface ProfileSettings {
     division: MultiplicativeSettings;
     mix: MixSettings;
     factorGame: FactorGameSettings;
-    // The endless challenge for adults shows on the home screen only when switched on.
+    roundGames: Record<RoundGameId, RoundGameSettings>;
+    memoryGame: MemoryGameSettings;
+    // The endless challenge and Mahjong, for adults, show on the home screen only when switched on.
     isChallengeEnabled: boolean;
+    isMahjongEnabled: boolean;
 }
 
 // Why Jogar is off: a times-table practice with no table chosen, or a mix with fewer than two operations.
@@ -78,6 +95,8 @@ export interface Profile {
     stats: PracticeStats;
     // The most right answers in one run of the challenge; null until one has any.
     challengeRecord: number | null;
+    // The best time of a Mahjong board cleared without hints; null until one is.
+    mahjongRecord: number | null;
 }
 
 export interface AppData {
@@ -93,7 +112,7 @@ export type ProfileNameProblem = "empty" | "too-long" | "taken";
 
 export class ProfilesUtils {
     public static getDataVersion(): number {
-        return 8;
+        return 9;
     }
 
     // A mix of a single operation would just be that operation.
@@ -133,8 +152,25 @@ export class ProfilesUtils {
             division: multiplicative,
             mix: { operations: OperationsUtils.getValidOperations(), clock: ClockUtils.createDefault() },
             factorGame: { clock: ClockUtils.createDefault() },
-            isChallengeEnabled: false
+            roundGames: this.createDefaultRoundGameSettings(),
+            memoryGame: this.createDefaultMemoryGameSettings(),
+            isChallengeEnabled: false,
+            isMahjongEnabled: false
         };
+    }
+
+    public static createDefaultRoundGameSettings(): Record<RoundGameId, RoundGameSettings> {
+        return {
+            counting: { clock: ClockUtils.createDefault() },
+            "number-bonds": { clock: ClockUtils.createDefault() },
+            "skip-counting": { clock: ClockUtils.createDefault() },
+            "missing-sign": { clock: ClockUtils.createDefault() },
+            balance: { clock: ClockUtils.createDefault() }
+        };
+    }
+
+    public static createDefaultMemoryGameSettings(): MemoryGameSettings {
+        return { content: MemoryGameUtils.getDefaultContent(), pairCount: MemoryGameUtils.getDefaultPairCount(), clock: ClockUtils.createDefault() };
     }
 
     public static getPracticeOperations(settings: ProfileSettings): Operation[] {
@@ -176,7 +212,8 @@ export class ProfilesUtils {
             wallet: WalletUtils.createInitial(),
             records: {},
             stats: StatsUtils.createEmpty(),
-            challengeRecord: null
+            challengeRecord: null,
+            mahjongRecord: null
         };
     }
 
