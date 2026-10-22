@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { LocalesUtils } from "./locales/utils.ts";
+import type { FactorRound } from "./factorGame/utils.ts";
 import { Messages } from "./messages.ts";
 import type { Question } from "./questions/utils.ts";
 
@@ -147,6 +148,44 @@ describe("Messages for bigger numbers and mixes", () => {
     });
 });
 
+const round24: FactorRound = {
+    target: 24,
+    pairs: [
+        { first: 2, second: 12 },
+        { first: 3, second: 8 },
+        { first: 4, second: 6 }
+    ],
+    answer: { first: 4, second: 6 }
+};
+
+describe("Messages for Descobre a conta", () => {
+    it("says what a missed multiplication makes, never the answer", () => {
+        expect(Messages.getFactorGameTryAgain({ first: 4, second: 7 })).toBe("Quase! 4 × 7 dá 28. Tenta outra vez.");
+    });
+
+    it("shows the other multiplications of the number after a right answer", () => {
+        const feedback = Messages.getFactorGameFeedback({ round: round24, givenPairs: [{ first: 6, second: 4 }], isCorrect: true }, 0);
+        expect(feedback.lines).toEqual(["Também podia ser 2 × 12 ou 3 × 8."]);
+    });
+
+    it("shows every multiplication after two misses, or the only one", () => {
+        const missed = {
+            givenPairs: [
+                { first: 4, second: 7 },
+                { first: 5, second: 5 }
+            ],
+            isCorrect: false
+        };
+        expect(Messages.getFactorGameFeedback({ ...missed, round: round24 }, 0)).toEqual({ title: "Quase!", lines: ["Podia ser 2 × 12, 3 × 8 ou 4 × 6."] });
+        const round144: FactorRound = { target: 144, pairs: [{ first: 12, second: 12 }], answer: { first: 12, second: 12 } };
+        expect(Messages.getFactorGameFeedback({ ...missed, round: round144 }, 0).lines).toEqual(["A resposta certa é 12 × 12."]);
+    });
+
+    it("writes every multiplication of a number in one line", () => {
+        expect(Messages.getFactorRoundText(round24)).toBe("24 = 2 × 12 = 3 × 8 = 4 × 6");
+    });
+});
+
 describe("Messages in every language", () => {
     afterEach(() => Messages.setLocale("pt"));
 
@@ -166,7 +205,12 @@ describe("Messages in every language", () => {
         Messages.getCoinProgress(3.5),
         Messages.getChallengeLevelUp(3),
         Messages.getLabels().questionPosition(3, 10),
-        Messages.getLabels().deleteProfileQuestion("Rita")
+        Messages.getLabels().deleteProfileQuestion("Rita"),
+        Messages.getFactorGameNeedsTable(),
+        Messages.getFactorGameQuestion(24),
+        Messages.getFactorGameTryAgain({ first: 4, second: 7 }),
+        ...Messages.getFactorGameFeedback({ round: round24, givenPairs: [{ first: 4, second: 6 }], isCorrect: true }, 0).lines,
+        ...Messages.getFactorGameFeedback({ round: round24, givenPairs: [], isCorrect: false }, 0).lines
     ];
 
     it("words every message, with nothing missing", () => {

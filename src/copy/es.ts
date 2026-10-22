@@ -165,6 +165,16 @@ export const es: Copy = {
     challengeStopped: "Desafío terminado.",
     challengeLevelReached: (level) => `Has llegado al nivel ${level}.`,
 
+    factorGameName: "Descubre la cuenta",
+    factorGameAbout: "¿Qué multiplicación da este número?",
+    factorGameGreeting: "Te enseño un número. ¡Descubre una multiplicación que dé ese número!",
+    factorGameAnyAnswer: "Toca dos números para hacer la cuenta. Muchos números tienen varias, ¡y cualquiera vale!",
+    factorGameNeedsTable: (fromTable, toTable) => `Elige al menos una tabla del ${fromTable} al ${toTable}.`,
+    factorGameQuestion: (target) => `¿Qué multiplicación da ${target}?`,
+    factorGameTryAgain: (first, second, product) => `¡Casi! ${first} × ${second} da ${product}. Inténtalo otra vez.`,
+    factorGameAlso: (multiplications) => `También podría ser ${multiplications}.`,
+    factorGameAnswers: (multiplications) => `Podría ser ${multiplications}.`,
+
     coinsCount: (coins) => (coins === 1 ? "1 moneda" : `${coins} monedas`),
     coinProgress: (answers, answersPerCoin) => `${answers} de ${answersPerCoin}`,
     piggyBankAbout: (answersPerCoin) => `Cada ayuda cuesta 1 moneda. Cada ${answersPerCoin} aciertos dan una moneda nueva.`,
@@ -255,6 +265,7 @@ export const es: Copy = {
         noAnswerYet: "Aún sin respuesta",
         yourAnswer: (answer) => `Tu respuesta: ${answer}`,
         chooseAnswer: "Elige la respuesta",
+        chooseTwoNumbers: "Elige dos números",
 
         correctAtFirstTry: "aciertos a la primera",
         time: "Tiempo",

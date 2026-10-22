@@ -188,6 +188,16 @@ export const it: Copy = {
     challengeStopped: "Sfida terminata.",
     challengeLevelReached: (level) => `Hai raggiunto il livello ${level}.`,
 
+    factorGameName: "Trova la moltiplicazione",
+    factorGameAbout: "Quale moltiplicazione fa questo numero?",
+    factorGameGreeting: "Ti mostro un numero. Trova una moltiplicazione che faccia quel numero!",
+    factorGameAnyAnswer: "Tocca due numeri per fare la moltiplicazione. Molti numeri ne hanno più di una, e va bene qualsiasi!",
+    factorGameNeedsTable: (fromTable, toTable) => `Scegli almeno una tabellina dal ${fromTable} al ${toTable}.`,
+    factorGameQuestion: (target) => `Quale moltiplicazione fa ${target}?`,
+    factorGameTryAgain: (first, second, product) => `Quasi! ${first} × ${second} fa ${product}. Riprova.`,
+    factorGameAlso: (multiplications) => `Va bene anche ${multiplications}.`,
+    factorGameAnswers: (multiplications) => `Poteva essere ${multiplications}.`,
+
     coinsCount: (coins) => (coins === 1 ? "1 moneta" : `${coins} monete`),
     coinProgress: (answers, answersPerCoin) => `${answers} di ${answersPerCoin}`,
     piggyBankAbout: (answersPerCoin) => `Ogni aiuto costa 1 moneta. Ogni ${answersPerCoin} risposte giuste guadagni una moneta nuova.`,
@@ -278,6 +288,7 @@ export const it: Copy = {
         noAnswerYet: "Ancora nessuna risposta",
         yourAnswer: (answer) => `La tua risposta: ${answer}`,
         chooseAnswer: "Scegli la risposta",
+        chooseTwoNumbers: "Scegli due numeri",
 
         correctAtFirstTry: "giuste al primo colpo",
         time: "Tempo",

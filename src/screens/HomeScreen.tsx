@@ -17,6 +17,7 @@ interface HomeScreenProps {
     storageStatus: StorageStatus;
     onChoosePractice: (practice: Practice) => void;
     onShowProgress: () => void;
+    onOpenFactorGame: () => void;
     onOpenChallenge: () => void;
     onOpenSettings: () => void;
 }
@@ -24,7 +25,7 @@ interface HomeScreenProps {
 // Only the choice of what to practise; everything about how to play it waits on the next screen. The coins sit in
 // the corner and open the piggy bank. What an adult changes once in a while (who is playing, the language, the
 // challenge for adults) waits behind the gear next to them.
-export function HomeScreen({ profile, storageStatus, onChoosePractice, onShowProgress, onOpenChallenge, onOpenSettings }: HomeScreenProps) {
+export function HomeScreen({ profile, storageStatus, onChoosePractice, onShowProgress, onOpenFactorGame, onOpenChallenge, onOpenSettings }: HomeScreenProps) {
     const { settings } = profile;
     const installPrompt: InstallPrompt = useInstallPrompt();
     const labels: Labels = Messages.getLabels();
@@ -68,6 +69,16 @@ export function HomeScreen({ profile, storageStatus, onChoosePractice, onShowPro
             )}
 
             <PracticeTiles summaries={summaries} onChoose={onChoosePractice} />
+
+            <button type="button" className="practice practice--multiplication practice--wide" onClick={onOpenFactorGame}>
+                <span className="practice__symbol practice__symbol--factors" aria-hidden="true">
+                    ?×?
+                </span>
+                <span className="practice__text">
+                    <span className="practice__name">{Messages.getFactorGameName()}</span>
+                    <span className="practice__summary">{Messages.getFactorGameAbout()}</span>
+                </span>
+            </button>
 
             {settings.isChallengeEnabled && (
                 <button type="button" className="practice practice--challenge" onClick={onOpenChallenge}>

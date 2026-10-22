@@ -2,6 +2,8 @@ import moment from "moment";
 import { useEffect, useState } from "react";
 import { ChallengeScreen } from "./screens/ChallengeScreen.tsx";
 import { ChallengeSessionScreen } from "./screens/ChallengeSessionScreen.tsx";
+import { FactorGameScreen } from "./screens/FactorGameScreen.tsx";
+import { FactorGameSessionScreen } from "./screens/FactorGameSessionScreen.tsx";
 import { HomeScreen } from "./screens/HomeScreen.tsx";
 import { ProgressScreen } from "./screens/ProgressScreen.tsx";
 import { SessionScreen } from "./screens/SessionScreen.tsx";
@@ -10,6 +12,7 @@ import { SetupScreen } from "./screens/SetupScreen.tsx";
 import { SummaryScreen } from "./screens/SummaryScreen.tsx";
 import { WelcomeScreen } from "./screens/WelcomeScreen.tsx";
 import { ChallengeUtils, type ChallengeRun } from "./utils/challenge/utils.ts";
+import type { FactorGameOutcome } from "./utils/factorGame/utils.ts";
 import { LocalesUtils, type Locale } from "./utils/locales/utils.ts";
 import { Messages } from "./utils/messages.ts";
 import { ProfilesUtils, type AppData, type Profile } from "./utils/profiles/utils.ts";
@@ -25,7 +28,9 @@ type View =
     | { name: "progress" }
     | { name: "settings" }
     | { name: "challenge"; run: ChallengeRun | null }
-    | { name: "challenge-session" };
+    | { name: "challenge-session" }
+    | { name: "factor-game"; outcome: FactorGameOutcome | null }
+    | { name: "factor-game-session" };
 
 export function App() {
     const [stored] = useState<LoadResult>(() => StorageUtils.load());
@@ -141,6 +146,29 @@ export function App() {
                     onBack={() => setView({ name: "home" })}
                 />
             );
+        case "factor-game-session":
+            return (
+                <FactorGameSessionScreen
+                    tables={activeProfile.settings.multiplication.tables}
+                    onFinish={(outcome) => setView({ name: "factor-game", outcome })}
+                    onExit={() => setView({ name: "home" })}
+                />
+            );
+        case "factor-game":
+            return (
+                <FactorGameScreen
+                    tables={activeProfile.settings.multiplication.tables}
+                    outcome={view.outcome}
+                    onTablesChange={(tables) =>
+                        updateActiveProfile((profile) => ({
+                            ...profile,
+                            settings: { ...profile.settings, multiplication: { ...profile.settings.multiplication, tables } }
+                        }))
+                    }
+                    onPlay={() => setView({ name: "factor-game-session" })}
+                    onHome={() => setView({ name: "home" })}
+                />
+            );
         case "challenge-session":
             return <ChallengeSessionScreen onFinish={finishChallenge} />;
         case "challenge":
@@ -163,6 +191,7 @@ export function App() {
                         setView({ name: "setup" });
                     }}
                     onShowProgress={() => setView({ name: "progress" })}
+                    onOpenFactorGame={() => setView({ name: "factor-game", outcome: null })}
                     onOpenChallenge={() => setView({ name: "challenge", run: null })}
                     onOpenSettings={() => setView({ name: "settings" })}
                 />

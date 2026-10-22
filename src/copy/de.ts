@@ -170,6 +170,16 @@ export const de: Copy = {
     challengeStopped: "Challenge beendet.",
     challengeLevelReached: (level) => `Du hast Level ${level} erreicht.`,
 
+    factorGameName: "Finde die Malaufgabe",
+    factorGameAbout: "Welche Malaufgabe ergibt diese Zahl?",
+    factorGameGreeting: "Ich zeige dir eine Zahl. Finde eine Malaufgabe, die diese Zahl ergibt!",
+    factorGameAnyAnswer: "Tippe auf zwei Zahlen für die Malaufgabe. Viele Zahlen haben mehrere, und jede davon zählt!",
+    factorGameNeedsTable: (fromTable, toTable) => `Wähle mindestens eine Reihe von ${fromTable} bis ${toTable}.`,
+    factorGameQuestion: (target) => `Welche Malaufgabe ergibt ${target}?`,
+    factorGameTryAgain: (first, second, product) => `Fast! ${first} × ${second} ergibt ${product}. Versuch es noch mal.`,
+    factorGameAlso: (multiplications) => `Es geht auch mit ${multiplications}.`,
+    factorGameAnswers: (multiplications) => `Richtig wäre ${multiplications}.`,
+
     coinsCount: (coins) => (coins === 1 ? "1 Münze" : `${coins} Münzen`),
     coinProgress: (answers, answersPerCoin) => `${answers} von ${answersPerCoin}`,
     piggyBankAbout: (answersPerCoin) => `Jede Hilfe kostet 1 Münze. Für ${answersPerCoin} richtige Antworten gibt es eine neue Münze.`,
@@ -262,6 +272,7 @@ export const de: Copy = {
         noAnswerYet: "Noch keine Antwort",
         yourAnswer: (answer) => `Deine Antwort: ${answer}`,
         chooseAnswer: "Wähle die Antwort",
+        chooseTwoNumbers: "Wähle zwei Zahlen",
 
         correctAtFirstTry: "beim ersten Versuch richtig",
         time: "Zeit",

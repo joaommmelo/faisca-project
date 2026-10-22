@@ -664,6 +664,15 @@ fieldset {
     font-weight: 800;
 }
 
+/* Nothing on the right (no coins in the mini-game): the label stays in the middle of the screen. */
+.session-header--centered {
+    grid-template-columns: 1fr auto 1fr;
+}
+
+.session-header--centered .exit-button {
+    justify-self: start;
+}
+
 .exit-button {
     display: inline-flex;
     align-items: center;
@@ -895,6 +904,13 @@ fieldset {
     border-color: var(--color-success);
     background: var(--color-success-soft);
     color: var(--color-success);
+}
+
+/* With two slots to fill, the one the next tap goes to. */
+.equation__slot--next {
+    border-style: solid;
+    background: var(--color-primary-soft);
+    box-shadow: 0 4px 0 var(--color-primary-pressed);
 }
 
 .choices {
@@ -1426,6 +1442,7 @@ fieldset {
 }
 
 .practice--mix,
+.practice--wide,
 .practice--challenge {
     min-height: 96px;
     flex-direction: row;
@@ -1453,13 +1470,17 @@ fieldset {
     font-size: 1.3rem;
 }
 
+.practice__symbol--factors {
+    font-size: 1.45rem;
+}
+
 .practice__name {
     font-size: clamp(1rem, 4.4vw, 1.25rem);
     font-weight: 900;
     line-height: 1.15;
 }
 
-/* The challenge's name and record, one under the other, next to its symbol. */
+/* A wide tile's name and line (the challenge's record), one under the other, next to its symbol. */
 .practice__text {
     display: flex;
     flex-direction: column;
@@ -1492,11 +1513,14 @@ fieldset {
     line-height: 1.1;
 }
 
+/* Never wraps nor shrinks: a symbol of several signs (+−×÷, ?×?) stays on one line next to a long name. */
 .setup-title__symbol {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
     min-width: 56px;
+    white-space: nowrap;
     height: 56px;
     padding: 0 10px;
     border-radius: var(--radius-md);
@@ -2260,6 +2284,12 @@ fieldset {
 /* Inside a card the last question has less room than on the session screen. */
 .challenge-last .equation--long {
     font-size: clamp(1.4rem, 7vw, 2.75rem);
+}
+
+/* Descobre a conta: the example of the rules, smaller than a question. */
+.factor-example .equation {
+    padding: 0;
+    font-size: clamp(1.75rem, 9vw, 3rem);
 }
 
 .clock-result {

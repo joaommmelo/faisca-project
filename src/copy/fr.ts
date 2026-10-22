@@ -175,6 +175,16 @@ export const fr: Copy = {
     challengeStopped: "Défi terminé.",
     challengeLevelReached: (level) => `Tu as atteint le niveau ${level}.`,
 
+    factorGameName: "Trouve la multiplication",
+    factorGameAbout: "Quelle multiplication donne ce nombre ?",
+    factorGameGreeting: "Je montre un nombre. Trouve une multiplication qui donne ce nombre !",
+    factorGameAnyAnswer: "Touche deux nombres pour faire la multiplication. Beaucoup de nombres en ont plusieurs, et n’importe laquelle compte !",
+    factorGameNeedsTable: (fromTable, toTable) => `Choisis au moins une table de ${fromTable} à ${toTable}.`,
+    factorGameQuestion: (target) => `Quelle multiplication donne ${target} ?`,
+    factorGameTryAgain: (first, second, product) => `Presque ! ${first} × ${second} font ${product}. Essaie encore.`,
+    factorGameAlso: (multiplications) => `Ça marche aussi avec ${multiplications}.`,
+    factorGameAnswers: (multiplications) => `Ça pouvait être ${multiplications}.`,
+
     coinsCount: (coins) => (coins < 2 ? `${coins} pièce` : `${coins} pièces`),
     coinProgress: (answers, answersPerCoin) => `${answers} sur ${answersPerCoin}`,
     piggyBankAbout: (answersPerCoin) => `Chaque aide coûte 1 pièce. Toutes les ${answersPerCoin} bonnes réponses, tu gagnes une nouvelle pièce.`,
@@ -267,6 +277,7 @@ export const fr: Copy = {
         noAnswerYet: "Pas encore de réponse",
         yourAnswer: (answer) => `Ta réponse : ${answer}`,
         chooseAnswer: "Choisis la réponse",
+        chooseTwoNumbers: "Choisis deux nombres",
 
         correctAtFirstTry: "justes du premier coup",
         time: "Temps",

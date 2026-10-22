@@ -140,6 +140,18 @@ export interface Copy {
     challengeStopped: string;
     challengeLevelReached: (level: number) => string;
 
+    // "Descobre a conta": a number, and a multiplication that makes it. Lists of multiplications ("2 × 12, 3 × 8 e
+    // 4 × 6") arrive joined in the language's own way, with "or".
+    factorGameName: string;
+    factorGameAbout: string;
+    factorGameGreeting: string;
+    factorGameAnyAnswer: string;
+    factorGameNeedsTable: (fromTable: number, toTable: number) => string;
+    factorGameQuestion: (target: number) => string;
+    factorGameTryAgain: (first: number, second: number, product: number) => string;
+    factorGameAlso: (multiplications: string) => string;
+    factorGameAnswers: (multiplications: string) => string;
+
     // Coins, storage, progress and profiles
     coinsCount: (coins: number) => string;
     // "3½ de 5": the answers arrive written out, with a half for multiple choice.
@@ -236,6 +248,7 @@ export interface Labels {
     noAnswerYet: string;
     yourAnswer: (answer: string) => string;
     chooseAnswer: string;
+    chooseTwoNumbers: string;
 
     correctAtFirstTry: string;
     time: string;

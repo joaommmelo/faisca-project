@@ -9,8 +9,9 @@ import type { Skill } from "./arithmetic/utils.ts";
 import { ChallengeUtils, type ChallengeRun } from "./challenge/utils.ts";
 import { ClockUtils, type ClockDirection, type ClockReference, type ClockSettings } from "./clock/utils.ts";
 import { DifficultiesUtils, type Difficulty } from "./difficulties/utils.ts";
+import { FactorGameUtils, type FactorPair, type FactorRound, type FactorRoundResult } from "./factorGame/utils.ts";
 import { HelpsUtils, type ArithmeticHint, type HelpUnavailableReason, type Calculation, type VerticalHelpStep } from "./helps/utils.ts";
-import type { Locale } from "./locales/utils.ts";
+import { LocalesUtils, type Locale } from "./locales/utils.ts";
 import { NumbersUtils } from "./numbers/utils.ts";
 import { OperationsUtils, type Operation } from "./operations/utils.ts";
 import type { ClockOutcome, Milestone, SessionOffer, UnlockRequirement, UnlockStep } from "./progression/utils.ts";
@@ -460,6 +461,59 @@ export class Messages {
         return this.getCopy().challengeLevelReached(ChallengeUtils.getLevel(correctCount));
     }
 
+    public static getFactorGameName(): string {
+        return this.getCopy().factorGameName;
+    }
+
+    public static getFactorGameAbout(): string {
+        return this.getCopy().factorGameAbout;
+    }
+
+    public static getFactorGameGreeting(): string {
+        return this.getCopy().factorGameGreeting;
+    }
+
+    public static getFactorGameAnyAnswer(): string {
+        return this.getCopy().factorGameAnyAnswer;
+    }
+
+    public static getFactorGameNeedsTable(): string {
+        const factors: number[] = FactorGameUtils.getFactors();
+        return this.getCopy().factorGameNeedsTable(factors[0], factors[factors.length - 1]);
+    }
+
+    public static getFactorGameQuestion(target: number): string {
+        return this.getCopy().factorGameQuestion(target);
+    }
+
+    // The first miss says what the child's multiplication makes, never the answer.
+    public static getFactorGameTryAgain(pair: FactorPair): string {
+        return this.getCopy().factorGameTryAgain(pair.first, pair.second, pair.first * pair.second);
+    }
+
+    // Once answered, the other multiplications that make the same number: when right, as a bonus; after two misses,
+    // all of them.
+    public static getFactorGameFeedback(result: FactorRoundResult, variant: number): Feedback {
+        const copy: Copy = this.getCopy();
+        if (result.isCorrect) {
+            const title: string = FactorGameUtils.isFirstTryCorrect(result) ? copy.praises[variant % copy.praises.length] : copy.rightAtSecondTry;
+            const otherPairs: FactorPair[] = FactorGameUtils.getOtherPairs(result);
+            return { title, lines: otherPairs.length === 0 ? [] : [copy.factorGameAlso(this.writeFactorPairs(otherPairs))] };
+        }
+        const pairs: FactorPair[] = result.round.pairs;
+        const answer: string = pairs.length === 1 ? copy.rightAnswer(this.getFactorPairText(pairs[0])) : copy.factorGameAnswers(this.writeFactorPairs(pairs));
+        return { title: copy.almost, lines: [answer] };
+    }
+
+    public static getFactorPairText(pair: FactorPair): string {
+        return `${pair.first} × ${pair.second}`;
+    }
+
+    // Every multiplication that makes the number: "24 = 2 × 12 = 3 × 8 = 4 × 6".
+    public static getFactorRoundText(round: FactorRound): string {
+        return [String(round.target), ...round.pairs.map((pair) => this.getFactorPairText(pair))].join(" = ");
+    }
+
     public static getCoinsCount(coins: number): string {
         return this.getCopy().coinsCount(coins);
     }
@@ -512,6 +566,12 @@ export class Messages {
 
     private static getCopy(): Copy {
         return COPIES[this.locale];
+    }
+
+    // "2 × 12, 3 × 8 ou 4 × 6", with the words and commas of the language.
+    private static writeFactorPairs(pairs: FactorPair[]): string {
+        const list: Intl.ListFormat = new Intl.ListFormat(LocalesUtils.getLanguageTag(this.locale), { type: "disjunction" });
+        return list.format(pairs.map((pair) => this.getFactorPairText(pair)));
     }
 
     private static writeCalculation(calculation: Calculation, symbol: string): string {

@@ -160,6 +160,16 @@ export const en: Copy = {
     challengeStopped: "Challenge over.",
     challengeLevelReached: (level) => `You reached level ${level}.`,
 
+    factorGameName: "What times what?",
+    factorGameAbout: "Which multiplication makes this number?",
+    factorGameGreeting: "I show a number. Find a multiplication that makes it!",
+    factorGameAnyAnswer: "Tap two numbers to make the multiplication. Lots of numbers have more than one, and any of them counts!",
+    factorGameNeedsTable: (fromTable, toTable) => `Choose at least one times table from ${fromTable} to ${toTable}.`,
+    factorGameQuestion: (target) => `What times what makes ${target}?`,
+    factorGameTryAgain: (first, second, product) => `Almost! ${first} × ${second} makes ${product}. Try again.`,
+    factorGameAlso: (multiplications) => `It could also be ${multiplications}.`,
+    factorGameAnswers: (multiplications) => `It could be ${multiplications}.`,
+
     coinsCount: (coins) => (coins === 1 ? "1 coin" : `${coins} coins`),
     coinProgress: (answers, answersPerCoin) => `${answers} of ${answersPerCoin}`,
     piggyBankAbout: (answersPerCoin) => `Each hint costs 1 coin. Every ${answersPerCoin} right answers earn a new coin.`,
@@ -250,6 +260,7 @@ export const en: Copy = {
         noAnswerYet: "No answer yet",
         yourAnswer: (answer) => `Your answer: ${answer}`,
         chooseAnswer: "Choose the answer",
+        chooseTwoNumbers: "Choose two numbers",
 
         correctAtFirstTry: "right on the first try",
         time: "Time",
