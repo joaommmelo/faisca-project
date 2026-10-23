@@ -1,3 +1,4 @@
+import { Capacitor } from "@capacitor/core";
 import { useSyncExternalStore } from "react";
 import { InstallUtils, type InstallMethod } from "../utils/install/utils.ts";
 
@@ -41,8 +42,12 @@ window.addEventListener("beforeinstallprompt", (event) => {
 
 window.addEventListener("appinstalled", () => setInstallState({ promptEvent: null, isInstalled: true }));
 
-// navigator.standalone is how iOS says the page was opened from the home screen.
-const isStandalone: boolean = window.matchMedia("(display-mode: standalone)").matches || ("standalone" in navigator && navigator.standalone === true);
+// navigator.standalone is how iOS says the page was opened from the home screen. The app from the store is installed
+// already.
+const isStandalone: boolean =
+    Capacitor.isNativePlatform() ||
+    window.matchMedia("(display-mode: standalone)").matches ||
+    ("standalone" in navigator && navigator.standalone === true);
 
 export function useInstallPrompt(): InstallPrompt {
     const { promptEvent, isInstalled } = useSyncExternalStore(subscribe, () => installState);

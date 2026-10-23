@@ -131,7 +131,8 @@ button {
     width: 100%;
     max-width: 640px;
     margin: 0 auto;
-    padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
+    /* The Android app draws under the status bar; the browser and iOS give 0 here. */
+    padding: calc(16px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
     display: flex;
     flex-direction: column;
     gap: 20px;
