@@ -9,7 +9,8 @@ import { useInstallPrompt, type InstallPrompt } from "../hooks/useInstallPrompt.
 import type { Difficulty } from "../utils/difficulties/utils.ts";
 import { LevelsUtils } from "../utils/levels/utils.ts";
 import { Messages } from "../utils/messages.ts";
-import type { Operation } from "../utils/operations/utils.ts";
+import type { MissionGame } from "../utils/missions/utils.ts";
+import { OperationsUtils, type Operation } from "../utils/operations/utils.ts";
 import { ProfilesUtils, type Practice, type Profile } from "../utils/profiles/utils.ts";
 import type { RoundGameId } from "../utils/roundGame/utils.ts";
 import type { StorageStatus } from "../utils/storage/utils.ts";
@@ -61,6 +62,23 @@ export function HomeScreen({
         };
     })();
 
+    // The mission opens its game's own screen, as its tile would.
+    const openMission = (game: MissionGame): void => {
+        if (OperationsUtils.isValidOperation(game)) {
+            onChoosePractice(game);
+            return;
+        }
+        if (game === "factor-game") {
+            onOpenFactorGame();
+            return;
+        }
+        if (game === "memory") {
+            onOpenMemoryGame();
+            return;
+        }
+        onOpenRoundGame(game);
+    };
+
     return (
         <main className="screen screen--home">
             <header className="home-header">
@@ -94,6 +112,7 @@ export function HomeScreen({
                 onOpenMemoryGame={onOpenMemoryGame}
                 onOpenMahjong={onOpenMahjong}
                 onOpenChallenge={onOpenChallenge}
+                onOpenMission={openMission}
             />
 
             <button type="button" className="button button--secondary button--block" onClick={onShowProgress}>

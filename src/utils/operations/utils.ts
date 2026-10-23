@@ -13,7 +13,7 @@ export class OperationsUtils {
         return ["addition", "subtraction", "multiplication", "division"];
     }
 
-    public static isValidOperation(value: string): boolean {
+    public static isValidOperation(value: string): value is Operation {
         return (this.getValidOperations() as string[]).includes(value);
     }
 

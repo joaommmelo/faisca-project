@@ -1,12 +1,15 @@
+import moment from "moment";
 import { useId } from "react";
 import { FactorGameUtils } from "../utils/factorGame/utils.ts";
 import { LevelsUtils } from "../utils/levels/utils.ts";
 import { MemoryGameUtils } from "../utils/memoryGame/utils.ts";
 import { Messages } from "../utils/messages.ts";
+import { MissionsUtils, type DailyMission, type MissionGame } from "../utils/missions/utils.ts";
 import { OperationsUtils } from "../utils/operations/utils.ts";
 import type { Profile } from "../utils/profiles/utils.ts";
 import { RoundGameUtils, type RoundGameId } from "../utils/roundGame/utils.ts";
 import { GameSymbol } from "./GameSymbol.tsx";
+import { MissionCard } from "./MissionCard.tsx";
 
 interface GameTilesProps {
     profile: Profile;
@@ -16,13 +19,25 @@ interface GameTilesProps {
     onOpenMemoryGame: () => void;
     onOpenMahjong: () => void;
     onOpenChallenge: () => void;
+    onOpenMission: (game: MissionGame) => void;
 }
 
-// Under the operations, the games: two by two, in the same tiles as the operations, each with its level. The games
-// for adults go across the width when they are switched on.
-export function GameTiles({ profile, onChooseMix, onOpenFactorGame, onOpenRoundGame, onOpenMemoryGame, onOpenMahjong, onOpenChallenge }: GameTilesProps) {
+// Under the operations, the games: today's mission first, then two by two, in the same tiles as the operations, each
+// with its level. The games for adults go across the width when they are switched on.
+export function GameTiles({
+    profile,
+    onChooseMix,
+    onOpenFactorGame,
+    onOpenRoundGame,
+    onOpenMemoryGame,
+    onOpenMahjong,
+    onOpenChallenge,
+    onOpenMission
+}: GameTilesProps) {
     const titleId: string = useId();
     const { settings } = profile;
+    const now: moment.Moment = moment();
+    const mission: DailyMission | null = MissionsUtils.getToday(profile.missions, now);
     const getLevelSummary = (trackId: string): string => Messages.getLevelName(LevelsUtils.getTrack(profile.tracks, trackId).level);
 
     return (
@@ -30,6 +45,7 @@ export function GameTiles({ profile, onChooseMix, onOpenFactorGame, onOpenRoundG
             <h2 id={titleId} className="section-title">
                 {Messages.getLabels().gamesTitle}
             </h2>
+            {mission !== null && <MissionCard mission={mission} week={MissionsUtils.getWeek(profile.missions, now)} onOpen={onOpenMission} />}
             <ul className="practices">
                 <li>
                     <button type="button" className="practice practice--mix" onClick={onChooseMix}>

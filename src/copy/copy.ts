@@ -32,6 +32,10 @@ export interface Copy {
     retryNextTime: string;
     coinMilestone: string;
     levelUpMilestone: (level: number) => string;
+    missionMilestone: string;
+    missionWeekMilestone: string;
+    missionToDo: string;
+    missionDone: string;
 
     // Names
     operationNames: Record<Operation, string>;
@@ -279,6 +283,10 @@ export interface Labels {
     advanced: string;
     whatToPractise: string;
     gamesTitle: string;
+    missionTitle: string;
+    missionWeek: (done: number, total: number) => string;
+    // Monday first.
+    weekdayInitials: string[];
     seePiggyBank: string;
     piggyBank: string;
     outOf: (total: number) => string;
@@ -347,6 +355,7 @@ export interface Labels {
     practiceDays: (count: number) => string;
     coins: (count: number) => string;
     daysInARow: (count: number) => string;
+    missionsDone: (count: number) => string;
     records: string;
     noRecords: string;
     divisionUsesMap: string;

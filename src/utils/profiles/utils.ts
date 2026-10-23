@@ -6,6 +6,7 @@ import type { LeitnerBoxes } from "../leitner/utils.ts";
 import type { Tracks } from "../levels/utils.ts";
 import type { Locale } from "../locales/utils.ts";
 import { MemoryGameUtils, type MemoryContent } from "../memoryGame/utils.ts";
+import { MissionsUtils, type Missions } from "../missions/utils.ts";
 import { OperationsUtils, type Operation } from "../operations/utils.ts";
 import { QuestionsUtils, type AnswerLayout, type PracticeMode, type RecentSkillAnswers } from "../questions/utils.ts";
 import type { Records } from "../records/utils.ts";
@@ -97,6 +98,7 @@ export interface Profile {
     challengeRecord: number | null;
     // The best time of a Mahjong board cleared without hints; null until one is.
     mahjongRecord: number | null;
+    missions: Missions;
 }
 
 export interface AppData {
@@ -112,7 +114,7 @@ export type ProfileNameProblem = "empty" | "too-long" | "taken";
 
 export class ProfilesUtils {
     public static getDataVersion(): number {
-        return 9;
+        return 10;
     }
 
     // A mix of a single operation would just be that operation.
@@ -213,7 +215,8 @@ export class ProfilesUtils {
             records: {},
             stats: StatsUtils.createEmpty(),
             challengeRecord: null,
-            mahjongRecord: null
+            mahjongRecord: null,
+            missions: MissionsUtils.createEmpty()
         };
     }
 

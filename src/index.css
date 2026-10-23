@@ -1572,6 +1572,170 @@ fieldset {
     font-weight: 800;
 }
 
+/* Missão do dia: today's game in its own colours, what it earns, and the week's circles. */
+
+.mission {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+    padding: var(--space-4);
+}
+
+/* The symbol, the name and ▶ in a row; what it earns across the width under them, so it never squeezes. */
+.mission__button {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+    width: 100%;
+    min-height: 72px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+}
+
+.mission__symbol {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.mission__badge {
+    position: absolute;
+    right: -8px;
+    bottom: -8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 3px solid var(--color-surface);
+    border-radius: 50%;
+    background: var(--color-success);
+    color: #ffffff;
+}
+
+.mission__badge .icon {
+    width: 18px;
+    height: 18px;
+}
+
+.mission__text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.mission__title {
+    color: var(--op-ink);
+    font-size: 0.95rem;
+    font-weight: 900;
+}
+
+.mission__name {
+    font-size: clamp(1.1rem, 5vw, 1.35rem);
+    font-weight: 900;
+    line-height: 1.15;
+}
+
+.mission__state {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    font-weight: 800;
+}
+
+.mission__state .icon {
+    flex-shrink: 0;
+    width: 1.5em;
+    height: 1.5em;
+}
+
+.mission--done .mission__state {
+    color: var(--color-success);
+}
+
+/* The same yellow ▶ as Jogar: this card is played by tapping it. */
+.mission__go {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    box-shadow: 0 3px 0 var(--color-accent-pressed);
+    color: var(--color-text);
+}
+
+.mission__go .icon {
+    width: 22px;
+    height: 22px;
+}
+
+.mission__button:active .mission__go {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--color-accent-pressed);
+}
+
+.mission-week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--space-1);
+}
+
+.mission-week__day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+/* A missed day is only an empty circle, as quiet as the days still to come. */
+.mission-week__circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 36px;
+    aspect-ratio: 1;
+    border: 2px dashed var(--color-border);
+    border-radius: 50%;
+    background: var(--color-surface);
+}
+
+.mission-week__day--today .mission-week__circle {
+    border: 3px solid var(--op-ink);
+}
+
+.mission-week__day--done .mission-week__circle {
+    border: 2px solid var(--color-accent-pressed);
+    background: var(--color-accent-soft);
+}
+
+.mission-week__circle .icon {
+    width: 70%;
+    height: 70%;
+}
+
+.mission-week__initial {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.mission-week__day--today .mission-week__initial {
+    color: var(--op-ink);
+    font-weight: 900;
+}
+
 /* Setup: one operation or the mix, before playing */
 
 .setup-header {

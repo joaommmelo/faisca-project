@@ -4,6 +4,7 @@ import type { Difficulty } from "../difficulties/utils.ts";
 import type { LeitnerBoxes } from "../leitner/utils.ts";
 import type { Tracks } from "../levels/utils.ts";
 import type { Locale } from "../locales/utils.ts";
+import { MissionsUtils } from "../missions/utils.ts";
 import { OperationsUtils, type Operation } from "../operations/utils.ts";
 import { ProfilesUtils, type AppData, type Profile, type ProfileSettings } from "../profiles/utils.ts";
 import { QuestionsUtils, type AnswerLayout, type PracticeMode, type RecentSkillAnswers } from "../questions/utils.ts";
@@ -94,10 +95,13 @@ interface VersionThreeData {
     activeProfileId: string | null;
 }
 
+// v9 and older had no daily missions.
+type VersionNineProfile = Omit<Profile, "missions">;
+
 // v8 and older had no games of rounds, no Memória and no Mahjong.
 type VersionEightSettings = Omit<ProfileSettings, "roundGames" | "memoryGame" | "isMahjongEnabled">;
 
-interface VersionEightProfile extends Omit<Profile, "settings" | "mahjongRecord"> {
+interface VersionEightProfile extends Omit<VersionNineProfile, "settings" | "mahjongRecord"> {
     settings: VersionEightSettings;
 }
 
@@ -163,6 +167,13 @@ interface VersionEightData {
     locale: Locale | null;
 }
 
+interface VersionNineData {
+    version: 9;
+    profiles: VersionNineProfile[];
+    activeProfileId: string | null;
+    locale: Locale | null;
+}
+
 export class MigrationsUtils {
     public static getOldestMigratableVersion(): number {
         return 1;
@@ -206,8 +217,14 @@ export class MigrationsUtils {
             }
             return data.version === 7 ? (data as VersionSevenData) : null;
         })();
-        const versionEight: VersionEightData = versionSeven === null ? (data as VersionEightData) : this.fromVersionSeven(versionSeven);
-        return this.fromVersionEight(versionEight);
+        const versionEight: VersionEightData | null = (() => {
+            if (versionSeven !== null) {
+                return this.fromVersionSeven(versionSeven);
+            }
+            return data.version === 8 ? (data as VersionEightData) : null;
+        })();
+        const versionNine: VersionNineData = versionEight === null ? (data as VersionNineData) : this.fromVersionEight(versionEight);
+        return this.fromVersionNine(versionNine);
     }
 
     // v1 only knew multiplication: its boxes, tables, mode, timer and stats carry over unchanged.
@@ -348,11 +365,11 @@ export class MigrationsUtils {
 
     // v9 adds the games of rounds and Memória, each with its clock on like every clock starts, and Mahjong for
     // adults: switched off, and without a record.
-    private static fromVersionEight(data: VersionEightData): AppData {
+    private static fromVersionEight(data: VersionEightData): VersionNineData {
         return {
             ...data,
             version: 9,
-            profiles: data.profiles.map((profile): Profile => ({
+            profiles: data.profiles.map((profile): VersionNineProfile => ({
                 ...profile,
                 settings: {
                     ...profile.settings,
@@ -362,6 +379,15 @@ export class MigrationsUtils {
                 },
                 mahjongRecord: null
             }))
+        };
+    }
+
+    // v10 adds the daily missions: none drawn yet, none done.
+    private static fromVersionNine(data: VersionNineData): AppData {
+        return {
+            ...data,
+            version: 10,
+            profiles: data.profiles.map((profile): Profile => ({ ...profile, missions: MissionsUtils.createEmpty() }))
         };
     }
 

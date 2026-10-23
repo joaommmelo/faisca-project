@@ -315,6 +315,24 @@ describe("StorageUtils.load", () => {
         });
     });
 
+    it("migrates v9 progress: no mission drawn yet and none done, and nothing else changes", () => {
+        const { missions, ...versionNineProfile } = { ...ProfilesUtils.createProfile("Rui"), wallet: { coins: 4, points: 6 }, mahjongRecord: 61000 };
+        stubStorage({
+            [StorageUtils.getStorageKey()]: JSON.stringify({ version: 9, activeProfileId: versionNineProfile.id, profiles: [versionNineProfile], locale: "it" })
+        });
+
+        expect(missions).toEqual({ current: null, doneDays: [], doneCount: 0 });
+        expect(StorageUtils.load()).toEqual({
+            data: {
+                version: ProfilesUtils.getDataVersion(),
+                activeProfileId: versionNineProfile.id,
+                profiles: [{ ...versionNineProfile, missions }],
+                locale: "it"
+            },
+            status: "saved"
+        });
+    });
+
     it("reports storage the browser blocks and keeps working", () => {
         vi.stubGlobal("window", {
             localStorage: {

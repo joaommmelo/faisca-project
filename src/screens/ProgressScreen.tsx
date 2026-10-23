@@ -66,6 +66,12 @@ export function ProgressScreen({ profile, onBack }: ProgressScreenProps) {
                         <span className="stat__label">{labels.daysInARow(visibleStreak)}</span>
                     </li>
                 )}
+                {profile.missions.doneCount > 0 && (
+                    <li className="stat">
+                        <span className="stat__value">{profile.missions.doneCount}</span>
+                        <span className="stat__label">{labels.missionsDone(profile.missions.doneCount)}</span>
+                    </li>
+                )}
             </ul>
 
             <RecordsCard profile={profile} />

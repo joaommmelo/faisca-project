@@ -16,6 +16,7 @@ import { HelpsUtils, type ArithmeticHint, type HelpUnavailableReason, type Calcu
 import { LocalesUtils, type Locale } from "./locales/utils.ts";
 import { MahjongUtils, type MahjongEnding, type MahjongFace } from "./mahjong/utils.ts";
 import { MemoryGameUtils, type MemoryCard, type MemoryContent, type MemoryFace } from "./memoryGame/utils.ts";
+import type { MissionGame } from "./missions/utils.ts";
 import { NumbersUtils } from "./numbers/utils.ts";
 import { OperationsUtils, type Operation } from "./operations/utils.ts";
 import type { ClockOutcome, Milestone, SessionOffer, UnlockRequirement, UnlockStep } from "./progression/utils.ts";
@@ -118,11 +119,31 @@ export class Messages {
         if (milestone.kind === "coin") {
             return this.getCopy().coinMilestone;
         }
+        if (milestone.kind === "mission") {
+            return milestone.isWeekComplete ? this.getCopy().missionWeekMilestone : this.getCopy().missionMilestone;
+        }
         return this.getCopy().levelUpMilestone(milestone.level);
     }
 
     public static getOperationName(operation: Operation): string {
         return this.getCopy().operationNames[operation];
+    }
+
+    public static getMissionGameName(game: MissionGame): string {
+        if (OperationsUtils.isValidOperation(game)) {
+            return this.getOperationName(game);
+        }
+        if (game === "factor-game") {
+            return this.getFactorGameName();
+        }
+        if (game === "memory") {
+            return this.getMemoryGameName();
+        }
+        return this.getRoundGameName(game);
+    }
+
+    public static getMissionState(isDone: boolean): string {
+        return isDone ? this.getCopy().missionDone : this.getCopy().missionToDo;
     }
 
     public static getMixName(): string {

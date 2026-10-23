@@ -23,8 +23,9 @@ import { LocalesUtils, type Locale } from "./utils/locales/utils.ts";
 import { MahjongUtils, type MahjongRun } from "./utils/mahjong/utils.ts";
 import { MemoryGameUtils, type FinishedMemoryGame, type MemoryGameOutcome } from "./utils/memoryGame/utils.ts";
 import { Messages } from "./utils/messages.ts";
+import { MissionsUtils } from "./utils/missions/utils.ts";
 import { ProfilesUtils, type AppData, type Profile } from "./utils/profiles/utils.ts";
-import { ProgressionUtils, type FinishSessionResult, type TimedProfile } from "./utils/progression/utils.ts";
+import { ProgressionUtils, type ApplyRecordResult, type FinishSessionResult, type TimedProfile } from "./utils/progression/utils.ts";
 import { RoundGameUtils, type FinishedRoundGame, type RoundGameId, type RoundGameOutcome } from "./utils/roundGame/utils.ts";
 import type { SessionOutcome } from "./utils/session/utils.ts";
 import { StorageUtils, type LoadResult } from "./utils/storage/utils.ts";
@@ -51,9 +52,11 @@ export function App() {
     const [stored] = useState<LoadResult>(() => StorageUtils.load());
     // The first start detects the language and keeps it.
     const [data, setData] = useState<AppData>(() =>
-        stored.data.locale === null
-            ? ProfilesUtils.setLocale(stored.data, LocalesUtils.detect(Intl.DateTimeFormat().resolvedOptions().timeZone, navigator.languages))
-            : stored.data
+        withTodaysMission(
+            stored.data.locale === null
+                ? ProfilesUtils.setLocale(stored.data, LocalesUtils.detect(Intl.DateTimeFormat().resolvedOptions().timeZone, navigator.languages))
+                : stored.data
+        )
     );
     const [view, setView] = useState<View>({ name: "home" });
     const canSave: boolean = StorageUtils.canSave(stored.status);
@@ -88,7 +91,7 @@ export function App() {
     if (activeProfile === null) {
         // The first profile starts at home, whatever screen was open when the last one was deleted.
         const createFirstProfile = (name: string): void => {
-            setData(ProfilesUtils.add(data, name));
+            setData(withTodaysMission(ProfilesUtils.add(data, name)));
             setView({ name: "home" });
         };
         return <WelcomeScreen data={data} locale={locale} onCreateProfile={createFirstProfile} onLocaleChange={changeLocale} />;
@@ -98,28 +101,49 @@ export function App() {
         setData((current) => ProfilesUtils.updateActive(current, change));
     };
 
+    const showHome = (): void => {
+        setData(withTodaysMission);
+        setView({ name: "home" });
+    };
+
+    // Every game the child finishes may be today's mission; what it earned joins the game's own milestones.
     const finishSession = (outcome: Omit<SessionOutcome, "offer" | "clock">): void => {
-        const finished: FinishSessionResult = ProgressionUtils.finishSession(activeProfile, moment(), outcome);
-        updateActiveProfile(() => finished.profile);
-        setView({ name: "summary", outcome: { ...outcome, offer: finished.offer, clock: finished.clock } });
+        const now: moment.Moment = moment();
+        const finished: FinishSessionResult = ProgressionUtils.finishSession(activeProfile, now, outcome);
+        const mission: ApplyRecordResult = MissionsUtils.complete(finished.profile, now, activeProfile.settings.practice);
+        updateActiveProfile(() => mission.profile);
+        setView({
+            name: "summary",
+            outcome: { ...outcome, milestones: [...outcome.milestones, ...mission.milestones], offer: finished.offer, clock: finished.clock }
+        });
     };
 
     const finishFactorGame = (finished: FinishedFactorGame): void => {
-        const timed: TimedProfile = FactorGameUtils.finish(activeProfile, moment(), finished);
-        updateActiveProfile(() => timed.profile);
-        setView({ name: "factor-game", outcome: { ...finished, clock: timed.clock } });
+        const now: moment.Moment = moment();
+        const timed: TimedProfile = FactorGameUtils.finish(activeProfile, now, finished);
+        const mission: ApplyRecordResult = MissionsUtils.complete(timed.profile, now, "factor-game");
+        updateActiveProfile(() => mission.profile);
+        setView({ name: "factor-game", outcome: { ...finished, milestones: [...finished.milestones, ...mission.milestones], clock: timed.clock } });
     };
 
     const finishRoundGame = (finished: FinishedRoundGame): void => {
-        const timed: TimedProfile = RoundGameUtils.finish(activeProfile, moment(), finished);
-        updateActiveProfile(() => timed.profile);
-        setView({ name: "round-game", game: finished.game, outcome: { ...finished, clock: timed.clock } });
+        const now: moment.Moment = moment();
+        const timed: TimedProfile = RoundGameUtils.finish(activeProfile, now, finished);
+        const mission: ApplyRecordResult = MissionsUtils.complete(timed.profile, now, finished.game);
+        updateActiveProfile(() => mission.profile);
+        setView({
+            name: "round-game",
+            game: finished.game,
+            outcome: { ...finished, milestones: [...finished.milestones, ...mission.milestones], clock: timed.clock }
+        });
     };
 
     const finishMemoryGame = (finished: FinishedMemoryGame): void => {
-        const timed: TimedProfile = MemoryGameUtils.finish(activeProfile, moment(), finished);
-        updateActiveProfile(() => timed.profile);
-        setView({ name: "memory-game", outcome: { ...finished, clock: timed.clock } });
+        const now: moment.Moment = moment();
+        const timed: TimedProfile = MemoryGameUtils.finish(activeProfile, now, finished);
+        const mission: ApplyRecordResult = MissionsUtils.complete(timed.profile, now, "memory");
+        updateActiveProfile(() => mission.profile);
+        setView({ name: "memory-game", outcome: { ...finished, milestones: [...finished.milestones, ...mission.milestones], clock: timed.clock } });
     };
 
     const finishMahjong = (ending: Omit<MahjongRun, "previousRecordMilliseconds">): void => {
@@ -141,7 +165,7 @@ export function App() {
                     profile={activeProfile}
                     onProfileChange={(profile) => updateActiveProfile(() => profile)}
                     onFinish={finishSession}
-                    onExit={() => setView({ name: "home" })}
+                    onExit={showHome}
                 />
             );
         case "summary":
@@ -154,7 +178,7 @@ export function App() {
                     }}
                     onPlayAgain={() => setView({ name: "session" })}
                     onShowProgress={() => setView({ name: "progress" })}
-                    onHome={() => setView({ name: "home" })}
+                    onHome={showHome}
                 />
             );
         case "setup":
@@ -163,11 +187,11 @@ export function App() {
                     profile={activeProfile}
                     onSettingsChange={(settings) => updateActiveProfile((profile) => ({ ...profile, settings }))}
                     onPlay={() => setView({ name: "session" })}
-                    onBack={() => setView({ name: "home" })}
+                    onBack={showHome}
                 />
             );
         case "progress":
-            return <ProgressScreen profile={activeProfile} onBack={() => setView({ name: "home" })} />;
+            return <ProgressScreen profile={activeProfile} onBack={showHome} />;
         case "settings":
             return (
                 <SettingsScreen
@@ -185,7 +209,7 @@ export function App() {
                     onMahjongSwitch={(isMahjongEnabled) =>
                         updateActiveProfile((profile) => ({ ...profile, settings: { ...profile.settings, isMahjongEnabled } }))
                     }
-                    onBack={() => setView({ name: "home" })}
+                    onBack={showHome}
                 />
             );
         case "factor-game-session":
@@ -194,7 +218,7 @@ export function App() {
                     profile={activeProfile}
                     onProfileChange={(profile) => updateActiveProfile(() => profile)}
                     onFinish={finishFactorGame}
-                    onExit={() => setView({ name: "home" })}
+                    onExit={showHome}
                 />
             );
         case "factor-game":
@@ -205,7 +229,7 @@ export function App() {
                     onSettingsChange={(settings) => updateActiveProfile((profile) => ({ ...profile, settings }))}
                     onPlay={() => setView({ name: "factor-game-session" })}
                     onShowProgress={() => setView({ name: "progress" })}
-                    onHome={() => setView({ name: "home" })}
+                    onHome={showHome}
                 />
             );
         case "round-game-session":
@@ -216,7 +240,7 @@ export function App() {
                     profile={activeProfile}
                     onProfileChange={(profile) => updateActiveProfile(() => profile)}
                     onFinish={finishRoundGame}
-                    onExit={() => setView({ name: "home" })}
+                    onExit={showHome}
                 />
             );
         case "round-game": {
@@ -229,7 +253,7 @@ export function App() {
                     onSettingsChange={(settings) => updateActiveProfile((profile) => ({ ...profile, settings }))}
                     onPlay={() => setView({ name: "round-game-session", game })}
                     onShowProgress={() => setView({ name: "progress" })}
-                    onHome={() => setView({ name: "home" })}
+                    onHome={showHome}
                 />
             );
         }
@@ -239,7 +263,7 @@ export function App() {
                     profile={activeProfile}
                     onProfileChange={(profile) => updateActiveProfile(() => profile)}
                     onFinish={finishMemoryGame}
-                    onExit={() => setView({ name: "home" })}
+                    onExit={showHome}
                 />
             );
         case "memory-game":
@@ -250,31 +274,17 @@ export function App() {
                     onSettingsChange={(settings) => updateActiveProfile((profile) => ({ ...profile, settings }))}
                     onPlay={() => setView({ name: "memory-game-session" })}
                     onShowProgress={() => setView({ name: "progress" })}
-                    onHome={() => setView({ name: "home" })}
+                    onHome={showHome}
                 />
             );
         case "mahjong-session":
             return <MahjongSessionScreen onFinish={finishMahjong} />;
         case "mahjong":
-            return (
-                <MahjongScreen
-                    profile={activeProfile}
-                    run={view.run}
-                    onPlay={() => setView({ name: "mahjong-session" })}
-                    onHome={() => setView({ name: "home" })}
-                />
-            );
+            return <MahjongScreen profile={activeProfile} run={view.run} onPlay={() => setView({ name: "mahjong-session" })} onHome={showHome} />;
         case "challenge-session":
             return <ChallengeSessionScreen onFinish={finishChallenge} />;
         case "challenge":
-            return (
-                <ChallengeScreen
-                    profile={activeProfile}
-                    run={view.run}
-                    onPlay={() => setView({ name: "challenge-session" })}
-                    onHome={() => setView({ name: "home" })}
-                />
-            );
+            return <ChallengeScreen profile={activeProfile} run={view.run} onPlay={() => setView({ name: "challenge-session" })} onHome={showHome} />;
         default:
             return (
                 <HomeScreen
@@ -295,4 +305,14 @@ export function App() {
                 />
             );
     }
+}
+
+// Opening the home screen on a new day draws the active profile's mission for today, before the screen shows it.
+function withTodaysMission(data: AppData): AppData {
+    const activeProfile: Profile | null = ProfilesUtils.getActive(data);
+    if (activeProfile === null) {
+        return data;
+    }
+    const refreshed: Profile = MissionsUtils.refresh(activeProfile, moment());
+    return refreshed === activeProfile ? data : ProfilesUtils.update(data, refreshed);
 }

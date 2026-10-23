@@ -12,7 +12,8 @@ import { SessionUtils, type AnswerRecord, type SessionSummary } from "../session
 import { StatsUtils } from "../stats/utils.ts";
 import { WalletUtils, type AddWalletPointsResult } from "../wallet/utils.ts";
 
-export type Milestone = { kind: "coin" } | { kind: "level-up"; level: number };
+// The mission only ever shows at the end of a game, with the week when its last circle filled.
+export type Milestone = { kind: "coin" } | { kind: "level-up"; level: number } | { kind: "mission"; isWeekComplete: boolean };
 
 export interface ApplyRecordResult {
     profile: Profile;
