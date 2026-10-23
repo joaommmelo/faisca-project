@@ -9,6 +9,7 @@ import { CloseIcon, HomeIcon, SparkIcon } from "../components/Icons.tsx";
 import { MemoryCardFace } from "../components/MemoryCardFace.tsx";
 import { SessionClock } from "../components/SessionClock.tsx";
 import type { Labels } from "../copy/copy.ts";
+import { useBackButton } from "../hooks/useBackButton.ts";
 import { ClockUtils, type ClockSettings } from "../utils/clock/utils.ts";
 import { HelpsUtils, type HelpUnavailableReason } from "../utils/helps/utils.ts";
 import { MemoryGameUtils, type FinishedMemoryGame, type MemoryCard, type MemoryFlipResult, type MemoryGame } from "../utils/memoryGame/utils.ts";
@@ -45,6 +46,7 @@ export function MemoryGameSessionScreen({ profile, onProfileChange, onFinish, on
     const [gameMilestones, setGameMilestones] = useState<Milestone[]>([]);
     const [coinFlightKey, setCoinFlightKey] = useState<number | null>(null);
     const [isExitConfirmOpen, setIsExitConfirmOpen] = useState<boolean>(false);
+    useBackButton("screen", () => setIsExitConfirmOpen(true));
     const isFinished: boolean = MemoryGameUtils.isFinished(game);
     const isMissShown: boolean = game.flippedIds.length === 2;
 

@@ -5,6 +5,7 @@ import { ExitSheet } from "../components/ExitSheet.tsx";
 import { CheckIcon, CloseIcon, MedalIcon } from "../components/Icons.tsx";
 import { NumericKeypad } from "../components/NumericKeypad.tsx";
 import type { Labels } from "../copy/copy.ts";
+import { useBackButton } from "../hooks/useBackButton.ts";
 import { ChallengeUtils, type ChallengeClock, type ChallengeEnding, type ChallengeQuestion, type ChallengeRun } from "../utils/challenge/utils.ts";
 import { KeypadUtils } from "../utils/keypad/utils.ts";
 import { Messages } from "../utils/messages.ts";
@@ -73,6 +74,7 @@ export function ChallengeSessionScreen({ onFinish }: ChallengeSessionScreenProps
         setClock(ChallengeUtils.pauseClock(clock, moment().valueOf()));
         setIsExitConfirmOpen(true);
     };
+    useBackButton("screen", openExitConfirm);
 
     const closeExitConfirm = (): void => {
         const resumedAt: number = moment().valueOf();

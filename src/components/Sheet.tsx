@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { useBackButton } from "../hooks/useBackButton.ts";
 
 interface SheetProps {
     titleId: string;
@@ -13,6 +14,7 @@ interface SheetProps {
 export function Sheet({ titleId, initialFocusRef, onClose, children }: SheetProps) {
     const dialogRef = useRef<HTMLDialogElement>(null);
     const [opener] = useState<Element | null>(() => document.activeElement);
+    useBackButton("sheet", onClose);
 
     useEffect(() => {
         if (dialogRef.current === null || initialFocusRef.current === null) {

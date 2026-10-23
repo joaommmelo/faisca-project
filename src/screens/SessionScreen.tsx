@@ -13,6 +13,7 @@ import { SessionClock } from "../components/SessionClock.tsx";
 import { TryAgainNote } from "../components/TryAgainNote.tsx";
 import { VerticalAnswer } from "../components/VerticalAnswer.tsx";
 import type { Labels } from "../copy/copy.ts";
+import { useBackButton } from "../hooks/useBackButton.ts";
 import { ClockUtils, type ClockSettings } from "../utils/clock/utils.ts";
 import { HelpsUtils, type HelpUnavailableReason } from "../utils/helps/utils.ts";
 import { Messages } from "../utils/messages.ts";
@@ -51,6 +52,7 @@ export function SessionScreen({ profile, onProfileChange, onFinish, onExit }: Se
     const [tryAgainText, setTryAgainText] = useState<string | null>(null);
     const [tryAgainCount, setTryAgainCount] = useState<number>(0);
     const [isExitConfirmOpen, setIsExitConfirmOpen] = useState<boolean>(false);
+    useBackButton("screen", () => setIsExitConfirmOpen(true));
 
     const question: Question = SessionUtils.getCurrentQuestion(session);
     const record: AnswerRecord | null = SessionUtils.getCurrentRecord(session);
