@@ -3,6 +3,7 @@ import { useEffect, useEffectEvent, useState } from "react";
 import { ExitSheet } from "../components/ExitSheet.tsx";
 import { ClockIcon, CloseIcon, HelpIcon, MedalIcon } from "../components/Icons.tsx";
 import type { Labels } from "../copy/copy.ts";
+import { useBackButton } from "../hooks/useBackButton.ts";
 import { MahjongUtils, type MahjongEnding, type MahjongGame, type MahjongRun, type MahjongSelectResult, type MahjongTile } from "../utils/mahjong/utils.ts";
 import { Messages } from "../utils/messages.ts";
 import { TimeUtils } from "../utils/time/utils.ts";
@@ -31,6 +32,7 @@ export function MahjongSessionScreen({ onFinish }: MahjongSessionScreenProps) {
     const [startedAt] = useState<number>(() => moment().valueOf());
     const [now, setNow] = useState<number>(() => moment().valueOf());
     const [isExitConfirmOpen, setIsExitConfirmOpen] = useState<boolean>(false);
+    useBackButton("screen", () => setIsExitConfirmOpen(true));
     const remaining: MahjongTile[] = MahjongUtils.getRemaining(game);
     const isCleared: boolean = MahjongUtils.isCleared(game);
     const isStuck: boolean = MahjongUtils.isStuck(game);

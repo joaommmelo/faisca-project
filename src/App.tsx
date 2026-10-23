@@ -16,6 +16,7 @@ import { SessionScreen } from "./screens/SessionScreen.tsx";
 import { SettingsScreen } from "./screens/SettingsScreen.tsx";
 import { SetupScreen } from "./screens/SetupScreen.tsx";
 import { SummaryScreen } from "./screens/SummaryScreen.tsx";
+import { useBackButton } from "./hooks/useBackButton.ts";
 import { WelcomeScreen } from "./screens/WelcomeScreen.tsx";
 import { ChallengeUtils, type ChallengeRun } from "./utils/challenge/utils.ts";
 import { FactorGameUtils, type FactorGameOutcome, type FinishedFactorGame } from "./utils/factorGame/utils.ts";
@@ -87,6 +88,14 @@ export function App() {
         window.scrollTo({ top: 0 });
     }, [view.name]);
 
+    const showHome = (): void => {
+        setData(withTodaysMission);
+        setView({ name: "home" });
+    };
+
+    // Back from any screen goes home, as «Início» does; from the home and welcome screens it leaves the app.
+    useBackButton("app", hasProfiles && view.name !== "home" ? showHome : null);
+
     const activeProfile: Profile | null = ProfilesUtils.getActive(data);
     if (activeProfile === null) {
         // The first profile starts at home, whatever screen was open when the last one was deleted.
@@ -99,11 +108,6 @@ export function App() {
 
     const updateActiveProfile = (change: (profile: Profile) => Profile): void => {
         setData((current) => ProfilesUtils.updateActive(current, change));
-    };
-
-    const showHome = (): void => {
-        setData(withTodaysMission);
-        setView({ name: "home" });
     };
 
     // Every game the child finishes may be today's mission; what it earned joins the game's own milestones.

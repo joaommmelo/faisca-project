@@ -11,6 +11,7 @@ import { CloseIcon, HomeIcon } from "../components/Icons.tsx";
 import { SessionClock } from "../components/SessionClock.tsx";
 import { TryAgainNote } from "../components/TryAgainNote.tsx";
 import type { Labels } from "../copy/copy.ts";
+import { useBackButton } from "../hooks/useBackButton.ts";
 import { ClockUtils, type ClockSettings } from "../utils/clock/utils.ts";
 import {
     FactorGameUtils,
@@ -62,6 +63,7 @@ export function FactorGameSessionScreen({ profile, onProfileChange, onFinish, on
     const [tryAgainText, setTryAgainText] = useState<string | null>(null);
     const [tryAgainCount, setTryAgainCount] = useState<number>(0);
     const [isExitConfirmOpen, setIsExitConfirmOpen] = useState<boolean>(false);
+    useBackButton("screen", () => setIsExitConfirmOpen(true));
 
     const round: FactorRound = FactorGameUtils.getCurrentRound(game);
     const result: FactorRoundResult | null = FactorGameUtils.getCurrentResult(game);

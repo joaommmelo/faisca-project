@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What shows while the app opens before Android 12 (from 12 on, Android draws the icon on the same cream): the app
+     icon from public/favicon.svg on the app's background. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/splash_background" />
+    <item android:width="120dp" android:height="120dp" android:gravity="center" android:drawable="@drawable/app_icon" />
+</layer-list>
