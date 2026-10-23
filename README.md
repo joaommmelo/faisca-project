@@ -42,6 +42,22 @@ O Pages publica `docs/` tal como está, por isso cada alteração à app precisa
 
 **Netlify:** ligar o repositório com *Build command* `npm run build` e *Publish directory* `docs`.
 
+## App para Android (Capacitor)
+
+A pasta `android/` é a app para as lojas: o [Capacitor](https://capacitorjs.com/) leva o mesmo build de `docs/` para dentro de uma app Android, que funciona sem rede desde a primeira abertura. O site e a app são o mesmo código.
+
+Requer o JDK 21 e o Android SDK 36 (o Android Studio instala ambos).
+
+```bash
+npm run android    # build + copia docs/ para android/
+cd android
+JAVA_HOME=$(/usr/libexec/java_home -v 21) ./gradlew assembleDebug   # APK de teste: app/build/outputs/apk/debug/
+```
+
+Ou `npx cap open android` para abrir no Android Studio e correr num emulador ou num telemóvel. Cada alteração à app precisa de um novo `npm run android` e de uma versão nova na loja (subir `versionCode` e `versionName` em `android/app/build.gradle`).
+
+A app da loja guarda o progresso à parte do site: quem passa do site para a app começa do zero.
+
 ## Instalar a app
 
 A app tem de estar publicada em HTTPS (o GitHub Pages já o é).
