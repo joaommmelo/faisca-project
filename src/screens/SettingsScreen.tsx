@@ -1,3 +1,4 @@
+import { BackupPanel } from "../components/BackupPanel.tsx";
 import { BackIcon } from "../components/Icons.tsx";
 import { LanguagePicker } from "../components/LanguagePicker.tsx";
 import { ProfilesPanel } from "../components/ProfilesPanel.tsx";
@@ -18,11 +19,12 @@ interface SettingsScreenProps {
     onLocaleChange: (locale: Locale) => void;
     onChallengeSwitch: (isChallengeEnabled: boolean) => void;
     onMahjongSwitch: (isMahjongEnabled: boolean) => void;
+    onRestore: (data: AppData) => void;
     onBack: () => void;
 }
 
-// What an adult changes once in a while, out of the way of playing: who is playing, the language, and the games for
-// adults.
+// What an adult changes once in a while, out of the way of playing: who is playing, the language, the games for
+// adults, and the progress to a file and back.
 export function SettingsScreen({
     data,
     profile,
@@ -33,6 +35,7 @@ export function SettingsScreen({
     onLocaleChange,
     onChallengeSwitch,
     onMahjongSwitch,
+    onRestore,
     onBack
 }: SettingsScreenProps) {
     const headingRef = useFocusOnMount<HTMLHeadingElement>();
@@ -76,6 +79,8 @@ export function SettingsScreen({
                     onChange={onMahjongSwitch}
                 />
             </section>
+
+            <BackupPanel data={data} onRestore={onRestore} />
         </main>
     );
 }

@@ -1,3 +1,4 @@
+import { BackupPanel } from "../components/BackupPanel.tsx";
 import { InstallCard } from "../components/InstallCard.tsx";
 import { LanguagePicker } from "../components/LanguagePicker.tsx";
 import { Logo } from "../components/Logo.tsx";
@@ -12,9 +13,10 @@ interface WelcomeScreenProps {
     locale: Locale;
     onCreateProfile: (name: string) => void;
     onLocaleChange: (locale: Locale) => void;
+    onRestore: (data: AppData) => void;
 }
 
-export function WelcomeScreen({ data, locale, onCreateProfile, onLocaleChange }: WelcomeScreenProps) {
+export function WelcomeScreen({ data, locale, onCreateProfile, onLocaleChange, onRestore }: WelcomeScreenProps) {
     return (
         <main className="screen screen--centered">
             <Logo isCentered />
@@ -26,6 +28,7 @@ export function WelcomeScreen({ data, locale, onCreateProfile, onLocaleChange }:
             </section>
             <InstallCard />
             <LanguagePicker locale={locale} onChange={onLocaleChange} />
+            <BackupPanel data={data} onRestore={onRestore} />
         </main>
     );
 }

@@ -93,6 +93,12 @@ export function App() {
         setView({ name: "home" });
     };
 
+    // Progress brought back from a file starts at home, like a first profile.
+    const restoreBackup = (restored: AppData): void => {
+        setData(withTodaysMission(restored));
+        setView({ name: "home" });
+    };
+
     // Back from any screen goes home, as «Início» does; from the home and welcome screens it leaves the app.
     useBackButton("app", hasProfiles && view.name !== "home" ? showHome : null);
 
@@ -103,7 +109,7 @@ export function App() {
             setData(withTodaysMission(ProfilesUtils.add(data, name)));
             setView({ name: "home" });
         };
-        return <WelcomeScreen data={data} locale={locale} onCreateProfile={createFirstProfile} onLocaleChange={changeLocale} />;
+        return <WelcomeScreen data={data} locale={locale} onCreateProfile={createFirstProfile} onLocaleChange={changeLocale} onRestore={restoreBackup} />;
     }
 
     const updateActiveProfile = (change: (profile: Profile) => Profile): void => {
@@ -213,6 +219,7 @@ export function App() {
                     onMahjongSwitch={(isMahjongEnabled) =>
                         updateActiveProfile((profile) => ({ ...profile, settings: { ...profile.settings, isMahjongEnabled } }))
                     }
+                    onRestore={restoreBackup}
                     onBack={showHome}
                 />
             );

@@ -266,6 +266,17 @@ export interface Labels {
     confirmDelete: string;
     language: string;
     settings: string;
+    backupTitle: string;
+    backupAbout: string;
+    // On the welcome screen, before any profile: where the file comes from (Settings → Backup), then where it goes.
+    backupWelcomeTitle: string;
+    backupWelcomeAbout: (place: string) => string;
+    saveBackup: string;
+    openBackup: string;
+    restoreBackupQuestion: (names: string[]) => string;
+    confirmRestore: string;
+    backupUnreadable: string;
+    backupNewerVersion: string;
 
     install: string;
     installTitle: string;
