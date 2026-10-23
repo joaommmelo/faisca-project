@@ -106,6 +106,12 @@ describe("ProgressionUtils.applyRecord", () => {
         expect(result.profile.wallet).toEqual({ coins: 4, points: 0 });
         expect(result.milestones).toEqual([{ kind: "coin" }]);
     });
+
+    it("celebrates a star when the points of every game together reach the next one", () => {
+        const profile: Profile = createTestProfile({}, { tracks: { "counting-game": { level: 1, points: 18, recentAnswers: [], answersSinceSafetyNet: 0 } } });
+        const result = ProgressionUtils.applyRecord(profile, record(additionQuestion()));
+        expect(result.milestones).toEqual([{ kind: "star" }]);
+    });
 });
 
 describe("ProgressionUtils.getUnlockableDifficulty", () => {

@@ -1,12 +1,13 @@
 import type moment from "moment";
 import { FactsUtils } from "../facts/utils.ts";
 import { LeitnerUtils, type LeitnerBoxes } from "../leitner/utils.ts";
-import { LevelsUtils, type RecentAnswer, type RecordTrackAnswerResult } from "../levels/utils.ts";
+import { LevelsUtils, type RecentAnswer, type RecordTrackAnswerResult, type Tracks } from "../levels/utils.ts";
 import type { Profile } from "../profiles/utils.ts";
 import { ProgressionUtils, type ApplyRecordResult, type ClockOutcome, type Milestone, type TimedProfile } from "../progression/utils.ts";
 import { RandomUtils, type RandomSource } from "../random/utils.ts";
 import { RecordsUtils } from "../records/utils.ts";
 import { SessionUtils } from "../session/utils.ts";
+import { StarsUtils } from "../stars/utils.ts";
 import { StatsUtils } from "../stats/utils.ts";
 import { WalletUtils, type AddWalletPointsResult } from "../wallet/utils.ts";
 
@@ -204,12 +205,14 @@ export class FactorGameUtils {
         const walletResult: AddWalletPointsResult = isCorrect
             ? WalletUtils.addPoints(profile.wallet, this.getPointsForAnswer())
             : { wallet: profile.wallet, coinsEarned: 0 };
+        const tracks: Tracks = { ...profile.tracks, [this.getTrackId()]: trackResult.track };
 
         return {
-            profile: { ...profile, boxes, tracks: { ...profile.tracks, [this.getTrackId()]: trackResult.track }, wallet: walletResult.wallet },
+            profile: { ...profile, boxes, tracks, wallet: walletResult.wallet },
             milestones: [
                 ...Array.from({ length: walletResult.coinsEarned }, (): Milestone => ({ kind: "coin" })),
-                ...trackResult.reachedLevels.map((level): Milestone => ({ kind: "level-up", level }))
+                ...trackResult.reachedLevels.map((level): Milestone => ({ kind: "level-up", level })),
+                ...StarsUtils.getMilestones(profile.tracks, tracks)
             ]
         };
     }

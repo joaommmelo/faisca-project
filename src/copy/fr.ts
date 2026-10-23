@@ -58,6 +58,10 @@ export const fr: Copy = {
     missionWeekMilestone: "Mission du jour réussie ! Semaine complète !",
     missionToDo: "Termine une partie et gagne une pièce.",
     missionDone: "Réussie ! Demain, il y en a une autre.",
+    starMilestone: "Tu as gagné une étoile !",
+    starsYouHave: (count) => (count === 0 ? "Pas encore d’étoile." : count === 1 ? "Tu as 1 étoile !" : `Tu as ${count} étoiles !`),
+    starsHelpAnswers: (count) => (count < 2 ? `Encore ${count} bonne réponse pour la prochaine étoile.` : `Encore ${count} bonnes réponses pour la prochaine étoile.`),
+    starsHelpEverywhere: "Tout ce que tu réussis compte, dans tous les jeux.",
 
     operationNames,
     mixName: "Mélange",
@@ -347,6 +351,9 @@ export const fr: Copy = {
         missionTitle: "Mission du jour",
         missionWeek: (done, total) => `Cette semaine : ${done} sur ${total}`,
         weekdayInitials: ["L", "M", "M", "J", "V", "S", "D"],
+        starsCount: (count) => (count < 2 ? `${count} étoile` : `${count} étoiles`),
+        seeStars: "Voir ce qui manque pour la prochaine étoile",
+        starsProgress: "Progression vers la prochaine étoile",
         seePiggyBank: "Voir la tirelire",
         piggyBank: "Tirelire",
         outOf: (total) => `sur ${total}`,
@@ -407,6 +414,7 @@ export const fr: Copy = {
         achievements: "Réussites de la partie",
         coinsEarned: (coins) => (coins < 2 ? `Tu as gagné ${coins} pièce !` : `Tu as gagné ${coins} pièces !`),
         newRecord: "Nouveau record !",
+        starsEarned: (count) => (count < 2 ? `Tu as gagné ${count} étoile !` : `Tu as gagné ${count} étoiles !`),
         toPractiseMore: "À travailler encore",
 
         progressTitle: (name) => `Tes progrès, ${name}`,

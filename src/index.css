@@ -2379,6 +2379,65 @@ fieldset {
     background: var(--color-accent);
 }
 
+/* The stars: the coins' pill, with a thin bar at its foot towards the next star, under the greeting. */
+.bubble__line {
+    display: block;
+}
+
+.star-pill {
+    position: relative;
+    overflow: hidden;
+    margin-top: var(--space-2);
+    padding-right: 16px;
+}
+
+.star-pill__bar {
+    position: absolute;
+    right: 14px;
+    bottom: 4px;
+    left: 14px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(201, 138, 0, 0.25);
+}
+
+.star-pill__fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-coin-edge);
+    transform-origin: left center;
+}
+
+.stars-meter {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin: var(--space-3) 0;
+}
+
+.stars-meter__count {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 1.5rem;
+    font-weight: 900;
+}
+
+.stars-meter__count .icon {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+.stars-meter .meter {
+    flex: 1;
+}
+
+.stars-card .hint {
+    margin: 0;
+    text-align: left;
+}
+
 .coin-button {
     position: relative;
 }

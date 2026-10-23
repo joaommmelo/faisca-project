@@ -1,6 +1,6 @@
 import { Celebration } from "../components/Celebration.tsx";
 import { GameSymbol } from "../components/GameSymbol.tsx";
-import { BackIcon, HomeIcon, PlayIcon, StarIcon } from "../components/Icons.tsx";
+import { BackIcon, HomeIcon, MedalIcon, PlayIcon } from "../components/Icons.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
 import type { Labels } from "../copy/copy.ts";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
@@ -88,7 +88,7 @@ function MahjongResult({ run }: { run: MahjongRun }) {
                 {!isCleared && <p className="score__time">{Messages.getMahjongTilesLeft(run.tilesLeft)}</p>}
                 {isNewRecord ? (
                     <p className="milestone milestone--record">
-                        <StarIcon />
+                        <MedalIcon />
                         {labels.newRecord}
                     </p>
                 ) : (

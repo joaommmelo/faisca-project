@@ -1,6 +1,6 @@
 import { Celebration } from "../components/Celebration.tsx";
 import { Equation } from "../components/Equation.tsx";
-import { BackIcon, HomeIcon, PlayIcon, StarIcon } from "../components/Icons.tsx";
+import { BackIcon, HomeIcon, MedalIcon, PlayIcon } from "../components/Icons.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
 import type { Labels } from "../copy/copy.ts";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
@@ -99,7 +99,7 @@ function ChallengeResult({ run }: { run: ChallengeRun }) {
                 <p className="score__time">{Messages.getChallengeLevelReached(run.correctCount)}</p>
                 {isNewRecord ? (
                     <p className="milestone milestone--record">
-                        <StarIcon />
+                        <MedalIcon />
                         {Messages.getLabels().newRecord}
                     </p>
                 ) : (

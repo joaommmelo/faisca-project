@@ -2,7 +2,7 @@ import { useId, useRef, useState } from "react";
 import type { Labels } from "../copy/copy.ts";
 import { LevelsUtils, type LevelEarning, type TrackProgress } from "../utils/levels/utils.ts";
 import { Messages, type Feedback } from "../utils/messages.ts";
-import { CheckIcon, StarIcon } from "./Icons.tsx";
+import { CheckIcon, LevelIcon } from "./Icons.tsx";
 import { MascotMessage } from "./Mascot.tsx";
 import { Sheet } from "./Sheet.tsx";
 
@@ -28,7 +28,7 @@ export function LevelMeter({ track, help }: LevelMeterProps) {
     return (
         <div className="level-meter">
             <span className="level-badge">
-                <StarIcon />
+                <LevelIcon />
                 {Messages.getLevelName(track.level)}
             </span>
             <div

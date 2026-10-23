@@ -3,17 +3,22 @@ import { ArithmeticUtils } from "../arithmetic/utils.ts";
 import { ClockUtils, type ClockSettings } from "../clock/utils.ts";
 import { DifficultiesUtils, type Difficulty } from "../difficulties/utils.ts";
 import { LeitnerUtils, type LeitnerBoxes } from "../leitner/utils.ts";
-import { LevelsUtils, type RecentAnswer, type RecordTrackAnswerResult, type TrackProgress } from "../levels/utils.ts";
+import { LevelsUtils, type RecentAnswer, type RecordTrackAnswerResult, type TrackProgress, type Tracks } from "../levels/utils.ts";
 import type { Operation } from "../operations/utils.ts";
 import { ProfilesUtils, type Profile } from "../profiles/utils.ts";
 import { QuestionsUtils, type RecentSkillAnswers } from "../questions/utils.ts";
 import { RecordsUtils, type RecordCategory, type RegisterTimeResult } from "../records/utils.ts";
 import { SessionUtils, type AnswerRecord, type SessionSummary } from "../session/utils.ts";
+import { StarsUtils } from "../stars/utils.ts";
 import { StatsUtils } from "../stats/utils.ts";
 import { WalletUtils, type AddWalletPointsResult } from "../wallet/utils.ts";
 
 // The mission only ever shows at the end of a game, with the week when its last circle filled.
-export type Milestone = { kind: "coin" } | { kind: "level-up"; level: number } | { kind: "mission"; isWeekComplete: boolean };
+export type Milestone =
+    | { kind: "coin" }
+    | { kind: "level-up"; level: number }
+    | { kind: "star" }
+    | { kind: "mission"; isWeekComplete: boolean };
 
 export interface ApplyRecordResult {
     profile: Profile;
@@ -119,10 +124,12 @@ export class ProgressionUtils {
         const walletResult: AddWalletPointsResult = isCorrect
             ? WalletUtils.addPoints(profile.wallet, LevelsUtils.getPointsForAnswer(question.format))
             : { wallet: profile.wallet, coinsEarned: 0 };
+        const tracks: Tracks = { ...profile.tracks, [question.trackId]: trackResult.track };
 
         const milestones: Milestone[] = [
             ...Array.from({ length: walletResult.coinsEarned }, (): Milestone => ({ kind: "coin" })),
-            ...trackResult.reachedLevels.map((level): Milestone => ({ kind: "level-up", level }))
+            ...trackResult.reachedLevels.map((level): Milestone => ({ kind: "level-up", level })),
+            ...StarsUtils.getMilestones(profile.tracks, tracks)
         ];
 
         return {
@@ -131,7 +138,7 @@ export class ProgressionUtils {
                 boxes,
                 skillBoxes,
                 recentSkillAnswers,
-                tracks: { ...profile.tracks, [question.trackId]: trackResult.track },
+                tracks,
                 wallet: walletResult.wallet
             },
             milestones

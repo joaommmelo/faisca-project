@@ -25,6 +25,7 @@ import type { AnswerLayout, DisplayedQuestion, PracticeMode, Question } from "./
 import type { RecordCategory } from "./records/utils.ts";
 import { RoundGameUtils, type GameRound, type RoundGameId, type RoundOption, type RoundResult } from "./roundGame/utils.ts";
 import { SessionUtils, type AnswerRecord } from "./session/utils.ts";
+import { StarsUtils, type StarsProgress } from "./stars/utils.ts";
 import type { StorageStatus } from "./storage/utils.ts";
 import { TimeUtils } from "./time/utils.ts";
 import type { VerticalColumn } from "./vertical/utils.ts";
@@ -122,6 +123,9 @@ export class Messages {
         if (milestone.kind === "mission") {
             return milestone.isWeekComplete ? this.getCopy().missionWeekMilestone : this.getCopy().missionMilestone;
         }
+        if (milestone.kind === "star") {
+            return this.getCopy().starMilestone;
+        }
         return this.getCopy().levelUpMilestone(milestone.level);
     }
 
@@ -140,6 +144,23 @@ export class Messages {
             return this.getMemoryGameName();
         }
         return this.getRoundGameName(game);
+    }
+
+    // What the stars sheet and the progress card say: how many, what is left to the next one, and what counts.
+    public static getStarsHelp(progress: StarsProgress): Feedback {
+        const copy: Copy = this.getCopy();
+        return {
+            title: this.getStarsCount(progress),
+            lines: [this.getStarsLeft(progress), copy.starsHelpEverywhere, copy.levelHelpChoiceHalf, copy.levelHelpWithHelp]
+        };
+    }
+
+    public static getStarsCount(progress: StarsProgress): string {
+        return this.getCopy().starsYouHave(progress.stars);
+    }
+
+    public static getStarsLeft(progress: StarsProgress): string {
+        return this.getCopy().starsHelpAnswers(StarsUtils.getAnswersToNextStar(progress));
     }
 
     public static getMissionState(isDone: boolean): string {

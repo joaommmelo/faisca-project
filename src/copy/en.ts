@@ -45,6 +45,10 @@ export const en: Copy = {
     missionWeekMilestone: "Today's mission done! Full week!",
     missionToDo: "Finish a game to earn a coin.",
     missionDone: "Done! There's another one tomorrow.",
+    starMilestone: "You earned a star!",
+    starsYouHave: (count) => (count === 0 ? "No stars yet." : count === 1 ? "You have 1 star!" : `You have ${count} stars!`),
+    starsHelpAnswers: (count) => (count === 1 ? "1 more right answer to the next star." : `${count} more right answers to the next star.`),
+    starsHelpEverywhere: "Everything you get right counts, in every game.",
 
     operationNames,
     mixName: "Mix",
@@ -327,6 +331,9 @@ export const en: Copy = {
         missionTitle: "Today's mission",
         missionWeek: (done, total) => `This week: ${done} of ${total}`,
         weekdayInitials: ["M", "T", "W", "T", "F", "S", "S"],
+        starsCount: (count) => (count === 1 ? "1 star" : `${count} stars`),
+        seeStars: "See what is left to the next star",
+        starsProgress: "Progress to the next star",
         seePiggyBank: "Open the piggy bank",
         piggyBank: "Piggy bank",
         outOf: (total) => `of ${total}`,
@@ -387,6 +394,7 @@ export const en: Copy = {
         achievements: "This game's achievements",
         coinsEarned: (coins) => (coins === 1 ? "You earned 1 coin!" : `You earned ${coins} coins!`),
         newRecord: "New record!",
+        starsEarned: (count) => (count === 1 ? "You earned 1 star!" : `You earned ${count} stars!`),
         toPractiseMore: "To work on",
 
         progressTitle: (name) => `Your progress, ${name}`,

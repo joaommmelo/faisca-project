@@ -2,7 +2,7 @@ import moment from "moment";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { Equation } from "../components/Equation.tsx";
 import { ExitSheet } from "../components/ExitSheet.tsx";
-import { CheckIcon, CloseIcon, StarIcon } from "../components/Icons.tsx";
+import { CheckIcon, CloseIcon, MedalIcon } from "../components/Icons.tsx";
 import { NumericKeypad } from "../components/NumericKeypad.tsx";
 import type { Labels } from "../copy/copy.ts";
 import { ChallengeUtils, type ChallengeClock, type ChallengeEnding, type ChallengeQuestion, type ChallengeRun } from "../utils/challenge/utils.ts";
@@ -152,7 +152,7 @@ export function ChallengeSessionScreen({ onFinish }: ChallengeSessionScreenProps
             </div>
 
             {isExitConfirmOpen && (
-                <ExitSheet question={labels.challengeExitQuestion} leaveIcon={<StarIcon />} onLeave={() => finish("stop", null)} onStay={closeExitConfirm} />
+                <ExitSheet question={labels.challengeExitQuestion} leaveIcon={<MedalIcon />} onLeave={() => finish("stop", null)} onStay={closeExitConfirm} />
             )}
         </main>
     );

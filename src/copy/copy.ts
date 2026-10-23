@@ -36,6 +36,10 @@ export interface Copy {
     missionWeekMilestone: string;
     missionToDo: string;
     missionDone: string;
+    starMilestone: string;
+    starsYouHave: (count: number) => string;
+    starsHelpAnswers: (count: number) => string;
+    starsHelpEverywhere: string;
 
     // Names
     operationNames: Record<Operation, string>;
@@ -287,6 +291,9 @@ export interface Labels {
     missionWeek: (done: number, total: number) => string;
     // Monday first.
     weekdayInitials: string[];
+    starsCount: (count: number) => string;
+    seeStars: string;
+    starsProgress: string;
     seePiggyBank: string;
     piggyBank: string;
     outOf: (total: number) => string;
@@ -347,6 +354,7 @@ export interface Labels {
     achievements: string;
     coinsEarned: (coins: number) => string;
     newRecord: string;
+    starsEarned: (count: number) => string;
     toPractiseMore: string;
 
     progressTitle: (name: string) => string;

@@ -72,6 +72,10 @@ export const it: Copy = {
     missionWeekMilestone: "Missione del giorno fatta! Settimana completa!",
     missionToDo: "Finisci una partita e vinci una moneta.",
     missionDone: "Fatta! Domani ce n'è un'altra.",
+    starMilestone: "Hai guadagnato una stella!",
+    starsYouHave: (count) => (count === 0 ? "Ancora nessuna stella." : count === 1 ? "Hai 1 stella!" : `Hai ${count} stelle!`),
+    starsHelpAnswers: (count) => (count === 1 ? "Manca 1 calcolo giusto per la prossima stella." : `Mancano ${count} calcoli giusti per la prossima stella.`),
+    starsHelpEverywhere: "Conta tutto quello che indovini, in tutti i giochi.",
 
     operationNames,
     mixName: "Misto",
@@ -356,6 +360,9 @@ export const it: Copy = {
         missionTitle: "Missione del giorno",
         missionWeek: (done, total) => `Questa settimana: ${done} su ${total}`,
         weekdayInitials: ["L", "M", "M", "G", "V", "S", "D"],
+        starsCount: (count) => (count === 1 ? "1 stella" : `${count} stelle`),
+        seeStars: "Vedi quanto manca alla prossima stella",
+        starsProgress: "Avanzamento verso la prossima stella",
         seePiggyBank: "Vedi il salvadanaio",
         piggyBank: "Salvadanaio",
         outOf: (total) => `di ${total}`,
@@ -416,6 +423,7 @@ export const it: Copy = {
         achievements: "Traguardi di questa partita",
         coinsEarned: (coins) => (coins === 1 ? "Hai guadagnato 1 moneta!" : `Hai guadagnato ${coins} monete!`),
         newRecord: "Nuovo record!",
+        starsEarned: (count) => (count === 1 ? "Hai guadagnato 1 stella!" : `Hai guadagnato ${count} stelle!`),
         toPractiseMore: "Da allenare ancora",
 
         progressTitle: (name) => `I tuoi progressi, ${name}`,

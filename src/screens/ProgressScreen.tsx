@@ -3,6 +3,7 @@ import { BackIcon, LockIcon } from "../components/Icons.tsx";
 import { LevelMeter } from "../components/LevelMeter.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
 import { ProgressMap } from "../components/ProgressMap.tsx";
+import { StarsMeter } from "../components/StarsMeter.tsx";
 import type { Labels } from "../copy/copy.ts";
 import { useFocusOnMount } from "../hooks/useFocusOnMount.ts";
 import { ArithmeticUtils } from "../utils/arithmetic/utils.ts";
@@ -16,6 +17,7 @@ import type { Profile } from "../utils/profiles/utils.ts";
 import { ProgressUtils } from "../utils/progress/utils.ts";
 import type { BestTime } from "../utils/records/utils.ts";
 import { RoundGameUtils, type RoundGameId } from "../utils/roundGame/utils.ts";
+import { StarsUtils, type StarsProgress } from "../utils/stars/utils.ts";
 import { StatsUtils } from "../utils/stats/utils.ts";
 import { TimeUtils } from "../utils/time/utils.ts";
 
@@ -29,6 +31,7 @@ export function ProgressScreen({ profile, onBack }: ProgressScreenProps) {
     const labels: Labels = Messages.getLabels();
     const masteredCount: number = ProgressUtils.countMastered(profile.boxes);
     const visibleStreak: number = StatsUtils.getVisibleStreak(profile.stats, moment());
+    const stars: StarsProgress = StarsUtils.getProgress(profile.tracks);
 
     return (
         <main className="screen">
@@ -46,6 +49,12 @@ export function ProgressScreen({ profile, onBack }: ProgressScreenProps) {
             <MascotMessage mood="proud" size={96}>
                 {Messages.getProgressCheer(masteredCount)}
             </MascotMessage>
+
+            <section className="card stars-card">
+                <h2 className="section-title">{Messages.getStarsCount(stars)}</h2>
+                <StarsMeter progress={stars} />
+                <p className="hint">{Messages.getStarsLeft(stars)}</p>
+            </section>
 
             <ul className="stats" aria-label={labels.progressNumbers}>
                 <li className="stat">

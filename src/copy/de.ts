@@ -53,6 +53,10 @@ export const de: Copy = {
     missionWeekMilestone: "Tagesmission geschafft! Die Woche ist voll!",
     missionToDo: "Spiel ein Spiel zu Ende und bekomm eine Münze.",
     missionDone: "Geschafft! Morgen gibt es eine neue.",
+    starMilestone: "Du hast einen Stern bekommen!",
+    starsYouHave: (count) => (count === 0 ? "Noch keine Sterne." : count === 1 ? "Du hast 1 Stern!" : `Du hast ${count} Sterne!`),
+    starsHelpAnswers: (count) => (count === 1 ? "Noch 1 richtige Aufgabe bis zum nächsten Stern." : `Noch ${count} richtige Aufgaben bis zum nächsten Stern.`),
+    starsHelpEverywhere: "Alles, was du richtig machst, zählt, in jedem Spiel.",
 
     operationNames,
     mixName: "Gemischt",
@@ -342,6 +346,9 @@ export const de: Copy = {
         missionTitle: "Tagesmission",
         missionWeek: (done, total) => `Diese Woche: ${done} von ${total}`,
         weekdayInitials: ["M", "D", "M", "D", "F", "S", "S"],
+        starsCount: (count) => (count === 1 ? "1 Stern" : `${count} Sterne`),
+        seeStars: "Ansehen, was bis zum nächsten Stern fehlt",
+        starsProgress: "Fortschritt bis zum nächsten Stern",
         seePiggyBank: "Sparschwein ansehen",
         piggyBank: "Sparschwein",
         outOf: (total) => `von ${total}`,
@@ -402,6 +409,7 @@ export const de: Copy = {
         achievements: "Erfolge in diesem Spiel",
         coinsEarned: (coins) => (coins === 1 ? "Du hast 1 Münze bekommen!" : `Du hast ${coins} Münzen bekommen!`),
         newRecord: "Neuer Rekord!",
+        starsEarned: (count) => (count === 1 ? "Du hast 1 Stern bekommen!" : `Du hast ${count} Sterne bekommen!`),
         toPractiseMore: "Zum Weiterüben",
 
         progressTitle: (name) => `Dein Fortschritt, ${name}`,

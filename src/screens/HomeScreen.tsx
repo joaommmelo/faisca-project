@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { CoinButton } from "../components/CoinButton.tsx";
 import { GameTiles } from "../components/GameTiles.tsx";
 import { SettingsIcon } from "../components/Icons.tsx";
 import { Logo } from "../components/Logo.tsx";
 import { MascotMessage } from "../components/Mascot.tsx";
 import { PracticeTiles } from "../components/PracticeTiles.tsx";
+import { StarButton, StarsSheet } from "../components/StarButton.tsx";
 import type { Labels } from "../copy/copy.ts";
 import { useInstallPrompt, type InstallPrompt } from "../hooks/useInstallPrompt.ts";
 import type { Difficulty } from "../utils/difficulties/utils.ts";
@@ -13,6 +15,7 @@ import type { MissionGame } from "../utils/missions/utils.ts";
 import { OperationsUtils, type Operation } from "../utils/operations/utils.ts";
 import { ProfilesUtils, type Practice, type Profile } from "../utils/profiles/utils.ts";
 import type { RoundGameId } from "../utils/roundGame/utils.ts";
+import { StarsUtils, type StarsProgress } from "../utils/stars/utils.ts";
 import type { StorageStatus } from "../utils/storage/utils.ts";
 
 interface HomeScreenProps {
@@ -47,6 +50,8 @@ export function HomeScreen({
     const { settings } = profile;
     const installPrompt: InstallPrompt = useInstallPrompt();
     const labels: Labels = Messages.getLabels();
+    const stars: StarsProgress = StarsUtils.getProgress(profile.tracks);
+    const [isStarsOpen, setIsStarsOpen] = useState<boolean>(false);
 
     const summaries: Record<Operation, string> = (() => {
         const getSummary = (operation: Operation): string => {
@@ -92,9 +97,12 @@ export function HomeScreen({
                 </div>
             </header>
 
+            {/* The child's stars sit in the greeting, next to their name. */}
             <MascotMessage mood="happy" size={80}>
-                {Messages.getGreeting(profile.name)}
+                <span className="bubble__line">{Messages.getGreeting(profile.name)}</span>
+                <StarButton progress={stars} onOpen={() => setIsStarsOpen(true)} />
             </MascotMessage>
+            {isStarsOpen && <StarsSheet progress={stars} onClose={() => setIsStarsOpen(false)} />}
 
             {storageStatus !== "saved" && (
                 <p className="notice" role="status">

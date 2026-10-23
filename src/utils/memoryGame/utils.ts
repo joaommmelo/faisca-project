@@ -1,13 +1,14 @@
 import type moment from "moment";
 import { FactsUtils, type Fact } from "../facts/utils.ts";
 import { LeitnerUtils } from "../leitner/utils.ts";
-import { LevelsUtils, type RecentAnswer, type RecordTrackAnswerResult } from "../levels/utils.ts";
+import { LevelsUtils, type RecentAnswer, type RecordTrackAnswerResult, type Tracks } from "../levels/utils.ts";
 import type { Operation } from "../operations/utils.ts";
 import type { Profile } from "../profiles/utils.ts";
 import type { AnswerFormat } from "../questions/utils.ts";
 import { ProgressionUtils, type ApplyRecordResult, type ClockOutcome, type Milestone, type TimedProfile } from "../progression/utils.ts";
 import { RandomUtils, type RandomSource } from "../random/utils.ts";
 import { RecordsUtils } from "../records/utils.ts";
+import { StarsUtils } from "../stars/utils.ts";
 import { StatsUtils } from "../stats/utils.ts";
 import { WalletUtils, type AddWalletPointsResult } from "../wallet/utils.ts";
 
@@ -221,11 +222,13 @@ export class MemoryGameUtils {
         const recentAnswer: RecentAnswer = { questionId: `${this.getTrackId()}:${game.content}:${card.value}`, isCorrect: true, format: this.getPairFormat() };
         const trackResult: RecordTrackAnswerResult = LevelsUtils.recordAnswer(LevelsUtils.getTrack(profile.tracks, this.getTrackId()), recentAnswer);
         const walletResult: AddWalletPointsResult = WalletUtils.addPoints(profile.wallet, this.getPointsForPair());
+        const tracks: Tracks = { ...profile.tracks, [this.getTrackId()]: trackResult.track };
         return {
-            profile: { ...profile, tracks: { ...profile.tracks, [this.getTrackId()]: trackResult.track }, wallet: walletResult.wallet },
+            profile: { ...profile, tracks, wallet: walletResult.wallet },
             milestones: [
                 ...Array.from({ length: walletResult.coinsEarned }, (): Milestone => ({ kind: "coin" })),
-                ...trackResult.reachedLevels.map((level): Milestone => ({ kind: "level-up", level }))
+                ...trackResult.reachedLevels.map((level): Milestone => ({ kind: "level-up", level })),
+                ...StarsUtils.getMilestones(profile.tracks, tracks)
             ]
         };
     }

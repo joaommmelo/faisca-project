@@ -103,10 +103,37 @@ export function HelpIcon() {
     );
 }
 
+// The child's stars: always gold, like the coins, and only ever for them.
 export function StarIcon() {
     return (
+        <svg className="icon icon--star" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+                d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z"
+                fill="#ffc83d"
+                stroke="#c98a00"
+                strokeWidth="1.4"
+                strokeLinejoin="round"
+            />
+        </svg>
+    );
+}
+
+// A game's level: steps going up.
+export function LevelIcon() {
+    return (
         <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z" fill="currentColor" strokeLinejoin="round" />
+            <path d="M3 20h5v-5h5v-5h5V4h3v16z" fill="currentColor" strokeLinejoin="round" />
+        </svg>
+    );
+}
+
+// A record: a medal on its ribbon.
+export function MedalIcon() {
+    return (
+        <svg className="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M7 2.5h4l2 6.5h-4zM17 2.5h-4l-2 6.5h4z" fill="currentColor" opacity="0.65" />
+            <circle cx="12" cy="15" r="6.5" fill="currentColor" />
+            <circle cx="12" cy="15" r="3.8" fill="none" stroke="#ffffff" strokeWidth="1.6" opacity="0.85" />
         </svg>
     );
 }

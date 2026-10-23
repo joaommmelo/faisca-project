@@ -1,7 +1,7 @@
 import moment from "moment";
 import { useEffect, useEffectEvent, useState } from "react";
 import { ExitSheet } from "../components/ExitSheet.tsx";
-import { ClockIcon, CloseIcon, HelpIcon, StarIcon } from "../components/Icons.tsx";
+import { ClockIcon, CloseIcon, HelpIcon, MedalIcon } from "../components/Icons.tsx";
 import type { Labels } from "../copy/copy.ts";
 import { MahjongUtils, type MahjongEnding, type MahjongGame, type MahjongRun, type MahjongSelectResult, type MahjongTile } from "../utils/mahjong/utils.ts";
 import { Messages } from "../utils/messages.ts";
@@ -154,7 +154,7 @@ export function MahjongSessionScreen({ onFinish }: MahjongSessionScreenProps) {
             </div>
 
             {isExitConfirmOpen && (
-                <ExitSheet question={labels.exitQuestion} leaveIcon={<StarIcon />} onLeave={() => finish("stop")} onStay={() => setIsExitConfirmOpen(false)} />
+                <ExitSheet question={labels.exitQuestion} leaveIcon={<MedalIcon />} onLeave={() => finish("stop")} onStay={() => setIsExitConfirmOpen(false)} />
             )}
         </main>
     );

@@ -2,8 +2,9 @@ import { useEffect, useId, useRef } from "react";
 import { Messages, type Feedback } from "../utils/messages.ts";
 import type { Milestone } from "../utils/progression/utils.ts";
 import { Celebration } from "./Celebration.tsx";
-import { CoinIcon, NextIcon, StarIcon } from "./Icons.tsx";
+import { NextIcon } from "./Icons.tsx";
 import { Mascot } from "./Mascot.tsx";
+import { MilestoneIcon } from "./MilestoneIcon.tsx";
 
 interface FeedbackPanelProps {
     feedback: Feedback;
@@ -41,7 +42,7 @@ export function FeedbackPanel({ feedback, isCorrect, milestones, onContinue }: F
                             <ul className="milestones">
                                 {milestones.map((milestone, index) => (
                                     <li key={index} className={`milestone milestone--${milestone.kind}`}>
-                                        {milestone.kind === "coin" ? <CoinIcon /> : <StarIcon />}
+                                        <MilestoneIcon kind={milestone.kind} />
                                         {Messages.getMilestone(milestone)}
                                     </li>
                                 ))}

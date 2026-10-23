@@ -2,7 +2,7 @@ import type moment from "moment";
 import { BalanceGameUtils, type BalanceRound, type BalanceSide } from "../balanceGame/utils.ts";
 import { CountingGameUtils, type CountingRound } from "../countingGame/utils.ts";
 import { LeitnerUtils, type LeitnerBoxes } from "../leitner/utils.ts";
-import { LevelsUtils, type RecentAnswer, type RecordTrackAnswerResult, type TrackProgress } from "../levels/utils.ts";
+import { LevelsUtils, type RecentAnswer, type RecordTrackAnswerResult, type TrackProgress, type Tracks } from "../levels/utils.ts";
 import { MissingSignGameUtils, type MissingSignRound } from "../missingSignGame/utils.ts";
 import { NumberBondsGameUtils, type NumberBondsRound } from "../numberBondsGame/utils.ts";
 import type { Operation } from "../operations/utils.ts";
@@ -12,6 +12,7 @@ import { RandomUtils, type RandomSource } from "../random/utils.ts";
 import { RecordsUtils } from "../records/utils.ts";
 import { SessionUtils } from "../session/utils.ts";
 import { SkipCountingGameUtils, type SkipCountingRound } from "../skipCountingGame/utils.ts";
+import { StarsUtils } from "../stars/utils.ts";
 import { StatsUtils } from "../stats/utils.ts";
 import { WalletUtils, type AddWalletPointsResult } from "../wallet/utils.ts";
 
@@ -334,12 +335,14 @@ export class RoundGameUtils {
         const walletResult: AddWalletPointsResult = isCorrect
             ? WalletUtils.addPoints(profile.wallet, this.getPointsForAnswer())
             : { wallet: profile.wallet, coinsEarned: 0 };
+        const tracks: Tracks = { ...profile.tracks, [this.getTrackId(game)]: trackResult.track };
 
         return {
-            profile: { ...profile, skillBoxes, tracks: { ...profile.tracks, [this.getTrackId(game)]: trackResult.track }, wallet: walletResult.wallet },
+            profile: { ...profile, skillBoxes, tracks, wallet: walletResult.wallet },
             milestones: [
                 ...Array.from({ length: walletResult.coinsEarned }, (): Milestone => ({ kind: "coin" })),
-                ...trackResult.reachedLevels.map((level): Milestone => ({ kind: "level-up", level }))
+                ...trackResult.reachedLevels.map((level): Milestone => ({ kind: "level-up", level })),
+                ...StarsUtils.getMilestones(profile.tracks, tracks)
             ]
         };
     }
