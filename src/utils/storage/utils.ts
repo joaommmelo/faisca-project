@@ -5,6 +5,10 @@ import { ProfilesUtils, type AppData } from "../profiles/utils.ts";
 // newer-version: the data was written by a newer Faísca; this one runs in memory and never overwrites it.
 export type StorageStatus = "saved" | "unavailable" | "newer-version";
 
+// What a saved text holds: progress this version can use, progress a newer Faísca wrote, or nothing it can read (not
+// JSON, not Faísca's, or older than any migration).
+export type ParsedData = { kind: "data"; data: AppData } | { kind: "newer-version" } | { kind: "unreadable" };
+
 export interface LoadResult {
     data: AppData;
     status: StorageStatus;
@@ -20,7 +24,7 @@ export class StorageUtils {
         return "faisca:probe";
     }
 
-    // Unreadable data starts the app fresh instead of crashing it. Older versions are migrated.
+    // Unreadable data starts the app fresh instead of crashing it.
     public static load(): LoadResult {
         if (!this.isAvailable()) {
             return { data: ProfilesUtils.createEmptyData(), status: "unavailable" };
@@ -31,6 +35,18 @@ export class StorageUtils {
             return { data: ProfilesUtils.createEmptyData(), status: "saved" };
         }
 
+        const parsed: ParsedData = this.parse(raw);
+        if (parsed.kind === "newer-version") {
+            return { data: ProfilesUtils.createEmptyData(), status: "newer-version" };
+        }
+        if (parsed.kind === "unreadable") {
+            return { data: ProfilesUtils.createEmptyData(), status: "saved" };
+        }
+        return { data: parsed.data, status: "saved" };
+    }
+
+    // The text localStorage keeps, which is also what a backup file holds. Older versions are migrated.
+    public static parse(raw: string): ParsedData {
         const parsed: unknown = (() => {
             try {
                 return JSON.parse(raw);
@@ -39,18 +55,18 @@ export class StorageUtils {
             }
         })();
         if (!this.hasProfiles(parsed)) {
-            return { data: ProfilesUtils.createEmptyData(), status: "saved" };
+            return { kind: "unreadable" };
         }
         if (parsed.version > ProfilesUtils.getDataVersion()) {
-            return { data: ProfilesUtils.createEmptyData(), status: "newer-version" };
+            return { kind: "newer-version" };
         }
         if (parsed.version === ProfilesUtils.getDataVersion()) {
-            return { data: parsed as unknown as AppData, status: "saved" };
+            return { kind: "data", data: parsed as unknown as AppData };
         }
         if (parsed.version >= MigrationsUtils.getOldestMigratableVersion()) {
-            return { data: MigrationsUtils.migrate(parsed), status: "saved" };
+            return { kind: "data", data: MigrationsUtils.migrate(parsed) };
         }
-        return { data: ProfilesUtils.createEmptyData(), status: "saved" };
+        return { kind: "unreadable" };
     }
 
     public static save(data: AppData): void {
@@ -96,6 +112,15 @@ export class StorageUtils {
             return false;
         }
         const candidate = value as { version?: unknown; profiles?: unknown };
-        return typeof candidate.version === "number" && Array.isArray(candidate.profiles);
+        return typeof candidate.version === "number" && Array.isArray(candidate.profiles) && candidate.profiles.every((profile) => this.isProfile(profile));
+    }
+
+    // Every version's profiles have an id and a name; a file without them is not Faísca's.
+    private static isProfile(value: unknown): boolean {
+        if (typeof value !== "object" || value === null) {
+            return false;
+        }
+        const candidate = value as { id?: unknown; name?: unknown };
+        return typeof candidate.id === "string" && typeof candidate.name === "string";
     }
 }
